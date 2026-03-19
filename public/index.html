@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warframe Craft Tracker</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 id="titleText">Warframe Craft Tracker</h1>
+          <p id="subtitleText" class="subtitle">
+            Sol panelden item sec, ortada listeyi yonet, sagda toplam ana malzemeleri takip et.
+          </p>
+        </div>
+        <div class="header-controls">
+          <label class="control-inline" for="languageSelect">
+            <span id="languageLabel">Dil</span>
+            <select id="languageSelect">
+              <option value="tr">TR</option>
+              <option value="en">EN</option>
+            </select>
+          </label>
+          <label class="control-inline" for="themeSelect">
+            <span id="themeLabel">Tema</span>
+            <select id="themeSelect">
+              <option value="orokin">Orokin</option>
+              <option value="drifter">Drifter</option>
+              <option value="void">Void</option>
+            </select>
+          </label>
+          <button id="shortcutButton" type="button" class="btn btn-secondary">Kisayollar</button>
+          <div id="appStatus" class="status-chip" role="status" aria-live="polite">Hazir</div>
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <section class="card panel" aria-labelledby="itemsPanelTitle">
+          <div class="panel-head">
+            <h2 id="itemsPanelTitle">Item Listesi</h2>
+            <span id="searchCountChip" class="count-chip">0 sonuc</span>
+          </div>
+          <div class="search-row">
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Esya ara (orn: Akbolto)"
+              aria-label="Craft item arama"
+              autocomplete="off"
+            />
+            <button id="searchButton" type="button" class="btn btn-primary">Ara</button>
+          </div>
+          <div id="searchResults" class="search-results" role="list" aria-label="Arama sonuclari"></div>
+        </section>
+
+        <section class="card panel" aria-labelledby="selectedPanelTitle">
+          <div class="panel-head">
+            <h2 id="selectedPanelTitle">Secilen Itemler</h2>
+            <span id="selectedCountChip" class="count-chip">0 item</span>
+          </div>
+          <div id="selectedList" class="selected-list" role="list" aria-label="Secilen item listesi"></div>
+
+          <div class="detail-box">
+            <div class="detail-head">
+              <h3 id="detailTitle">Detay</h3>
+              <div class="detail-actions">
+                <button id="detailPrevButton" type="button" class="btn btn-ghost">&#9664;</button>
+                <span id="detailPageInfo" class="count-chip">0 / 0</span>
+                <button id="detailNextButton" type="button" class="btn btn-ghost">&#9654;</button>
+                <button id="detailToggleButton" type="button" class="btn btn-secondary">Kapat</button>
+              </div>
+            </div>
+            <div id="detailRequirements" class="detail-requirements" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="card panel" aria-labelledby="totalsPanelTitle">
+          <div class="panel-head">
+            <h2 id="totalsPanelTitle">Toplam Gerekenler</h2>
+            <span id="totalsCountChip" class="count-chip">0 kalem</span>
+          </div>
+          <div id="totalsList" class="totals-list" role="list" aria-label="Toplam gereksinimler"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
+
+
+
+

@@ -1,0 +1,154 @@
+:root {
+  color-scheme: dark;
+  --wf-bg-base: #0b1220;
+  --wf-bg-container: #111b34;
+  --wf-bg-elevated: #152344;
+  --wf-text: #eaf0ff;
+  --wf-text-muted: #9db2da;
+  --wf-border: #2f4774;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--wf-bg-elevated) 45%, transparent), transparent 38%),
+    radial-gradient(circle at 95% 100%, color-mix(in srgb, var(--wf-bg-container) 42%, transparent), transparent 42%),
+    var(--wf-bg-base);
+  color: var(--wf-text);
+}
+
+body[data-theme="drifter"] {
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--wf-bg-elevated) 58%, transparent), transparent 36%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--wf-bg-container) 55%, transparent), transparent 43%),
+    var(--wf-bg-base);
+}
+
+body[data-theme="lotus"] {
+  background:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--wf-bg-elevated) 42%, transparent), transparent 40%),
+    radial-gradient(circle at 95% 100%, color-mix(in srgb, var(--wf-bg-container) 35%, transparent), transparent 42%),
+    var(--wf-bg-base);
+  color: var(--wf-text);
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 22px;
+}
+
+.hero-stack {
+  gap: 14px;
+}
+
+.hero-card {
+  border: 1px solid color-mix(in srgb, var(--wf-border) 80%, transparent);
+  box-shadow: 0 14px 44px rgba(5, 10, 27, 0.35);
+  backdrop-filter: blur(6px);
+  background: color-mix(in srgb, var(--wf-bg-container) 90%, transparent);
+}
+
+.panel-card {
+  height: min(82vh, 900px);
+  border: 1px solid color-mix(in srgb, var(--wf-border) 70%, transparent);
+  box-shadow: 0 10px 28px rgba(3, 10, 30, 0.28);
+  background: color-mix(in srgb, var(--wf-bg-container) 88%, transparent);
+}
+
+.panel-card .ant-card-body {
+  height: calc(100% - 57px);
+  overflow: hidden;
+}
+
+.panel-card .ant-card-head {
+  border-bottom: 1px solid color-mix(in srgb, var(--wf-border) 70%, transparent);
+}
+
+.panel-list {
+  max-height: 100%;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.panel-list .ant-list-item {
+  border-radius: 12px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--wf-border) 52%, transparent);
+  background: color-mix(in srgb, var(--wf-bg-elevated) 50%, transparent);
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.panel-list .ant-list-item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--wf-border) 88%, white);
+  background: color-mix(in srgb, var(--wf-bg-elevated) 72%, transparent);
+}
+
+.inner-scroll {
+  max-height: 260px;
+  overflow: auto;
+}
+
+.inner-scroll .ant-list-item {
+  margin-bottom: 10px;
+}
+
+.item-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid color-mix(in srgb, var(--wf-border) 78%, transparent);
+}
+
+.collapse-label {
+  width: 100%;
+}
+
+.collapse-label.active {
+  filter: brightness(1.08);
+}
+
+.ant-collapse-item {
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--wf-border) 68%, transparent) !important;
+}
+
+.focus-row {
+  border-color: color-mix(in srgb, var(--wf-border) 94%, white) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wf-border) 85%, white) inset;
+}
+
+.ant-collapse-item + .ant-collapse-item {
+  margin-top: 10px;
+}
+
+.ant-progress-text {
+  font-size: 11px !important;
+}
+
+.ant-tag {
+  border-radius: 999px;
+}
+
+body[data-theme="lotus"] .panel-list .ant-list-item {
+  background: color-mix(in srgb, var(--wf-bg-elevated) 58%, white);
+  border-color: color-mix(in srgb, var(--wf-border) 68%, white);
+}
+
+@media (max-width: 991px) {
+  .panel-card {
+    height: auto;
+  }
+
+  .panel-card .ant-card-body {
+    height: auto;
+  }
+
+  .panel-list {
+    max-height: 420px;
+  }
+}
+

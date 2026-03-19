@@ -1,0 +1,49 @@
+{
+  "name": "warframe-todo",
+  "version": "1.0.0",
+  "description": "Warframe craft requirement tracker with Express API and React + Vite frontend",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "setup": "npm install",
+    "start": "node src/server.js",
+    "dev": "concurrently \"cross-env PORT=3001 node --watch src/server.js\" \"vite --config web/vite.config.mjs\"",
+    "build": "vite build --config web/vite.config.mjs",
+    "preview": "vite preview --config web/vite.config.mjs",
+    "easy": "npm run build && npm start",
+    "desktop": "npm run build && electron .",
+    "desktop:pack": "npm run build && electron-builder --win portable",
+    "test": "node --test tests"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.1",
+    "antd": "^5.28.0",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.4.19"
+  },
+  "build": {
+    "appId": "com.wf.tracker",
+    "productName": "Warframe Craft Tracker",
+    "directories": {
+      "output": "desktop-dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "src/**/*",
+      "web/dist/**/*",
+      "package.json"
+    ]
+  }
+}
