@@ -48,6 +48,43 @@ app.get("/api/items", async (req, res) => {
   }
 });
 
+app.post("/api/items/resolve-metadata", async (req, res) => {
+  try {
+    const rawUniqueNames = Array.isArray(req.body?.uniqueNames) ? req.body.uniqueNames : [];
+    const uniqueNames = [...new Set(rawUniqueNames)]
+      .filter((value) => typeof value === "string" && value.length > 0)
+      .slice(0, 300);
+
+    if (uniqueNames.length === 0) {
+      res.json({ itemsByUniqueName: {} });
+      return;
+    }
+
+    const itemMap = await getItemMap();
+    const itemsByUniqueName = {};
+
+    for (const uniqueName of uniqueNames) {
+      const item = itemMap.get(uniqueName);
+      if (!item) {
+        continue;
+      }
+
+      itemsByUniqueName[uniqueName] = {
+        uniqueName: item.uniqueName,
+        name: item.name,
+        imageUrl: item.imageUrl || null,
+        type: item.type || null,
+        category: item.category || item.type || null,
+      };
+    }
+
+    res.json({ itemsByUniqueName });
+  } catch (error) {
+    console.error("/api/items/resolve-metadata error:", error);
+    res.status(500).json({ error: "Metadata could not be resolved." });
+  }
+});
+
 app.post("/api/calculate", async (req, res) => {
   try {
     const payloadItems = Array.isArray(req.body?.items) ? req.body.items : [];

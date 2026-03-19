@@ -99,6 +99,10 @@ const i18n = {
     unknown: "Bilinmiyor",
     resultCount: "{count} sonuc",
     selectedCount: "{count} secili",
+    selectedSearchPlaceholder: "Secilenlerde ara",
+    selectedSearchNoResult: "Aramada eslesme yok",
+    selectedCategory: "Kategori",
+    allCategories: "Tum Kategoriler",
     totalCount: "{count} kalem",
   },
   en: {
@@ -160,6 +164,10 @@ const i18n = {
     unknown: "Unknown",
     resultCount: "{count} results",
     selectedCount: "{count} selected",
+    selectedSearchPlaceholder: "Search selected",
+    selectedSearchNoResult: "No match in selected",
+    selectedCategory: "Category",
+    allCategories: "All categories",
     totalCount: "{count} rows",
   },
 };
@@ -259,6 +267,7 @@ function createDefaultPersistedState() {
     activeKeys: [],
     completedMap: {},
     activeSelected: null,
+    selectedCategoryFilter: "all",
     onboardingDone: false,
   };
 }
@@ -283,11 +292,26 @@ function normalizePersistedState(raw) {
     completionView: ["all", "open", "done"].includes(next.completionView)
       ? next.completionView
       : "all",
-    selectedItems: Array.isArray(next.selectedItems) ? next.selectedItems : [],
+    selectedItems: Array.isArray(next.selectedItems)
+      ? next.selectedItems.map((item) => {
+          const normalizedType = item?.type || item?.subtitle || item?.category || null;
+          const normalizedCategory = item?.category || item?.type || item?.subtitle || null;
+
+          return {
+            ...item,
+            type: normalizedType,
+            category: normalizedCategory,
+          };
+        })
+      : [],
     activeKeys: Array.isArray(next.activeKeys) ? next.activeKeys : [],
     themeProfiles:
       next.themeProfiles && typeof next.themeProfiles === "object" ? next.themeProfiles : {},
     completedMap: next.completedMap && typeof next.completedMap === "object" ? next.completedMap : {},
+    selectedCategoryFilter:
+      typeof next.selectedCategoryFilter === "string" && next.selectedCategoryFilter.length > 0
+        ? next.selectedCategoryFilter
+        : "all",
   };
 }
 
@@ -389,7 +413,11 @@ function CraftApp() {
 
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [selectedSearch, setSelectedSearch] = useState("");
   const [selectedItems, setSelectedItems] = useState(initialPersisted.selectedItems);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState(
+    initialPersisted.selectedCategoryFilter,
+  );
   const [activeKeys, setActiveKeys] = useState(initialPersisted.activeKeys);
   const [activeSelected, setActiveSelected] = useState(initialPersisted.activeSelected);
   const [completionView, setCompletionView] = useState(initialPersisted.completionView);
@@ -423,6 +451,7 @@ function CraftApp() {
       setThemeProfiles(persistedState.themeProfiles);
       setCompletionView(persistedState.completionView);
       setSelectedItems(persistedState.selectedItems);
+      setSelectedCategoryFilter(persistedState.selectedCategoryFilter || "all");
       setActiveKeys(persistedState.activeKeys);
       setCompletedMap(persistedState.completedMap);
       setActiveSelected(persistedState.activeSelected || null);
@@ -447,6 +476,7 @@ function CraftApp() {
         themeProfiles,
         completionView,
         selectedItems,
+        selectedCategoryFilter,
         activeKeys,
         completedMap,
         activeSelected,
@@ -460,6 +490,7 @@ function CraftApp() {
     themeProfiles,
     completionView,
     selectedItems,
+    selectedCategoryFilter,
     activeKeys,
     completedMap,
     activeSelected,
@@ -584,6 +615,134 @@ function CraftApp() {
     });
   }, [calculation.totals, completedMap, detailByItem, selectedItems]);
 
+  const selectedCategoryOptions = useMemo(() => {
+    const optionMap = new Map();
+    for (const item of selectedItems) {
+      const label = item.category || item.type || t("unknown");
+      const value = label.toLowerCase();
+      if (!optionMap.has(value)) {
+        optionMap.set(value, label);
+      }
+    }
+
+    const sorted = Array.from(optionMap.entries())
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }));
+
+    return [{ value: "all", label: t("allCategories") }, ...sorted];
+  }, [selectedItems, language]);
+
+  const filteredSelectedItems = useMemo(() => {
+    const normalizedQuery = selectedSearch.trim().toLowerCase();
+    const normalizedCategory = selectedCategoryFilter;
+
+    return selectedItems.filter((item) => {
+      const categoryLabel = (item.category || item.type || t("unknown")).toLowerCase();
+      const matchesQuery =
+        !normalizedQuery ||
+        item.name.toLowerCase().includes(normalizedQuery) ||
+        item.uniqueName.toLowerCase().includes(normalizedQuery);
+      const matchesCategory = normalizedCategory === "all" || categoryLabel === normalizedCategory;
+      return matchesQuery && matchesCategory;
+    });
+  }, [selectedItems, selectedSearch, selectedCategoryFilter, language]);
+
+  const missingSelectedMetadataUniqueNames = useMemo(() => {
+    return selectedItems
+      .filter((item) => {
+        const category = String(item.category || "").trim().toLowerCase();
+        const type = String(item.type || "").trim().toLowerCase();
+        const hasCategory = category.length > 0 && category !== "bilinmiyor" && category !== "unknown";
+        const hasType = type.length > 0 && type !== "bilinmiyor" && type !== "unknown";
+        return !hasCategory && !hasType;
+      })
+      .map((item) => item.uniqueName);
+  }, [selectedItems]);
+
+  useEffect(() => {
+    if (missingSelectedMetadataUniqueNames.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function resolveMissingSelectedMetadata() {
+      try {
+        const data = await requestJson("/api/items/resolve-metadata", {
+          method: "POST",
+          body: JSON.stringify({ uniqueNames: missingSelectedMetadataUniqueNames }),
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const itemsByUniqueName =
+          data?.itemsByUniqueName && typeof data.itemsByUniqueName === "object"
+            ? data.itemsByUniqueName
+            : {};
+
+        if (Object.keys(itemsByUniqueName).length === 0) {
+          return;
+        }
+
+        setSelectedItems((prev) => {
+          let changed = false;
+          const next = prev.map((item) => {
+            const resolved = itemsByUniqueName[item.uniqueName];
+            if (!resolved) {
+              return item;
+            }
+
+            const nextType = item.type || resolved.type || null;
+            const nextCategory = item.category || resolved.category || resolved.type || null;
+            const nextName = item.name || resolved.name || item.name;
+            const nextImageUrl = item.imageUrl || resolved.imageUrl || null;
+
+            if (
+              nextType === item.type &&
+              nextCategory === item.category &&
+              nextName === item.name &&
+              nextImageUrl === item.imageUrl
+            ) {
+              return item;
+            }
+
+            changed = true;
+            return {
+              ...item,
+              type: nextType,
+              category: nextCategory,
+              name: nextName,
+              imageUrl: nextImageUrl,
+            };
+          });
+
+          return changed ? next : prev;
+        });
+      } catch {
+        // Keep UI responsive when metadata resolution fails on unstable networks.
+      }
+    }
+
+    resolveMissingSelectedMetadata();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [missingSelectedMetadataUniqueNames]);
+
+  useEffect(() => {
+    if (selectedCategoryFilter === "all") {
+      return;
+    }
+
+    const stillExists = selectedCategoryOptions.some((option) => option.value === selectedCategoryFilter);
+    if (!stillExists) {
+      setSelectedCategoryFilter("all");
+    }
+  }, [selectedCategoryFilter, selectedCategoryOptions]);
+
   useEffect(() => {
     if (!activeSelected || !activeKeys.includes(activeSelected)) {
       setFocusRequirementKey(null);
@@ -627,7 +786,12 @@ function CraftApp() {
       if (existing) {
         return prev.map((entry) =>
           entry.uniqueName === item.uniqueName
-            ? { ...entry, quantity: entry.quantity + 1 }
+            ? {
+                ...entry,
+                quantity: entry.quantity + 1,
+                type: entry.type || item.type || item.category || null,
+                category: entry.category || item.category || item.type || null,
+              }
             : entry,
         );
       }
@@ -638,13 +802,14 @@ function CraftApp() {
           uniqueName: item.uniqueName,
           name: item.name,
           imageUrl: item.imageUrl || null,
+          type: item.type || null,
+          category: item.category || item.type || null,
           quantity: 1,
         },
       ];
     });
 
     setActiveSelected(item.uniqueName);
-    setActiveKeys((prev) => (prev.includes(item.uniqueName) ? prev : [...prev, item.uniqueName]));
     message.success(`${item.name} +1`);
   }
 
@@ -859,7 +1024,7 @@ function CraftApp() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeSelected, selectedItems]);
 
-  const selectedCollapseItems = selectedItems.map((item) => {
+  const selectedCollapseItems = filteredSelectedItems.map((item) => {
     const requirements = detailByItem.get(item.uniqueName) || [];
     const rows = enrichRequirements(requirements, completedMap[item.uniqueName] || {}, completionView);
     const isActive = activeSelected === item.uniqueName;
@@ -1082,10 +1247,30 @@ function CraftApp() {
                 className="panel-card"
               >
                 <Flex vertical gap={8} className="panel-content">
+                  <Flex gap={8} wrap="wrap">
+                    <Input
+                      size="small"
+                      placeholder={t("selectedSearchPlaceholder")}
+                      value={selectedSearch}
+                      onChange={(event) => setSelectedSearch(event.target.value)}
+                      suffix={<SearchOutlined />}
+                      style={{ flex: 1, minWidth: 190 }}
+                    />
+                    <Select
+                      size="small"
+                      value={selectedCategoryFilter}
+                      onChange={(value) => setSelectedCategoryFilter(value)}
+                      options={selectedCategoryOptions}
+                      style={{ minWidth: 180 }}
+                      placeholder={t("selectedCategory")}
+                    />
+                  </Flex>
                   {focusRequirementKey ? <Text type="secondary">{t("focusHint")}</Text> : null}
                   <div className="panel-scroll">
                     {selectedItems.length === 0 ? (
                       <Empty description={t("noSelected")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    ) : filteredSelectedItems.length === 0 ? (
+                      <Empty description={t("selectedSearchNoResult")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
                     ) : (
                       <Collapse
                         className="panel-list"
