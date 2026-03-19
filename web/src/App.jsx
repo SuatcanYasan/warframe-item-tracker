@@ -67,6 +67,7 @@ const i18n = {
     customText: "Metin",
     customTextSecondary: "Yardimci Metin",
     customBorder: "Kenar",
+    customScrollbar: "Scroll Rengi",
     customSuccess: "Basari",
     customWarning: "Uyari",
     customError: "Hata",
@@ -127,6 +128,7 @@ const i18n = {
     customText: "Text",
     customTextSecondary: "Secondary Text",
     customBorder: "Border",
+    customScrollbar: "Scrollbar",
     customSuccess: "Success",
     customWarning: "Warning",
     customError: "Error",
@@ -177,6 +179,7 @@ const themeOptions = {
       colorText: "#eaf0ff",
       colorTextSecondary: "#9db2da",
       colorBorder: "#2f4774",
+      colorScrollbar: "#4c68a4",
       borderRadius: 12,
     },
   },
@@ -194,6 +197,7 @@ const themeOptions = {
       colorText: "#fdebd9",
       colorTextSecondary: "#c8b09b",
       colorBorder: "#57402f",
+      colorScrollbar: "#7a5b42",
       borderRadius: 10,
     },
   },
@@ -211,6 +215,7 @@ const themeOptions = {
       colorText: "#10244f",
       colorTextSecondary: "#4f6597",
       colorBorder: "#bfd0f9",
+      colorScrollbar: "#8ca8e8",
       borderRadius: 12,
     },
   },
@@ -223,6 +228,7 @@ const colorFields = [
   ["colorText", "customText"],
   ["colorTextSecondary", "customTextSecondary"],
   ["colorBorder", "customBorder"],
+  ["colorScrollbar", "customScrollbar"],
   ["colorSuccess", "customSuccess"],
   ["colorWarning", "customWarning"],
   ["colorError", "customError"],
@@ -260,12 +266,20 @@ function createDefaultPersistedState() {
 function normalizePersistedState(raw) {
   const fallback = createDefaultPersistedState();
   const next = { ...(raw || {}) };
+  const normalizedThemeName = themeOptions[next.theme] ? next.theme : "orokin";
+  const baseThemeToken = themeOptions[normalizedThemeName].token;
+  const persistedToken =
+    next.customThemeTokens && typeof next.customThemeTokens === "object" ? next.customThemeTokens : {};
 
   return {
     ...fallback,
     ...next,
     language: next.language === "en" ? "en" : "tr",
-    theme: themeOptions[next.theme] ? next.theme : "orokin",
+    theme: normalizedThemeName,
+    customThemeTokens: {
+      ...baseThemeToken,
+      ...persistedToken,
+    },
     completionView: ["all", "open", "done"].includes(next.completionView)
       ? next.completionView
       : "all",
@@ -461,6 +475,10 @@ function CraftApp() {
     root.style.setProperty("--wf-text", customThemeTokens.colorText || "#eaf0ff");
     root.style.setProperty("--wf-text-muted", customThemeTokens.colorTextSecondary || "#9db2da");
     root.style.setProperty("--wf-border", customThemeTokens.colorBorder || "#2f4774");
+    root.style.setProperty(
+      "--wf-scrollbar",
+      customThemeTokens.colorScrollbar || customThemeTokens.colorBorder || "#2f4774",
+    );
   }, [customThemeTokens, themeName]);
 
   useEffect(() => {
@@ -1066,25 +1084,27 @@ function CraftApp() {
                 }
                 className="panel-card"
               >
-                <Space direction="vertical" size="small" style={{ width: "100%" }}>
+                <Flex vertical gap={8} className="panel-content">
                   {focusRequirementKey ? <Text type="secondary">{t("focusHint")}</Text> : null}
-                  {selectedItems.length === 0 ? (
-                    <Empty description={t("noSelected")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                  ) : (
-                    <Collapse
-                      className="panel-list"
-                      activeKey={activeKeys}
-                      onChange={(keys) => {
-                        const keyList = Array.isArray(keys) ? keys : [keys];
-                        setActiveKeys(keyList);
-                        if (keyList.length > 0) {
-                          setActiveSelected(keyList[keyList.length - 1]);
-                        }
-                      }}
-                      items={selectedCollapseItems}
-                    />
-                  )}
-                </Space>
+                  <div className="panel-scroll">
+                    {selectedItems.length === 0 ? (
+                      <Empty description={t("noSelected")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    ) : (
+                      <Collapse
+                        className="panel-list"
+                        activeKey={activeKeys}
+                        onChange={(keys) => {
+                          const keyList = Array.isArray(keys) ? keys : [keys];
+                          setActiveKeys(keyList);
+                          if (keyList.length > 0) {
+                            setActiveSelected(keyList[keyList.length - 1]);
+                          }
+                        }}
+                        items={selectedCollapseItems}
+                      />
+                    )}
+                  </div>
+                </Flex>
               </Card>
             </Col>
 
@@ -1093,51 +1113,55 @@ function CraftApp() {
                 title={`${t("totals")} - ${t("totalCount", { count: adjustedTotals.length })}`}
                 className="panel-card"
               >
-                <Spin spinning={loadingCalc}>
-                  <List
-                    className="panel-list"
-                    dataSource={adjustedTotals}
-                    locale={{ emptyText: t("statusReady") }}
-                    renderItem={(resource) => (
-                      <List.Item
-                        actions={[
-                          resource.status === "done" ? (
-                            <Badge key="done" status="success" text={t("completeTag")} />
-                          ) : resource.status === "partial" ? (
-                            <Badge key="partial" status="processing" text={t("partialTag")} />
-                          ) : (
-                            <Text key="remaining" strong>
-                              {resource.remaining}
-                            </Text>
-                          ),
-                        ]}
-                      >
-                        <List.Item.Meta
-                          avatar={
-                            <img
-                              src={resource.imageUrl || FALLBACK_ICON}
-                              alt={resource.name}
-                              className="item-thumb"
+                <div className="panel-content">
+                  <div className="panel-scroll">
+                    <Spin spinning={loadingCalc}>
+                      <List
+                        className="panel-list"
+                        dataSource={adjustedTotals}
+                        locale={{ emptyText: t("statusReady") }}
+                        renderItem={(resource) => (
+                          <List.Item
+                            actions={[
+                              resource.status === "done" ? (
+                                <Badge key="done" status="success" text={t("completeTag")} />
+                              ) : resource.status === "partial" ? (
+                                <Badge key="partial" status="processing" text={t("partialTag")} />
+                              ) : (
+                                <Text key="remaining" strong>
+                                  {resource.remaining}
+                                </Text>
+                              ),
+                            ]}
+                          >
+                            <List.Item.Meta
+                              avatar={
+                                <img
+                                  src={resource.imageUrl || FALLBACK_ICON}
+                                  alt={resource.name}
+                                  className="item-thumb"
+                                />
+                              }
+                              title={resource.name}
+                              description={
+                                <Space direction="vertical" size={4} style={{ width: "100%" }}>
+                                  <Text type="secondary">
+                                    {`${t("quantity")}: ${resource.quantity} | ${t("doneAmount")}: ${resource.completedAmount} | ${t("remaining")}: ${resource.remaining}`}
+                                  </Text>
+                                  <Progress
+                                    percent={resource.completionPercent}
+                                    size="small"
+                                    status={resource.status === "done" ? "success" : "active"}
+                                  />
+                                </Space>
+                              }
                             />
-                          }
-                          title={resource.name}
-                          description={
-                            <Space direction="vertical" size={4} style={{ width: "100%" }}>
-                              <Text type="secondary">
-                                {`${t("quantity")}: ${resource.quantity} | ${t("doneAmount")}: ${resource.completedAmount} | ${t("remaining")}: ${resource.remaining}`}
-                              </Text>
-                              <Progress
-                                percent={resource.completionPercent}
-                                size="small"
-                                status={resource.status === "done" ? "success" : "active"}
-                              />
-                            </Space>
-                          }
-                        />
-                      </List.Item>
-                    )}
-                  />
-                </Spin>
+                          </List.Item>
+                        )}
+                      />
+                    </Spin>
+                  </div>
+                </div>
               </Card>
             </Col>
           </Row>

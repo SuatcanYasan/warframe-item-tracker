@@ -6,6 +6,7 @@
   --wf-text: #eaf0ff;
   --wf-text-muted: #9db2da;
   --wf-border: #2f4774;
+  --wf-scrollbar: #4c68a4;
 }
 
 body {
@@ -68,6 +69,46 @@ body[data-theme="lotus"] {
   max-height: 100%;
   overflow: auto;
   padding-right: 4px;
+}
+
+.panel-content {
+  height: 100%;
+  min-height: 0;
+}
+
+.panel-scroll {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--wf-scrollbar) 82%, transparent) transparent;
+}
+
+.panel-scroll .panel-list {
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.panel-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-scroll::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--wf-bg-container) 65%, transparent);
+  border-radius: 999px;
+}
+
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--wf-scrollbar) 85%, var(--wf-bg-elevated));
+  border-radius: 999px;
+}
+
+.panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--wf-scrollbar) 92%, white);
 }
 
 .panel-list .ant-list-item {
@@ -148,6 +189,10 @@ body[data-theme="lotus"] .panel-list .ant-list-item {
   }
 
   .panel-list {
+    max-height: 420px;
+  }
+
+  .panel-scroll {
     max-height: 420px;
   }
 }

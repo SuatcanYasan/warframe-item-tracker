@@ -9,7 +9,9 @@ const {
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3444;
+const APP_SIGNATURE = "warframe-craft-tracker";
+const STARTED_AT = new Date().toISOString();
 const webDistPath = path.join(__dirname, "..", "web", "dist");
 const legacyPublicPath = path.join(__dirname, "..", "public");
 const hasWebBuild = fs.existsSync(path.join(webDistPath, "index.html"));
@@ -23,7 +25,12 @@ if (hasWebBuild) {
 }
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    appSignature: APP_SIGNATURE,
+    pid: process.pid,
+    startedAt: STARTED_AT,
+  });
 });
 
 app.get("/api/items", async (req, res) => {
@@ -81,8 +88,17 @@ app.use((req, res) => {
 async function startServer() {
   try {
     await ensureDataLoaded();
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Warframe craft tracker is running on http://localhost:${PORT}`);
+    });
+
+    server.on("error", (error) => {
+      if (error && error.code === "EADDRINUSE") {
+        console.error(`Port ${PORT} is already in use. Could not start backend.`);
+      } else {
+        console.error("Server listen error:", error);
+      }
+      process.exit(1);
     });
   } catch (error) {
     console.error("Startup failed:", error);
