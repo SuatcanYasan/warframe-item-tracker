@@ -104,6 +104,10 @@ const i18n = {
     selectedCategory: "Kategori",
     allCategories: "Tum Kategoriler",
     totalCount: "{count} kalem",
+    focusedByRequirement: "Filtre: {name} isteyen secilenler",
+    clearRequirementFilter: "Filtreyi Temizle",
+    requirementUsedByCount: "{count} secilen urun istiyor",
+    requirementUsedByNone: "Bu kalemi isteyen secilen urun yok",
   },
   en: {
     subtitle: "Add items, track direct recipes, and subtract completed parts from totals.",
@@ -169,6 +173,10 @@ const i18n = {
     selectedCategory: "Category",
     allCategories: "All categories",
     totalCount: "{count} rows",
+    focusedByRequirement: "Filter: selected items requiring {name}",
+    clearRequirementFilter: "Clear Filter",
+    requirementUsedByCount: "Required by {count} selected items",
+    requirementUsedByNone: "No selected items require this row",
   },
 };
 
@@ -427,10 +435,12 @@ function CraftApp() {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingCalc, setLoadingCalc] = useState(false);
   const [focusRequirementKey, setFocusRequirementKey] = useState(null);
+  const [focusedTotalRequirement, setFocusedTotalRequirement] = useState(null);
 
   const searchInputRef = useRef(null);
   const themeImportInputRef = useRef(null);
   const requirementRefs = useRef(new Map());
+  const lastAutoFocusRequirementRef = useRef(null);
   const t = (key, params) => translate(language, key, params);
 
   useEffect(() => {
@@ -632,11 +642,36 @@ function CraftApp() {
     return [{ value: "all", label: t("allCategories") }, ...sorted];
   }, [selectedItems, language]);
 
+  const requirementParentMap = useMemo(() => {
+    const map = new Map();
+    for (const item of calculation.perItem || []) {
+      for (const requirement of item.requirements || []) {
+        if (!map.has(requirement.uniqueName)) {
+          map.set(requirement.uniqueName, new Set());
+        }
+        map.get(requirement.uniqueName).add(item.uniqueName);
+      }
+    }
+    return map;
+  }, [calculation.perItem]);
+
+  const focusedRequirementParents = useMemo(() => {
+    if (!focusedTotalRequirement?.uniqueName) {
+      return null;
+    }
+    return requirementParentMap.get(focusedTotalRequirement.uniqueName) || new Set();
+  }, [focusedTotalRequirement, requirementParentMap]);
+
   const filteredSelectedItems = useMemo(() => {
     const normalizedQuery = selectedSearch.trim().toLowerCase();
     const normalizedCategory = selectedCategoryFilter;
 
     return selectedItems.filter((item) => {
+      if (focusedRequirementParents) {
+        // Requirement focus mode should show all selected parents needing that resource.
+        return focusedRequirementParents.has(item.uniqueName);
+      }
+
       const categoryLabel = (item.category || item.type || t("unknown")).toLowerCase();
       const matchesQuery =
         !normalizedQuery ||
@@ -645,7 +680,55 @@ function CraftApp() {
       const matchesCategory = normalizedCategory === "all" || categoryLabel === normalizedCategory;
       return matchesQuery && matchesCategory;
     });
-  }, [selectedItems, selectedSearch, selectedCategoryFilter, language]);
+  }, [
+    selectedItems,
+    selectedSearch,
+    selectedCategoryFilter,
+    focusedRequirementParents,
+    language,
+  ]);
+
+  useEffect(() => {
+    const focusedRequirementKey = focusedTotalRequirement?.uniqueName || null;
+
+    if (!focusedRequirementKey) {
+      lastAutoFocusRequirementRef.current = null;
+      return;
+    }
+
+    const matchedItems = selectedItems.filter((item) => focusedRequirementParents?.has(item.uniqueName));
+    if (matchedItems.length === 0) {
+      return;
+    }
+
+    // Auto-expand only once per focused requirement; keep user collapse choices afterwards.
+    if (lastAutoFocusRequirementRef.current !== focusedRequirementKey) {
+      setActiveKeys((prev) => {
+        const next = new Set(prev);
+        for (const item of matchedItems) {
+          next.add(item.uniqueName);
+        }
+        return Array.from(next);
+      });
+      setActiveSelected(matchedItems[0].uniqueName);
+      lastAutoFocusRequirementRef.current = focusedRequirementKey;
+      return;
+    }
+
+    if (!activeSelected || !focusedRequirementParents?.has(activeSelected)) {
+      setActiveSelected(matchedItems[0].uniqueName);
+    }
+  }, [focusedTotalRequirement, focusedRequirementParents, selectedItems, activeSelected]);
+
+  useEffect(() => {
+    if (!focusedTotalRequirement?.uniqueName) {
+      return;
+    }
+
+    if ((focusedRequirementParents?.size || 0) === 0) {
+      setFocusedTotalRequirement(null);
+    }
+  }, [focusedTotalRequirement, focusedRequirementParents]);
 
   const missingSelectedMetadataUniqueNames = useMemo(() => {
     return selectedItems
@@ -1265,6 +1348,16 @@ function CraftApp() {
                       placeholder={t("selectedCategory")}
                     />
                   </Flex>
+                  {focusedTotalRequirement ? (
+                    <Flex align="center" justify="space-between" gap={8} wrap="wrap">
+                      <Text type="secondary">
+                        {t("focusedByRequirement", { name: focusedTotalRequirement.name })}
+                      </Text>
+                      <Button size="small" onClick={() => setFocusedTotalRequirement(null)}>
+                        {t("clearRequirementFilter")}
+                      </Button>
+                    </Flex>
+                  ) : null}
                   {focusRequirementKey ? <Text type="secondary">{t("focusHint")}</Text> : null}
                   <div className="panel-scroll">
                     {selectedItems.length === 0 ? (
@@ -1304,6 +1397,21 @@ function CraftApp() {
                         locale={{ emptyText: t("statusReady") }}
                         renderItem={(resource) => (
                           <List.Item
+                            className={`total-row ${
+                              focusedTotalRequirement?.uniqueName === resource.uniqueName ? "focused-total-row" : ""
+                            }`}
+                            onClick={() => {
+                              const current = focusedTotalRequirement?.uniqueName;
+                              const next =
+                                current === resource.uniqueName
+                                  ? null
+                                  : { uniqueName: resource.uniqueName, name: resource.name };
+                              setFocusedTotalRequirement(next);
+
+                              if (next && !(requirementParentMap.get(resource.uniqueName)?.size > 0)) {
+                                message.info(t("requirementUsedByNone"));
+                              }
+                            }}
                             actions={[
                               resource.status === "done" ? (
                                 <Badge key="done" status="success" text={t("completeTag")} />
@@ -1327,6 +1435,11 @@ function CraftApp() {
                               title={resource.name}
                               description={
                                 <Space direction="vertical" size={4} style={{ width: "100%" }}>
+                                  <Text type="secondary">
+                                    {t("requirementUsedByCount", {
+                                      count: requirementParentMap.get(resource.uniqueName)?.size || 0,
+                                    })}
+                                  </Text>
                                   <Text type="secondary">
                                     {`${t("quantity")}: ${resource.quantity} | ${t("doneAmount")}: ${resource.completedAmount} | ${t("remaining")}: ${resource.remaining}`}
                                   </Text>

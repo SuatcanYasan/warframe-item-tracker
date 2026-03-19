@@ -162,6 +162,19 @@ body[data-theme="lotus"] {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--wf-border) 85%, white) inset;
 }
 
+.focused-total-row {
+  border-color: color-mix(in srgb, var(--wf-border) 94%, white) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wf-border) 80%, white) inset;
+}
+
+.panel-list .ant-list-item.focused-total-row {
+  background: color-mix(in srgb, var(--wf-bg-elevated) 72%, transparent);
+}
+
+.panel-list .ant-list-item.total-row {
+  cursor: pointer;
+}
+
 .ant-collapse-item + .ant-collapse-item {
   margin-top: 10px;
 }
