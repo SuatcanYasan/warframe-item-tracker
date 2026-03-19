@@ -34,9 +34,21 @@ function startBackend() {
     env: {
       ...process.env,
       PORT: APP_PORT,
+      // Electron binary'yi Node davranisinda calistirarak backend scriptini dogrudan baslatir.
+      ELECTRON_RUN_AS_NODE: "1",
     },
     stdio: "inherit",
     windowsHide: true,
+  });
+
+  serverProcess.on("error", (error) => {
+    console.error("Backend process start error:", error);
+  });
+
+  serverProcess.on("exit", (code, signal) => {
+    if (code !== 0 && signal !== "SIGTERM") {
+      console.error(`Backend process exited unexpectedly. code=${code} signal=${signal}`);
+    }
   });
 }
 
