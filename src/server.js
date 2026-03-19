@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 
 const {
-  ensureDataLoaded,
   getItemMap,
   searchCraftableItems,
 } = require("./services/itemsService");
@@ -87,7 +86,6 @@ app.use((req, res) => {
 
 async function startServer() {
   try {
-    await ensureDataLoaded();
     const server = app.listen(PORT, () => {
       console.log(`Warframe craft tracker is running on http://localhost:${PORT}`);
     });

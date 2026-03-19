@@ -800,9 +800,6 @@ function CraftApp() {
     });
   }
 
-  useEffect(() => {
-    runSearch("");
-  }, []);
 
   useEffect(() => {
     function onKeyDown(event) {

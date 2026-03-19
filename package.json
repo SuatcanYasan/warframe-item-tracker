@@ -5,9 +5,11 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "setup": "npm install",
+    "snapshot": "node scripts/build-items-snapshot.mjs",
     "start": "node src/server.js",
     "dev": "concurrently \"cross-env PORT=3001 node --watch src/server.js\" \"vite --config web/vite.config.mjs\"",
     "build": "vite build --config web/vite.config.mjs",
+    "build:all": "npm run snapshot && npm run build",
     "preview": "vite preview --config web/vite.config.mjs",
     "easy": "npm run build && npm start",
     "desktop": "npm run build && electron .",
@@ -42,6 +44,7 @@
     "files": [
       "desktop/**/*",
       "src/**/*",
+      "data/**/*",
       "web/dist/**/*",
       "package.json"
     ]

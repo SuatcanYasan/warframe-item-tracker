@@ -279,6 +279,8 @@ function createWindow(port) {
     title: "Warframe Craft Tracker",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
+      devTools: !app.isPackaged,
+      spellcheck: false,
     },
   });
 
