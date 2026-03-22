@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8D48B"/>
+      <stop offset="50%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#8B7332"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E8DC"/>
+      <stop offset="100%" stop-color="#0A7B74"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="goldGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="248" fill="#030711" stroke="url(#goldGrad)" stroke-width="2" opacity="0.95"/>
+
+  <!-- Inner decorative ring -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#goldGrad)" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Orokin corner accents -->
+  <path d="M 128 60 L 256 60 L 256 65 L 133 65 Z" fill="url(#goldGrad)" opacity="0.4"/>
+  <path d="M 256 60 L 384 60 L 379 65 L 256 65 Z" fill="url(#goldGrad)" opacity="0.4"/>
+  <path d="M 128 452 L 256 452 L 256 447 L 133 447 Z" fill="url(#goldGrad)" opacity="0.4"/>
+  <path d="M 256 452 L 384 452 L 379 447 L 256 447 Z" fill="url(#goldGrad)" opacity="0.4"/>
+
+  <!-- Warframe-inspired Lotus/Anvil symbol -->
+  <g filter="url(#goldGlow)" transform="translate(256, 230)">
+    <!-- Central diamond/forge shape -->
+    <path d="M 0 -100 L 70 -20 L 70 40 L 0 90 L -70 40 L -70 -20 Z"
+          fill="none" stroke="url(#goldGrad)" stroke-width="2.5"/>
+
+    <!-- Inner energy core -->
+    <path d="M 0 -60 L 40 -10 L 40 25 L 0 55 L -40 25 L -40 -10 Z"
+          fill="url(#goldGrad)" opacity="0.12"/>
+
+    <!-- Hammer/craft symbol -->
+    <line x1="0" y1="-45" x2="0" y2="35" stroke="url(#cyanGrad)" stroke-width="3" filter="url(#glow)"/>
+    <line x1="-25" y1="-25" x2="25" y2="-25" stroke="url(#cyanGrad)" stroke-width="3" filter="url(#glow)"/>
+    <rect x="-18" y="-45" width="36" height="16" rx="3" fill="none" stroke="url(#cyanGrad)" stroke-width="2" filter="url(#glow)"/>
+
+    <!-- Side energy wings -->
+    <path d="M -70 -20 L -95 -50 L -85 -15 Z" fill="url(#goldGrad)" opacity="0.5"/>
+    <path d="M 70 -20 L 95 -50 L 85 -15 Z" fill="url(#goldGrad)" opacity="0.5"/>
+    <path d="M -70 40 L -95 70 L -85 35 Z" fill="url(#goldGrad)" opacity="0.3"/>
+    <path d="M 70 40 L 95 70 L 85 35 Z" fill="url(#goldGrad)" opacity="0.3"/>
+  </g>
+
+  <!-- Text: WCT -->
+  <text x="256" y="380" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700" font-size="42" letter-spacing="12" fill="url(#goldGrad)" filter="url(#glow)">
+    WCT
+  </text>
+
+  <!-- Subtitle -->
+  <text x="256" y="410" text-anchor="middle" font-family="Inter, sans-serif" font-weight="400" font-size="13" letter-spacing="4" fill="#8892A8">
+    CRAFT TRACKER
+  </text>
+</svg>

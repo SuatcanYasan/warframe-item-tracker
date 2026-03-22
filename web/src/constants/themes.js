@@ -1,0 +1,71 @@
+import { theme } from "antd";
+
+export const themeOptions = {
+  orokin: {
+    label: "Orokin",
+    algorithm: theme.darkAlgorithm,
+    token: {
+      colorPrimary: "#C9A84C",
+      colorSuccess: "#10B981",
+      colorWarning: "#F59E0B",
+      colorError: "#EF4444",
+      colorBgBase: "#030711",
+      colorBgContainer: "#0F1A30",
+      colorBgElevated: "#152040",
+      colorText: "#E8EDF5",
+      colorTextSecondary: "#8892A8",
+      colorBorder: "#1E2D4D",
+      colorScrollbar: "#8B7332",
+      borderRadius: 12,
+    },
+  },
+  drifter: {
+    label: "Drifter",
+    algorithm: theme.darkAlgorithm,
+    token: {
+      colorPrimary: "#d38d58",
+      colorSuccess: "#65d59a",
+      colorWarning: "#ffbc68",
+      colorError: "#ff7f7f",
+      colorBgBase: "#16100d",
+      colorBgContainer: "#241913",
+      colorBgElevated: "#2e2018",
+      colorText: "#fdebd9",
+      colorTextSecondary: "#c8b09b",
+      colorBorder: "#57402f",
+      colorScrollbar: "#7a5b42",
+      borderRadius: 10,
+    },
+  },
+  lotus: {
+    label: "Lotus",
+    algorithm: theme.defaultAlgorithm,
+    token: {
+      colorPrimary: "#2f54eb",
+      colorSuccess: "#33a96f",
+      colorWarning: "#d9922e",
+      colorError: "#d9534f",
+      colorBgBase: "#eef3ff",
+      colorBgContainer: "#ffffff",
+      colorBgElevated: "#f8faff",
+      colorText: "#10244f",
+      colorTextSecondary: "#4f6597",
+      colorBorder: "#bfd0f9",
+      colorScrollbar: "#8ca8e8",
+      borderRadius: 12,
+    },
+  },
+};
+
+export const colorFields = [
+  ["colorPrimary", "customPrimary"],
+  ["colorBgBase", "customBgBase"],
+  ["colorBgContainer", "customBgContainer"],
+  ["colorText", "customText"],
+  ["colorTextSecondary", "customTextSecondary"],
+  ["colorBorder", "customBorder"],
+  ["colorScrollbar", "customScrollbar"],
+  ["colorSuccess", "customSuccess"],
+  ["colorWarning", "customWarning"],
+  ["colorError", "customError"],
+];

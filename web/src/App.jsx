@@ -1,412 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { App as AntApp, ConfigProvider, Space } from "antd";
+import { themeOptions } from "./constants/themes";
+import { translate } from "./constants/i18n";
 import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  ColorPicker,
-  Collapse,
-  ConfigProvider,
-  Divider,
-  Drawer,
-  Empty,
-  Flex,
-  Input,
-  InputNumber,
-  List,
-  Modal,
-  Progress,
-  Row,
-  Select,
-  Segmented,
-  Space,
-  Spin,
-  Tag,
-  Typography,
-  message,
-  theme,
-} from "antd";
-import {
-  CheckCircleOutlined,
-  DeleteOutlined,
-  GlobalOutlined,
-  SearchOutlined,
-  SkinOutlined,
-} from "@ant-design/icons";
+  readStorage,
+  normalizePersistedState,
+  getPersistedState,
+  savePersistedState,
+} from "./utils/storage";
+import { requestJson, enrichRequirements, makeRequirementKey } from "./utils/helpers";
+import useItemI18n from "./hooks/useItemI18n";
+import useResizablePanels from "./hooks/useResizablePanels";
+import Header from "./components/Header";
+import SearchPanel from "./components/SearchPanel";
+import SelectedPanel from "./components/SelectedPanel";
+import TotalsPanel from "./components/TotalsPanel";
+import ThemeDrawer from "./components/ThemeDrawer";
+import WizardModal from "./components/WizardModal";
+import Footer from "./components/Footer";
 
-const { Title, Text } = Typography;
-const STORAGE_KEY = "wf-react-ui-v2";
-const FALLBACK_ICON =
-  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='8' fill='%2311182a'/><path d='M24 10l10 6v12l-10 6-10-6V16z' fill='%233f568f'/></svg>";
-
-const i18n = {
-  tr: {
-    subtitle: "Esyalari ekle, dogrudan tarifleri takip et, tamamladikca toplamdan dus.",
-    searchPlaceholder: "Esya ara (orn: Akbolto)",
-    search: "Ara",
-    add: "Ekle",
-    remove: "Sil",
-    selected: "Secilenler",
-    items: "Item Listesi",
-    totals: "Toplam Gerekenler",
-    detail: "Detay",
-    quantity: "Adet",
-    completed: "Tamamlandi",
-    completeTag: "Tamamlandi",
-    partialTag: "Kismi",
-    remaining: "Kalan",
-    doneAmount: "Tamamlanan",
-    completionMode: "Gorunum",
-    completionAll: "Tum",
-    completionOpen: "Eksik",
-    completionDone: "Tamam",
-    customize: "Tema Editoru",
-    customPrimary: "Ana Renk",
-    customBgBase: "Arkaplan",
-    customBgContainer: "Panel Arkaplani",
-    customText: "Metin",
-    customTextSecondary: "Yardimci Metin",
-    customBorder: "Kenar",
-    customScrollbar: "Scroll Rengi",
-    customSuccess: "Basari",
-    customWarning: "Uyari",
-    customError: "Hata",
-    customRadius: "Kose Yuvarlaklik",
-    resetTheme: "Preseti Sifirla",
-    saveThemeProfile: "Temayi Kaydet",
-    loadThemeProfile: "Tema Yukle",
-    themeProfileName: "Profil Adi",
-    themeProfilePlaceholder: "orn: Gece Mavisi",
-    themeSaved: "Tema profili kaydedildi",
-    themeLoaded: "Tema profili yuklendi",
-    themeProfileRequired: "Profil adini gir",
-    themeProfileEmpty: "Kayitli profil yok",
-    exportTheme: "Tema Disari Aktar",
-    importTheme: "Tema Ice Aktar",
-    invalidThemeFile: "Tema dosyasi gecersiz",
-    wizardTitle: "Ilk Acilis Sihirbazi",
-    wizardBody: "Dil ve tema secimini bir kez yap, sonra direkt kullanmaya basla.",
-    wizardOpen: "Sihirbazi Ac",
-    wizardFinish: "Tamamla",
-    focusHint: "Ilk eksik kaleme otomatik odaklandi",
-    noResults: "Sonuc yok",
-    noSelected: "Secim yok",
-    noDetail: "Secilen itemin gereksinimi yok",
-    shortcuts: "Kisayollar",
-    language: "Dil",
-    theme: "Tema",
-    statusReady: "Hazir",
-    unknown: "Bilinmiyor",
-    resultCount: "{count} sonuc",
-    selectedCount: "{count} secili",
-    selectedSearchPlaceholder: "Secilenlerde ara",
-    selectedSearchNoResult: "Aramada eslesme yok",
-    selectedCategory: "Kategori",
-    allCategories: "Tum Kategoriler",
-    totalCount: "{count} kalem",
-    focusedByRequirement: "Filtre: {name} isteyen secilenler",
-    clearRequirementFilter: "Filtreyi Temizle",
-    requirementUsedByCount: "{count} secilen urun istiyor",
-    requirementUsedByNone: "Bu kalemi isteyen secilen urun yok",
-  },
-  en: {
-    subtitle: "Add items, track direct recipes, and subtract completed parts from totals.",
-    searchPlaceholder: "Search item (e.g. Akbolto)",
-    search: "Search",
-    add: "Add",
-    remove: "Remove",
-    selected: "Selected",
-    items: "Item List",
-    totals: "Total Requirements",
-    detail: "Detail",
-    quantity: "Qty",
-    completed: "Completed",
-    completeTag: "Completed",
-    partialTag: "Partial",
-    remaining: "Remaining",
-    doneAmount: "Completed",
-    completionMode: "View",
-    completionAll: "All",
-    completionOpen: "Open",
-    completionDone: "Done",
-    customize: "Theme Editor",
-    customPrimary: "Primary",
-    customBgBase: "Background",
-    customBgContainer: "Panel Background",
-    customText: "Text",
-    customTextSecondary: "Secondary Text",
-    customBorder: "Border",
-    customScrollbar: "Scrollbar",
-    customSuccess: "Success",
-    customWarning: "Warning",
-    customError: "Error",
-    customRadius: "Border Radius",
-    resetTheme: "Reset To Preset",
-    saveThemeProfile: "Save Theme",
-    loadThemeProfile: "Load Theme",
-    themeProfileName: "Profile Name",
-    themeProfilePlaceholder: "e.g. Deep Blue",
-    themeSaved: "Theme profile saved",
-    themeLoaded: "Theme profile loaded",
-    themeProfileRequired: "Enter profile name",
-    themeProfileEmpty: "No saved profile",
-    exportTheme: "Export Theme",
-    importTheme: "Import Theme",
-    invalidThemeFile: "Theme file is invalid",
-    wizardTitle: "First Run Wizard",
-    wizardBody: "Pick language and theme once, then start tracking immediately.",
-    wizardOpen: "Open Wizard",
-    wizardFinish: "Finish",
-    focusHint: "Auto-focused the first missing requirement",
-    noResults: "No results",
-    noSelected: "No selection",
-    noDetail: "No requirements for selected item",
-    shortcuts: "Shortcuts",
-    language: "Language",
-    theme: "Theme",
-    statusReady: "Ready",
-    unknown: "Unknown",
-    resultCount: "{count} results",
-    selectedCount: "{count} selected",
-    selectedSearchPlaceholder: "Search selected",
-    selectedSearchNoResult: "No match in selected",
-    selectedCategory: "Category",
-    allCategories: "All categories",
-    totalCount: "{count} rows",
-    focusedByRequirement: "Filter: selected items requiring {name}",
-    clearRequirementFilter: "Clear Filter",
-    requirementUsedByCount: "Required by {count} selected items",
-    requirementUsedByNone: "No selected items require this row",
-  },
-};
-
-const themeOptions = {
-  orokin: {
-    label: "Orokin",
-    algorithm: theme.darkAlgorithm,
-    token: {
-      colorPrimary: "#6e8bff",
-      colorSuccess: "#4fcf8d",
-      colorWarning: "#f4be5e",
-      colorError: "#ff6b81",
-      colorBgBase: "#0b1220",
-      colorBgContainer: "#111b34",
-      colorBgElevated: "#152344",
-      colorText: "#eaf0ff",
-      colorTextSecondary: "#9db2da",
-      colorBorder: "#2f4774",
-      colorScrollbar: "#4c68a4",
-      borderRadius: 12,
-    },
-  },
-  drifter: {
-    label: "Drifter",
-    algorithm: theme.darkAlgorithm,
-    token: {
-      colorPrimary: "#d38d58",
-      colorSuccess: "#65d59a",
-      colorWarning: "#ffbc68",
-      colorError: "#ff7f7f",
-      colorBgBase: "#16100d",
-      colorBgContainer: "#241913",
-      colorBgElevated: "#2e2018",
-      colorText: "#fdebd9",
-      colorTextSecondary: "#c8b09b",
-      colorBorder: "#57402f",
-      colorScrollbar: "#7a5b42",
-      borderRadius: 10,
-    },
-  },
-  lotus: {
-    label: "Lotus",
-    algorithm: theme.defaultAlgorithm,
-    token: {
-      colorPrimary: "#2f54eb",
-      colorSuccess: "#33a96f",
-      colorWarning: "#d9922e",
-      colorError: "#d9534f",
-      colorBgBase: "#eef3ff",
-      colorBgContainer: "#ffffff",
-      colorBgElevated: "#f8faff",
-      colorText: "#10244f",
-      colorTextSecondary: "#4f6597",
-      colorBorder: "#bfd0f9",
-      colorScrollbar: "#8ca8e8",
-      borderRadius: 12,
-    },
-  },
-};
-
-const colorFields = [
-  ["colorPrimary", "customPrimary"],
-  ["colorBgBase", "customBgBase"],
-  ["colorBgContainer", "customBgContainer"],
-  ["colorText", "customText"],
-  ["colorTextSecondary", "customTextSecondary"],
-  ["colorBorder", "customBorder"],
-  ["colorScrollbar", "customScrollbar"],
-  ["colorSuccess", "customSuccess"],
-  ["colorWarning", "customWarning"],
-  ["colorError", "customError"],
-];
-
-function translate(language, key, params = {}) {
-  const template = i18n[language]?.[key] ?? i18n.tr[key] ?? key;
-  return template.replace(/\{(\w+)\}/g, (_s, token) => String(params[token] ?? ""));
-}
-
-function readStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function createDefaultPersistedState() {
-  return {
-    language: "tr",
-    theme: "orokin",
-    customThemeTokens: themeOptions.orokin.token,
-    themeProfiles: {},
-    completionView: "all",
-    selectedItems: [],
-    activeKeys: [],
-    completedMap: {},
-    activeSelected: null,
-    selectedCategoryFilter: "all",
-    onboardingDone: false,
-  };
-}
-
-function normalizePersistedState(raw) {
-  const fallback = createDefaultPersistedState();
-  const next = { ...(raw || {}) };
-  const normalizedThemeName = themeOptions[next.theme] ? next.theme : "orokin";
-  const baseThemeToken = themeOptions[normalizedThemeName].token;
-  const persistedToken =
-    next.customThemeTokens && typeof next.customThemeTokens === "object" ? next.customThemeTokens : {};
-
-  return {
-    ...fallback,
-    ...next,
-    language: next.language === "en" ? "en" : "tr",
-    theme: normalizedThemeName,
-    customThemeTokens: {
-      ...baseThemeToken,
-      ...persistedToken,
-    },
-    completionView: ["all", "open", "done"].includes(next.completionView)
-      ? next.completionView
-      : "all",
-    selectedItems: Array.isArray(next.selectedItems)
-      ? next.selectedItems.map((item) => {
-          const normalizedType = item?.type || item?.subtitle || item?.category || null;
-          const normalizedCategory = item?.category || item?.type || item?.subtitle || null;
-
-          return {
-            ...item,
-            type: normalizedType,
-            category: normalizedCategory,
-          };
-        })
-      : [],
-    activeKeys: Array.isArray(next.activeKeys) ? next.activeKeys : [],
-    themeProfiles:
-      next.themeProfiles && typeof next.themeProfiles === "object" ? next.themeProfiles : {},
-    completedMap: next.completedMap && typeof next.completedMap === "object" ? next.completedMap : {},
-    selectedCategoryFilter:
-      typeof next.selectedCategoryFilter === "string" && next.selectedCategoryFilter.length > 0
-        ? next.selectedCategoryFilter
-        : "all",
-  };
-}
-
-async function getPersistedState() {
-  if (window.wfDesktop?.storage?.get) {
-    try {
-      const fromDesktop = await window.wfDesktop.storage.get();
-      return normalizePersistedState(fromDesktop);
-    } catch {
-      return normalizePersistedState(readStorage());
-    }
-  }
-
-  return normalizePersistedState(readStorage());
-}
-
-async function savePersistedState(payload) {
-  if (window.wfDesktop?.storage?.set) {
-    try {
-      await window.wfDesktop.storage.set(payload);
-      return;
-    } catch {
-      // Fallback to localStorage when desktop save fails.
-    }
-  }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-}
-
-async function requestJson(url, options = {}) {
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-function makeRequirementKey(parentUniqueName, requirementUniqueName) {
-  return `${parentUniqueName}::${requirementUniqueName}`;
-}
-
-function enrichRequirements(requirements, completedByRequirement, viewMode) {
-  const enriched = (requirements || []).map((requirement) => {
-    const completedQuantity = Math.min(
-      requirement.quantity,
-      Math.max(0, Number(completedByRequirement?.[requirement.uniqueName]) || 0),
-    );
-
-    const remainingQuantity = Math.max(0, requirement.quantity - completedQuantity);
-    return {
-      ...requirement,
-      completedQuantity,
-      remainingQuantity,
-      isDone: remainingQuantity === 0,
-      completionPercent:
-        requirement.quantity > 0
-          ? Math.round((completedQuantity / requirement.quantity) * 100)
-          : 100,
-    };
-  });
-
-  const sorted = enriched.sort((a, b) => {
-    if (a.isDone !== b.isDone) {
-      return a.isDone ? 1 : -1;
-    }
-    return a.name.localeCompare(b.name);
-  });
-
-  return sorted.filter((entry) => {
-    if (viewMode === "open") {
-      return !entry.isDone;
-    }
-    if (viewMode === "done") {
-      return entry.isDone;
-    }
-    return true;
-  });
-}
-
-function CraftApp() {
+function CraftAppContent() {
+  const { message, modal } = AntApp.useApp();
   const initialPersisted = normalizePersistedState(readStorage());
 
   const [language, setLanguage] = useState(initialPersisted.language);
@@ -419,8 +33,6 @@ function CraftApp() {
   const [wizardOpen, setWizardOpen] = useState(!initialPersisted.onboardingDone);
   const [isHydrated, setIsHydrated] = useState(!window.wfDesktop?.isDesktop);
 
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const [selectedSearch, setSelectedSearch] = useState("");
   const [selectedItems, setSelectedItems] = useState(initialPersisted.selectedItems);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState(
@@ -432,29 +44,26 @@ function CraftApp() {
 
   const [completedMap, setCompletedMap] = useState(initialPersisted.completedMap);
   const [calculation, setCalculation] = useState({ perItem: [], totals: [] });
-  const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingCalc, setLoadingCalc] = useState(false);
   const [focusRequirementKey, setFocusRequirementKey] = useState(null);
   const [focusedTotalRequirement, setFocusedTotalRequirement] = useState(null);
+  const [panelOrder, setPanelOrder] = useState(initialPersisted.panelOrder);
+  const [draggedPanel, setDraggedPanel] = useState(null);
 
   const searchInputRef = useRef(null);
-  const themeImportInputRef = useRef(null);
   const requirementRefs = useRef(new Map());
+  const { widths: panelWidths, setWidths: setPanelWidths, containerRef, onResizeStart } =
+    useResizablePanels(initialPersisted.panelWidths);
   const lastAutoFocusRequirementRef = useRef(null);
   const t = (key, params) => translate(language, key, params);
+  const tin = useItemI18n(language);
 
+  // --- Hydration ---
   useEffect(() => {
-    if (isHydrated) {
-      return undefined;
-    }
-
+    if (isHydrated) return undefined;
     let cancelled = false;
-
     getPersistedState().then((persistedState) => {
-      if (cancelled) {
-        return;
-      }
-
+      if (cancelled) return;
       setLanguage(persistedState.language);
       setThemeName(persistedState.theme);
       setCustomThemeTokens(persistedState.customThemeTokens);
@@ -466,47 +75,45 @@ function CraftApp() {
       setCompletedMap(persistedState.completedMap);
       setActiveSelected(persistedState.activeSelected || null);
       setWizardOpen(!persistedState.onboardingDone);
+      setPanelWidths(persistedState.panelWidths);
+      setPanelOrder(persistedState.panelOrder);
       setIsHydrated(true);
     });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [isHydrated]);
 
+  // --- Persist ---
   useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
+    if (!isHydrated) return;
     savePersistedState({
-        language,
-        theme: themeName,
-        customThemeTokens,
-        themeProfiles,
-        completionView,
-        selectedItems,
-        selectedCategoryFilter,
-        activeKeys,
-        completedMap,
-        activeSelected,
-        onboardingDone: !wizardOpen,
+      language,
+      theme: themeName,
+      customThemeTokens,
+      themeProfiles,
+      completionView,
+      selectedItems,
+      selectedCategoryFilter,
+      activeKeys,
+      completedMap,
+      activeSelected,
+      onboardingDone: !wizardOpen,
+      panelWidths,
+      panelOrder,
     });
   }, [
-    isHydrated,
-    language,
-    themeName,
-    customThemeTokens,
-    themeProfiles,
-    completionView,
-    selectedItems,
-    selectedCategoryFilter,
-    activeKeys,
-    completedMap,
-    activeSelected,
-    wizardOpen,
+    isHydrated, language, themeName, customThemeTokens, themeProfiles,
+    completionView, selectedItems, selectedCategoryFilter, activeKeys,
+    completedMap, activeSelected, wizardOpen, panelWidths, panelOrder,
   ]);
 
+  // --- Sync theme to outer shell ---
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("wf-theme-change", {
+      detail: { themeName, tokens: customThemeTokens },
+    }));
+  }, [themeName, customThemeTokens]);
+
+  // --- Theme CSS vars ---
   useEffect(() => {
     document.body.setAttribute("data-theme", themeName);
     const root = document.documentElement;
@@ -522,14 +129,13 @@ function CraftApp() {
     );
   }, [customThemeTokens, themeName]);
 
+  // --- Calculate ---
   useEffect(() => {
     if (selectedItems.length === 0) {
       setCalculation({ perItem: [], totals: [] });
       return;
     }
-
     let cancelled = false;
-
     async function calculate() {
       setLoadingCalc(true);
       try {
@@ -541,30 +147,20 @@ function CraftApp() {
             includeBlueprints: false,
           }),
         });
-
         if (!cancelled) {
-          setCalculation({
-            perItem: data.perItem || [],
-            totals: data.totals || [],
-          });
+          setCalculation({ perItem: data.perItem || [], totals: data.totals || [] });
         }
       } catch (error) {
-        if (!cancelled) {
-          message.error(error.message);
-        }
+        if (!cancelled) message.error(error.message);
       } finally {
-        if (!cancelled) {
-          setLoadingCalc(false);
-        }
+        if (!cancelled) setLoadingCalc(false);
       }
     }
-
     calculate();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selectedItems]);
 
+  // --- Memoized data ---
   const detailByItem = useMemo(() => {
     const map = new Map();
     for (const item of calculation.perItem || []) {
@@ -593,7 +189,6 @@ function CraftApp() {
     for (const parent of selectedItems) {
       const requirements = detailByItem.get(parent.uniqueName) || [];
       const completed = completedMap[parent.uniqueName] || {};
-
       for (const requirement of requirements) {
         const completedQuantity = Math.min(
           requirement.quantity,
@@ -607,21 +202,13 @@ function CraftApp() {
         }
       }
     }
-
     return (calculation.totals || []).map((total) => {
       const remaining = Math.max(0, total.quantity - (deduction.get(total.uniqueName) || 0));
       const completedAmount = total.quantity - remaining;
       const completionPercent =
         total.quantity > 0 ? Math.round((completedAmount / total.quantity) * 100) : 100;
       const status = remaining === 0 ? "done" : completionPercent > 0 ? "partial" : "open";
-
-      return {
-        ...total,
-        remaining,
-        completedAmount,
-        completionPercent,
-        status,
-      };
+      return { ...total, remaining, completedAmount, completionPercent, status };
     });
   }, [calculation.totals, completedMap, detailByItem, selectedItems]);
 
@@ -630,15 +217,11 @@ function CraftApp() {
     for (const item of selectedItems) {
       const label = item.category || item.type || t("unknown");
       const value = label.toLowerCase();
-      if (!optionMap.has(value)) {
-        optionMap.set(value, label);
-      }
+      if (!optionMap.has(value)) optionMap.set(value, label);
     }
-
     const sorted = Array.from(optionMap.entries())
       .sort((a, b) => a[1].localeCompare(b[1]))
       .map(([value, label]) => ({ value, label }));
-
     return [{ value: "all", label: t("allCategories") }, ...sorted];
   }, [selectedItems, language]);
 
@@ -646,9 +229,7 @@ function CraftApp() {
     const map = new Map();
     for (const item of calculation.perItem || []) {
       for (const requirement of item.requirements || []) {
-        if (!map.has(requirement.uniqueName)) {
-          map.set(requirement.uniqueName, new Set());
-        }
+        if (!map.has(requirement.uniqueName)) map.set(requirement.uniqueName, new Set());
         map.get(requirement.uniqueName).add(item.uniqueName);
       }
     }
@@ -656,22 +237,17 @@ function CraftApp() {
   }, [calculation.perItem]);
 
   const focusedRequirementParents = useMemo(() => {
-    if (!focusedTotalRequirement?.uniqueName) {
-      return null;
-    }
+    if (!focusedTotalRequirement?.uniqueName) return null;
     return requirementParentMap.get(focusedTotalRequirement.uniqueName) || new Set();
   }, [focusedTotalRequirement, requirementParentMap]);
 
   const filteredSelectedItems = useMemo(() => {
     const normalizedQuery = selectedSearch.trim().toLowerCase();
     const normalizedCategory = selectedCategoryFilter;
-
     return selectedItems.filter((item) => {
       if (focusedRequirementParents) {
-        // Requirement focus mode should show all selected parents needing that resource.
         return focusedRequirementParents.has(item.uniqueName);
       }
-
       const categoryLabel = (item.category || item.type || t("unknown")).toLowerCase();
       const matchesQuery =
         !normalizedQuery ||
@@ -680,56 +256,38 @@ function CraftApp() {
       const matchesCategory = normalizedCategory === "all" || categoryLabel === normalizedCategory;
       return matchesQuery && matchesCategory;
     });
-  }, [
-    selectedItems,
-    selectedSearch,
-    selectedCategoryFilter,
-    focusedRequirementParents,
-    language,
-  ]);
+  }, [selectedItems, selectedSearch, selectedCategoryFilter, focusedRequirementParents, language]);
 
+  // --- Focus effects ---
   useEffect(() => {
-    const focusedRequirementKey = focusedTotalRequirement?.uniqueName || null;
-
-    if (!focusedRequirementKey) {
+    const focusedKey = focusedTotalRequirement?.uniqueName || null;
+    if (!focusedKey) {
       lastAutoFocusRequirementRef.current = null;
       return;
     }
-
     const matchedItems = selectedItems.filter((item) => focusedRequirementParents?.has(item.uniqueName));
-    if (matchedItems.length === 0) {
-      return;
-    }
-
-    // Auto-expand only once per focused requirement; keep user collapse choices afterwards.
-    if (lastAutoFocusRequirementRef.current !== focusedRequirementKey) {
+    if (matchedItems.length === 0) return;
+    if (lastAutoFocusRequirementRef.current !== focusedKey) {
       setActiveKeys((prev) => {
         const next = new Set(prev);
-        for (const item of matchedItems) {
-          next.add(item.uniqueName);
-        }
+        for (const item of matchedItems) next.add(item.uniqueName);
         return Array.from(next);
       });
       setActiveSelected(matchedItems[0].uniqueName);
-      lastAutoFocusRequirementRef.current = focusedRequirementKey;
+      lastAutoFocusRequirementRef.current = focusedKey;
       return;
     }
-
     if (!activeSelected || !focusedRequirementParents?.has(activeSelected)) {
       setActiveSelected(matchedItems[0].uniqueName);
     }
   }, [focusedTotalRequirement, focusedRequirementParents, selectedItems, activeSelected]);
 
   useEffect(() => {
-    if (!focusedTotalRequirement?.uniqueName) {
-      return;
-    }
-
-    if ((focusedRequirementParents?.size || 0) === 0) {
-      setFocusedTotalRequirement(null);
-    }
+    if (!focusedTotalRequirement?.uniqueName) return;
+    if ((focusedRequirementParents?.size || 0) === 0) setFocusedTotalRequirement(null);
   }, [focusedTotalRequirement, focusedRequirementParents]);
 
+  // --- Metadata resolution ---
   const missingSelectedMetadataUniqueNames = useMemo(() => {
     return selectedItems
       .filter((item) => {
@@ -743,126 +301,72 @@ function CraftApp() {
   }, [selectedItems]);
 
   useEffect(() => {
-    if (missingSelectedMetadataUniqueNames.length === 0) {
-      return;
-    }
-
+    if (missingSelectedMetadataUniqueNames.length === 0) return;
     let cancelled = false;
-
     async function resolveMissingSelectedMetadata() {
       try {
         const data = await requestJson("/api/items/resolve-metadata", {
           method: "POST",
           body: JSON.stringify({ uniqueNames: missingSelectedMetadataUniqueNames }),
         });
-
-        if (cancelled) {
-          return;
-        }
-
+        if (cancelled) return;
         const itemsByUniqueName =
           data?.itemsByUniqueName && typeof data.itemsByUniqueName === "object"
-            ? data.itemsByUniqueName
-            : {};
-
-        if (Object.keys(itemsByUniqueName).length === 0) {
-          return;
-        }
-
+            ? data.itemsByUniqueName : {};
+        if (Object.keys(itemsByUniqueName).length === 0) return;
         setSelectedItems((prev) => {
           let changed = false;
           const next = prev.map((item) => {
             const resolved = itemsByUniqueName[item.uniqueName];
-            if (!resolved) {
-              return item;
-            }
-
+            if (!resolved) return item;
             const nextType = item.type || resolved.type || null;
             const nextCategory = item.category || resolved.category || resolved.type || null;
             const nextName = item.name || resolved.name || item.name;
             const nextImageUrl = item.imageUrl || resolved.imageUrl || null;
-
             if (
-              nextType === item.type &&
-              nextCategory === item.category &&
-              nextName === item.name &&
-              nextImageUrl === item.imageUrl
-            ) {
-              return item;
-            }
-
+              nextType === item.type && nextCategory === item.category &&
+              nextName === item.name && nextImageUrl === item.imageUrl
+            ) return item;
             changed = true;
-            return {
-              ...item,
-              type: nextType,
-              category: nextCategory,
-              name: nextName,
-              imageUrl: nextImageUrl,
-            };
+            return { ...item, type: nextType, category: nextCategory, name: nextName, imageUrl: nextImageUrl };
           });
-
           return changed ? next : prev;
         });
       } catch {
-        // Keep UI responsive when metadata resolution fails on unstable networks.
+        // Keep UI responsive when metadata resolution fails.
       }
     }
-
     resolveMissingSelectedMetadata();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [missingSelectedMetadataUniqueNames]);
 
   useEffect(() => {
-    if (selectedCategoryFilter === "all") {
-      return;
-    }
-
-    const stillExists = selectedCategoryOptions.some((option) => option.value === selectedCategoryFilter);
-    if (!stillExists) {
-      setSelectedCategoryFilter("all");
-    }
+    if (selectedCategoryFilter === "all") return;
+    const stillExists = selectedCategoryOptions.some((o) => o.value === selectedCategoryFilter);
+    if (!stillExists) setSelectedCategoryFilter("all");
   }, [selectedCategoryFilter, selectedCategoryOptions]);
 
+  // --- Auto-focus requirement ---
   useEffect(() => {
     if (!activeSelected || !activeKeys.includes(activeSelected)) {
       setFocusRequirementKey(null);
       return;
     }
-
     const entries = enrichedByItem.get(activeSelected) || [];
     const firstMissing = entries.find((entry) => !entry.isDone);
     if (!firstMissing) {
       setFocusRequirementKey(null);
       return;
     }
-
     const key = makeRequirementKey(activeSelected, firstMissing.uniqueName);
     setFocusRequirementKey(key);
-
     requestAnimationFrame(() => {
       const targetNode = requirementRefs.current.get(key);
-      if (targetNode) {
-        targetNode.scrollIntoView({ block: "center", behavior: "smooth" });
-      }
+      if (targetNode) targetNode.scrollIntoView({ block: "center", behavior: "smooth" });
     });
   }, [activeSelected, activeKeys, enrichedByItem]);
 
-  async function runSearch(query = search) {
-    const normalized = query.trim();
-    setLoadingSearch(true);
-    try {
-      const data = await requestJson(`/api/items?search=${encodeURIComponent(normalized)}&limit=40`);
-      setSearchResults(data.items || []);
-    } catch (error) {
-      message.error(error.message);
-    } finally {
-      setLoadingSearch(false);
-    }
-  }
-
+  // --- Actions ---
   function addItem(item) {
     setSelectedItems((prev) => {
       const existing = prev.find((entry) => entry.uniqueName === item.uniqueName);
@@ -878,7 +382,6 @@ function CraftApp() {
             : entry,
         );
       }
-
       return [
         ...prev,
         {
@@ -891,7 +394,6 @@ function CraftApp() {
         },
       ];
     });
-
     setActiveSelected(item.uniqueName);
     message.success(`${item.name} +1`);
   }
@@ -904,9 +406,15 @@ function CraftApp() {
       return next;
     });
     setActiveKeys((prev) => prev.filter((key) => key !== uniqueName));
-    if (activeSelected === uniqueName) {
-      setActiveSelected(null);
-    }
+    if (activeSelected === uniqueName) setActiveSelected(null);
+  }
+
+  function clearAllItems() {
+    setSelectedItems([]);
+    setCompletedMap({});
+    setActiveKeys([]);
+    setActiveSelected(null);
+    setFocusedTotalRequirement(null);
   }
 
   function updateQuantity(uniqueName, quantity) {
@@ -930,111 +438,74 @@ function CraftApp() {
     }));
   }
 
-  function updateThemeToken(key, value) {
-    setCustomThemeTokens((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  }
-
-  function resetThemeToPreset() {
-    setCustomThemeTokens(themeOptions[themeName].token);
-  }
-
-  function saveCurrentThemeProfile() {
-    const trimmedName = themeProfileInput.trim();
-    if (!trimmedName) {
-      message.warning(t("themeProfileRequired"));
-      return;
+  function bulkDonate(resourceUniqueName, totalAmount) {
+    // Find all selected items that need this resource and distribute the amount
+    const consumers = [];
+    for (const parent of selectedItems) {
+      const requirements = detailByItem.get(parent.uniqueName) || [];
+      const req = requirements.find((r) => r.uniqueName === resourceUniqueName);
+      if (!req) continue;
+      const alreadyCompleted = Math.min(
+        req.quantity,
+        Math.max(0, Number(completedMap[parent.uniqueName]?.[resourceUniqueName]) || 0),
+      );
+      const remaining = req.quantity - alreadyCompleted;
+      if (remaining > 0) {
+        consumers.push({ parentUniqueName: parent.uniqueName, reqQuantity: req.quantity, alreadyCompleted, remaining });
+      }
     }
+    if (consumers.length === 0) return;
 
-    setThemeProfiles((prev) => ({
-      ...prev,
-      [trimmedName]: {
-        themeName,
-        token: customThemeTokens,
-      },
-    }));
-    setSelectedProfileName(trimmedName);
-    setThemeProfileInput("");
-    message.success(t("themeSaved"));
-  }
-
-  function loadThemeProfile(profileName) {
-    const profile = themeProfiles[profileName];
-    if (!profile) {
-      return;
-    }
-
-    setThemeName(profile.themeName);
-    setCustomThemeTokens(profile.token);
-    setSelectedProfileName(profileName);
-    message.success(t("themeLoaded"));
-  }
-
-  function removeThemeProfile(profileName) {
-    setThemeProfiles((prev) => {
+    let left = totalAmount;
+    setCompletedMap((prev) => {
       const next = { ...prev };
-      delete next[profileName];
+      for (const c of consumers) {
+        if (left <= 0) break;
+        const give = Math.min(left, c.remaining);
+        const newCompleted = Math.min(c.reqQuantity, c.alreadyCompleted + give);
+        next[c.parentUniqueName] = {
+          ...(next[c.parentUniqueName] || {}),
+          [resourceUniqueName]: newCompleted,
+        };
+        left -= give;
+      }
       return next;
     });
+  }
 
-    if (selectedProfileName === profileName) {
-      setSelectedProfileName("");
+  function importBackupData(data) {
+    if (Array.isArray(data.selectedItems)) {
+      setSelectedItems(data.selectedItems);
     }
+    if (data.completedMap && typeof data.completedMap === "object") {
+      setCompletedMap(data.completedMap);
+    }
+    setActiveKeys([]);
+    setActiveSelected(null);
   }
 
-  function exportCurrentTheme() {
-    const payload = {
-      themeName,
-      token: customThemeTokens,
-    };
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `wf-theme-${themeName}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  function onPanelDragStart(panelId) {
+    setDraggedPanel(panelId);
   }
 
-  function importThemeFromFile(event) {
-    const file = event.target.files?.[0];
-    if (!file) {
+  function onPanelDrop(targetPanelId) {
+    if (!draggedPanel || draggedPanel === targetPanelId) {
+      setDraggedPanel(null);
       return;
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(String(reader.result || "{}"));
-        if (!parsed?.token) {
-          throw new Error("invalid");
-        }
-
-        if (themeOptions[parsed.themeName]) {
-          setThemeName(parsed.themeName);
-        }
-        setCustomThemeTokens(parsed.token);
-        message.success(t("themeLoaded"));
-      } catch {
-        message.error(t("invalidThemeFile"));
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
-  }
-
-  function finishWizard() {
-    setWizardOpen(false);
-    message.success(t("wizardFinish"));
+    setPanelOrder((prev) => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(draggedPanel);
+      const toIdx = next.indexOf(targetPanelId);
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, draggedPanel);
+      return next;
+    });
+    setDraggedPanel(null);
   }
 
   function showShortcuts() {
-    Modal.info({
+    modal.info({
       title: t("shortcuts"),
       content: (
         <ul>
@@ -1048,36 +519,27 @@ function CraftApp() {
     });
   }
 
-
+  // --- Keyboard shortcuts ---
   useEffect(() => {
     function onKeyDown(event) {
-      if (event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "/") {
         event.preventDefault();
         searchInputRef.current?.focus();
         return;
       }
-
       if (event.key === "?") {
         event.preventDefault();
         showShortcuts();
         return;
       }
-
       const tagName = String(event.target?.tagName || "").toLowerCase();
-      if (["input", "textarea", "select"].includes(tagName)) {
-        return;
-      }
-
+      if (["input", "textarea", "select"].includes(tagName)) return;
       if (event.key === "Delete" && activeSelected) {
         event.preventDefault();
         removeItem(activeSelected);
         return;
       }
-
       const currentIndex = selectedItems.findIndex((item) => item.uniqueName === activeSelected);
       if (event.key === "ArrowDown" && selectedItems.length > 0) {
         event.preventDefault();
@@ -1090,7 +552,6 @@ function CraftApp() {
         );
         return;
       }
-
       if (event.key === "ArrowUp" && selectedItems.length > 0) {
         event.preventDefault();
         const next = currentIndex <= 0 ? selectedItems.length - 1 : currentIndex - 1;
@@ -1102,496 +563,175 @@ function CraftApp() {
         );
       }
     }
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeSelected, selectedItems]);
 
-  const selectedCollapseItems = filteredSelectedItems.map((item) => {
-    const requirements = detailByItem.get(item.uniqueName) || [];
-    const rows = enrichRequirements(requirements, completedMap[item.uniqueName] || {}, completionView);
-    const isActive = activeSelected === item.uniqueName;
-
-    return {
-      key: item.uniqueName,
-      label: (
-        <Flex
-          align="center"
-          justify="space-between"
-          gap={8}
-          className={isActive ? "collapse-label active" : "collapse-label"}
-        >
-          <Space align="center">
-            <img src={item.imageUrl || FALLBACK_ICON} alt={item.name} className="item-thumb" />
-            <span>{item.name}</span>
-          </Space>
-          <Space>
-            <InputNumber
-              min={1}
-              size="small"
-              value={item.quantity}
-              onClick={(event) => event.stopPropagation()}
-              onChange={(value) => updateQuantity(item.uniqueName, value)}
-            />
-            <Button
-              danger
-              size="small"
-              icon={<DeleteOutlined />}
-              onClick={(event) => {
-                event.stopPropagation();
-                removeItem(item.uniqueName);
-              }}
-            >
-              {t("remove")}
-            </Button>
-          </Space>
-        </Flex>
-      ),
-      children:
-        requirements.length === 0 ? (
-          <Empty description={t("noDetail")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ) : rows.length === 0 ? (
-          <Empty description={t("noResults")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ) : (
-          <List
-            dataSource={rows}
-            className="inner-scroll"
-            renderItem={(requirement) => {
-              const requirementKey = makeRequirementKey(item.uniqueName, requirement.uniqueName);
-              return (
-                <List.Item
-                  className={focusRequirementKey === requirementKey ? "focus-row" : ""}
-                  ref={(node) => {
-                    if (node) {
-                      requirementRefs.current.set(requirementKey, node);
-                    } else {
-                      requirementRefs.current.delete(requirementKey);
-                    }
-                  }}
-                  actions={[
-                    <Space key="right" direction="vertical" size={2} align="end">
-                      <InputNumber
-                        min={0}
-                        max={requirement.quantity}
-                        size="small"
-                        value={requirement.completedQuantity}
-                        onChange={(value) => setCompletedQuantity(item.uniqueName, requirement, value)}
-                      />
-                      <Text type={requirement.isDone ? "success" : "secondary"}>
-                        {t("remaining")}: {requirement.remainingQuantity}
-                      </Text>
-                    </Space>,
-                  ]}
-                >
-                  <Space direction="vertical" style={{ width: "100%" }} size={4}>
-                    <Space>
-                      <img
-                        src={requirement.imageUrl || FALLBACK_ICON}
-                        alt={requirement.name}
-                        className="item-thumb"
-                      />
-                      <Text delete={requirement.isDone}>{requirement.name}</Text>
-                      {requirement.isDone ? <Tag color="success">{t("completed")}</Tag> : null}
-                    </Space>
-                    <Progress
-                      percent={requirement.completionPercent}
-                      size="small"
-                      status={requirement.isDone ? "success" : "active"}
-                      format={() => `${requirement.completedQuantity} / ${requirement.quantity}`}
-                    />
-                  </Space>
-                </List.Item>
-              );
-            }}
+  // --- Render ---
+  return (
+    <>
+      <div className="app-shell" role="application" aria-label="Warframe Craft Tracker">
+        <Space direction="vertical" size="middle" style={{ width: "100%" }} className="hero-stack" component="main">
+          <Header
+            t={t}
+            language={language}
+            setLanguage={setLanguage}
+            themeName={themeName}
+            setThemeName={setThemeName}
+            setCustomThemeTokens={setCustomThemeTokens}
+            setThemeDrawerOpen={setThemeDrawerOpen}
+            setWizardOpen={setWizardOpen}
+            showShortcuts={showShortcuts}
+            adjustedTotals={adjustedTotals}
+            selectedItems={selectedItems}
           />
-        ),
-      extra: isActive ? <Tag color="processing">{t("detail")}</Tag> : null,
-    };
-  });
+
+          {(() => {
+            const panelRegistry = {
+              search: (
+                <SearchPanel
+                  t={t}
+                  tin={tin}
+                  onAddItem={addItem}
+                  searchInputRef={searchInputRef}
+                />
+              ),
+              selected: (
+                <SelectedPanel
+                  t={t}
+                  tin={tin}
+                  selectedItems={selectedItems}
+                  filteredSelectedItems={filteredSelectedItems}
+                  selectedSearch={selectedSearch}
+                  setSelectedSearch={setSelectedSearch}
+                  selectedCategoryFilter={selectedCategoryFilter}
+                  setSelectedCategoryFilter={setSelectedCategoryFilter}
+                  selectedCategoryOptions={selectedCategoryOptions}
+                  completionView={completionView}
+                  setCompletionView={setCompletionView}
+                  activeKeys={activeKeys}
+                  setActiveKeys={setActiveKeys}
+                  activeSelected={activeSelected}
+                  setActiveSelected={setActiveSelected}
+                  detailByItem={detailByItem}
+                  completedMap={completedMap}
+                  enrichedByItem={enrichedByItem}
+                  focusRequirementKey={focusRequirementKey}
+                  requirementRefs={requirementRefs}
+                  focusedTotalRequirement={focusedTotalRequirement}
+                  setFocusedTotalRequirement={setFocusedTotalRequirement}
+                  focusRequirementKeyValue={focusRequirementKey}
+                  removeItem={removeItem}
+                  updateQuantity={updateQuantity}
+                  setCompletedQuantity={setCompletedQuantity}
+                  clearAllItems={clearAllItems}
+                  onImportData={importBackupData}
+                />
+              ),
+              totals: (
+                <TotalsPanel
+                  t={t}
+                  tin={tin}
+                  adjustedTotals={adjustedTotals}
+                  loadingCalc={loadingCalc}
+                  focusedTotalRequirement={focusedTotalRequirement}
+                  setFocusedTotalRequirement={setFocusedTotalRequirement}
+                  requirementParentMap={requirementParentMap}
+                  onBulkDonate={bulkDonate}
+                />
+              ),
+            };
+
+            return (
+              <div className="resizable-row" ref={containerRef}>
+                {panelOrder.map((panelId, index) => (
+                  <div key={panelId} style={{ display: "contents" }}>
+                    <div
+                      className={`resizable-panel ${draggedPanel === panelId ? "dragging" : ""} ${draggedPanel && draggedPanel !== panelId ? "drag-target" : ""}`}
+                      style={{ width: `${panelWidths[panelId]}%` }}
+                      draggable
+                      onDragStart={() => onPanelDragStart(panelId)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => onPanelDrop(panelId)}
+                      onDragEnd={() => setDraggedPanel(null)}
+                    >
+                      {panelRegistry[panelId]}
+                    </div>
+                    {index < panelOrder.length - 1 && (
+                      <div
+                        className="resize-handle"
+                        onMouseDown={(e) =>
+                          onResizeStart(panelOrder[index], panelOrder[index + 1], e)
+                        }
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </Space>
+
+        <Footer />
+      </div>
+
+      <ThemeDrawer
+        t={t}
+        open={themeDrawerOpen}
+        onClose={() => setThemeDrawerOpen(false)}
+        themeName={themeName}
+        setThemeName={setThemeName}
+        customThemeTokens={customThemeTokens}
+        setCustomThemeTokens={setCustomThemeTokens}
+        themeProfiles={themeProfiles}
+        setThemeProfiles={setThemeProfiles}
+        selectedProfileName={selectedProfileName}
+        setSelectedProfileName={setSelectedProfileName}
+        themeProfileInput={themeProfileInput}
+        setThemeProfileInput={setThemeProfileInput}
+      />
+
+      <WizardModal
+        t={t}
+        open={wizardOpen}
+        language={language}
+        setLanguage={setLanguage}
+        themeName={themeName}
+        setThemeName={setThemeName}
+        setCustomThemeTokens={setCustomThemeTokens}
+        onFinish={() => setWizardOpen(false)}
+      />
+    </>
+  );
+}
+
+function CraftApp() {
+  const persisted = normalizePersistedState(readStorage());
+  const [themeName, setThemeNameOuter] = useState(persisted.theme);
+  const [tokens, setTokensOuter] = useState(persisted.customThemeTokens);
+
+  // Listen for theme changes from CraftAppContent via custom events
+  useEffect(() => {
+    function onThemeChange(e) {
+      if (e.detail.themeName) setThemeNameOuter(e.detail.themeName);
+      if (e.detail.tokens) setTokensOuter(e.detail.tokens);
+    }
+    window.addEventListener("wf-theme-change", onThemeChange);
+    return () => window.removeEventListener("wf-theme-change", onThemeChange);
+  }, []);
 
   return (
     <ConfigProvider
       theme={{
-        algorithm: themeOptions[themeName].algorithm,
-        token: customThemeTokens,
+        algorithm: themeOptions[themeName]?.algorithm || themeOptions.orokin.algorithm,
+        token: tokens,
       }}
     >
-      <div className="app-shell">
-        <Space direction="vertical" size="middle" style={{ width: "100%" }} className="hero-stack">
-          <Card className="hero-card" variant="borderless">
-            <Flex align="center" justify="space-between" wrap="wrap" gap={12}>
-              <div>
-                <Title level={3} style={{ margin: 0 }}>
-                  Warframe Craft Tracker
-                </Title>
-                <Text type="secondary">{t("subtitle")}</Text>
-              </div>
-
-              <Space wrap>
-                <Tag icon={<GlobalOutlined />}>{t("language")}</Tag>
-                <Segmented
-                  value={language}
-                  onChange={(value) => setLanguage(value)}
-                  options={[
-                    { value: "tr", label: "TR" },
-                    { value: "en", label: "EN" },
-                  ]}
-                />
-
-                <Tag icon={<SkinOutlined />}>{t("theme")}</Tag>
-                <Segmented
-                  value={themeName}
-                  onChange={(value) => {
-                    setThemeName(value);
-                    setCustomThemeTokens(themeOptions[value].token);
-                  }}
-                  options={Object.entries(themeOptions).map(([value, opt]) => ({
-                    value,
-                    label: opt.label,
-                  }))}
-                />
-
-                <Divider type="vertical" />
-
-                <Button onClick={() => setThemeDrawerOpen(true)}>{t("customize")}</Button>
-                <Button onClick={() => setWizardOpen(true)}>{t("wizardOpen")}</Button>
-                <Button onClick={showShortcuts}>{t("shortcuts")}</Button>
-              </Space>
-            </Flex>
-          </Card>
-
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={8}>
-              <Card
-                title={`${t("items")} - ${t("resultCount", { count: searchResults.length })}`}
-                className="panel-card"
-              >
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  <Input
-                    ref={searchInputRef}
-                    placeholder={t("searchPlaceholder")}
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    onPressEnter={() => runSearch(search)}
-                    suffix={<SearchOutlined />}
-                  />
-                  <Button type="primary" onClick={() => runSearch(search)} icon={<SearchOutlined />}>
-                    {t("search")}
-                  </Button>
-
-                  <Spin spinning={loadingSearch}>
-                    <List
-                      className="panel-list"
-                      dataSource={searchResults}
-                      locale={{ emptyText: t("noResults") }}
-                      renderItem={(item) => (
-                        <List.Item
-                          actions={[
-                            <Button key="add" type="primary" size="small" onClick={() => addItem(item)}>
-                              {t("add")}
-                            </Button>,
-                          ]}
-                        >
-                          <List.Item.Meta
-                            avatar={
-                              <img src={item.imageUrl || FALLBACK_ICON} alt={item.name} className="item-thumb" />
-                            }
-                            title={item.name}
-                            description={item.type || t("unknown")}
-                          />
-                        </List.Item>
-                      )}
-                    />
-                  </Spin>
-                </Space>
-              </Card>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card
-                title={
-                  <Flex justify="space-between" align="center" wrap="wrap" gap={8}>
-                    <span>{`${t("selected")} - ${t("selectedCount", { count: selectedItems.length })}`}</span>
-                    <Space size={6}>
-                      <Text type="secondary">{t("completionMode")}</Text>
-                      <Segmented
-                        size="small"
-                        value={completionView}
-                        onChange={(value) => setCompletionView(value)}
-                        options={[
-                          { label: t("completionAll"), value: "all" },
-                          { label: t("completionOpen"), value: "open" },
-                          { label: t("completionDone"), value: "done" },
-                        ]}
-                      />
-                    </Space>
-                  </Flex>
-                }
-                className="panel-card"
-              >
-                <Flex vertical gap={8} className="panel-content">
-                  <Flex gap={8} wrap="wrap">
-                    <Input
-                      size="small"
-                      placeholder={t("selectedSearchPlaceholder")}
-                      value={selectedSearch}
-                      onChange={(event) => setSelectedSearch(event.target.value)}
-                      suffix={<SearchOutlined />}
-                      style={{ flex: 1, minWidth: 190 }}
-                    />
-                    <Select
-                      size="small"
-                      value={selectedCategoryFilter}
-                      onChange={(value) => setSelectedCategoryFilter(value)}
-                      options={selectedCategoryOptions}
-                      style={{ minWidth: 180 }}
-                      placeholder={t("selectedCategory")}
-                    />
-                  </Flex>
-                  {focusedTotalRequirement ? (
-                    <Flex align="center" justify="space-between" gap={8} wrap="wrap">
-                      <Text type="secondary">
-                        {t("focusedByRequirement", { name: focusedTotalRequirement.name })}
-                      </Text>
-                      <Button size="small" onClick={() => setFocusedTotalRequirement(null)}>
-                        {t("clearRequirementFilter")}
-                      </Button>
-                    </Flex>
-                  ) : null}
-                  {focusRequirementKey ? <Text type="secondary">{t("focusHint")}</Text> : null}
-                  <div className="panel-scroll">
-                    {selectedItems.length === 0 ? (
-                      <Empty description={t("noSelected")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                    ) : filteredSelectedItems.length === 0 ? (
-                      <Empty description={t("selectedSearchNoResult")} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                    ) : (
-                      <Collapse
-                        className="panel-list"
-                        activeKey={activeKeys}
-                        onChange={(keys) => {
-                          const keyList = Array.isArray(keys) ? keys : [keys];
-                          setActiveKeys(keyList);
-                          if (keyList.length > 0) {
-                            setActiveSelected(keyList[keyList.length - 1]);
-                          }
-                        }}
-                        items={selectedCollapseItems}
-                      />
-                    )}
-                  </div>
-                </Flex>
-              </Card>
-            </Col>
-
-            <Col xs={24} lg={8}>
-              <Card
-                title={`${t("totals")} - ${t("totalCount", { count: adjustedTotals.length })}`}
-                className="panel-card"
-              >
-                <div className="panel-content">
-                  <div className="panel-scroll">
-                    <Spin spinning={loadingCalc}>
-                      <List
-                        className="panel-list"
-                        dataSource={adjustedTotals}
-                        locale={{ emptyText: t("statusReady") }}
-                        renderItem={(resource) => (
-                          <List.Item
-                            className={`total-row ${
-                              focusedTotalRequirement?.uniqueName === resource.uniqueName ? "focused-total-row" : ""
-                            }`}
-                            onClick={() => {
-                              const current = focusedTotalRequirement?.uniqueName;
-                              const next =
-                                current === resource.uniqueName
-                                  ? null
-                                  : { uniqueName: resource.uniqueName, name: resource.name };
-                              setFocusedTotalRequirement(next);
-
-                              if (next && !(requirementParentMap.get(resource.uniqueName)?.size > 0)) {
-                                message.info(t("requirementUsedByNone"));
-                              }
-                            }}
-                            actions={[
-                              resource.status === "done" ? (
-                                <Badge key="done" status="success" text={t("completeTag")} />
-                              ) : resource.status === "partial" ? (
-                                <Badge key="partial" status="processing" text={t("partialTag")} />
-                              ) : (
-                                <Text key="remaining" strong>
-                                  {resource.remaining}
-                                </Text>
-                              ),
-                            ]}
-                          >
-                            <List.Item.Meta
-                              avatar={
-                                <img
-                                  src={resource.imageUrl || FALLBACK_ICON}
-                                  alt={resource.name}
-                                  className="item-thumb"
-                                />
-                              }
-                              title={resource.name}
-                              description={
-                                <Space direction="vertical" size={4} style={{ width: "100%" }}>
-                                  <Text type="secondary">
-                                    {t("requirementUsedByCount", {
-                                      count: requirementParentMap.get(resource.uniqueName)?.size || 0,
-                                    })}
-                                  </Text>
-                                  <Text type="secondary">
-                                    {`${t("quantity")}: ${resource.quantity} | ${t("doneAmount")}: ${resource.completedAmount} | ${t("remaining")}: ${resource.remaining}`}
-                                  </Text>
-                                  <Progress
-                                    percent={resource.completionPercent}
-                                    size="small"
-                                    status={resource.status === "done" ? "success" : "active"}
-                                  />
-                                </Space>
-                              }
-                            />
-                          </List.Item>
-                        )}
-                      />
-                    </Spin>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </Space>
-      </div>
-
-      <Drawer
-        title={t("customize")}
-        placement="right"
-        width={360}
-        open={themeDrawerOpen}
-        onClose={() => setThemeDrawerOpen(false)}
-        extra={<Button onClick={resetThemeToPreset}>{t("resetTheme")}</Button>}
-      >
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <Text strong>{t("loadThemeProfile")}</Text>
-          <Flex gap={8} align="center">
-            <Select
-              style={{ flex: 1 }}
-              value={selectedProfileName || undefined}
-              placeholder={t("themeProfileEmpty")}
-              options={Object.keys(themeProfiles).map((name) => ({
-                label: name,
-                value: name,
-              }))}
-              onChange={(value) => {
-                setSelectedProfileName(value);
-                loadThemeProfile(value);
-              }}
-            />
-            <Button
-              danger
-              disabled={!selectedProfileName}
-              onClick={() => removeThemeProfile(selectedProfileName)}
-            >
-              {t("remove")}
-            </Button>
-          </Flex>
-
-          <Text strong>{t("saveThemeProfile")}</Text>
-          <Flex gap={8} align="center">
-            <Input
-              value={themeProfileInput}
-              placeholder={t("themeProfilePlaceholder")}
-              onChange={(event) => setThemeProfileInput(event.target.value)}
-            />
-            <Button type="primary" onClick={saveCurrentThemeProfile}>
-              {t("saveThemeProfile")}
-            </Button>
-          </Flex>
-
-          <Space>
-            <Button onClick={exportCurrentTheme}>{t("exportTheme")}</Button>
-            <Button
-              onClick={() => {
-                themeImportInputRef.current?.click();
-              }}
-            >
-              {t("importTheme")}
-            </Button>
-            <input
-              ref={themeImportInputRef}
-              type="file"
-              accept="application/json"
-              style={{ display: "none" }}
-              onChange={importThemeFromFile}
-            />
-          </Space>
-
-          <Divider />
-
-          {colorFields.map(([tokenKey, labelKey]) => (
-            <Flex key={tokenKey} align="center" justify="space-between">
-              <Text>{t(labelKey)}</Text>
-              <ColorPicker
-                value={customThemeTokens[tokenKey]}
-                onChange={(value) => updateThemeToken(tokenKey, value.toHexString())}
-                showText
-              />
-            </Flex>
-          ))}
-
-          <Divider />
-          <Flex align="center" justify="space-between" gap={8}>
-            <Text>{t("customRadius")}</Text>
-            <InputNumber
-              min={2}
-              max={24}
-              value={customThemeTokens.borderRadius}
-              onChange={(value) => updateThemeToken("borderRadius", Math.max(2, Number(value) || 2))}
-            />
-          </Flex>
-        </Space>
-      </Drawer>
-
-      <Modal
-        title={t("wizardTitle")}
-        open={wizardOpen}
-        onCancel={finishWizard}
-        onOk={finishWizard}
-        okText={t("wizardFinish")}
-      >
-        <Space direction="vertical" style={{ width: "100%" }} size="middle">
-          <Text>{t("wizardBody")}</Text>
-          <Flex align="center" justify="space-between" wrap="wrap" gap={10}>
-            <Text>{t("language")}</Text>
-            <Segmented
-              value={language}
-              onChange={(value) => setLanguage(value)}
-              options={[
-                { value: "tr", label: "TR" },
-                { value: "en", label: "EN" },
-              ]}
-            />
-          </Flex>
-          <Flex align="center" justify="space-between" wrap="wrap" gap={10}>
-            <Text>{t("theme")}</Text>
-            <Segmented
-              value={themeName}
-              onChange={(value) => {
-                setThemeName(value);
-                setCustomThemeTokens(themeOptions[value].token);
-              }}
-              options={Object.entries(themeOptions).map(([value, option]) => ({
-                value,
-                label: option.label,
-              }))}
-            />
-          </Flex>
-        </Space>
-      </Modal>
+      <AntApp>
+        <CraftAppContent />
+      </AntApp>
     </ConfigProvider>
   );
 }
 
 export default CraftApp;
-
-

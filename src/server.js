@@ -3,7 +3,9 @@ const fs = require("fs");
 const path = require("path");
 
 const {
+  getItemByUniqueName,
   getItemMap,
+  getI18nForLanguage,
   searchCraftableItems,
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
@@ -82,6 +84,49 @@ app.post("/api/items/resolve-metadata", async (req, res) => {
   } catch (error) {
     console.error("/api/items/resolve-metadata error:", error);
     res.status(500).json({ error: "Metadata could not be resolved." });
+  }
+});
+
+app.get("/api/items/drops/:uniqueName", async (req, res) => {
+  try {
+    const uniqueName = req.params.uniqueName;
+    const item = await getItemByUniqueName(uniqueName);
+    if (!item) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    const drops = item.drops || [];
+    const componentDrops = (item.components || [])
+      .filter((c) => c.drops && c.drops.length > 0)
+      .map((c) => ({
+        componentName: c.name,
+        drops: c.drops,
+      }));
+
+    res.json({
+      uniqueName: item.uniqueName,
+      name: item.name,
+      description: item.description || null,
+      drops,
+      componentDrops,
+    });
+  } catch (error) {
+    console.error("/api/items/drops error:", error);
+    res.status(500).json({ error: "Drop data could not be loaded." });
+  }
+});
+
+app.get("/api/i18n", async (req, res) => {
+  try {
+    const lang = typeof req.query.lang === "string" && req.query.lang.trim().length > 0
+      ? req.query.lang.trim()
+      : "tr";
+
+    const names = await getI18nForLanguage(lang);
+    res.json({ lang, names });
+  } catch (error) {
+    console.error("/api/i18n error:", error);
+    res.status(500).json({ error: "i18n data could not be loaded." });
   }
 });
 
