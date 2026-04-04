@@ -1,133 +1,252 @@
-# Warframe Item Tracker (WIT)
+<div align="center">
 
-Warframe oyunu için craft, relic ve envanter takip uygulaması. Tarayıcıdan çalışır, verilerin lokalinde tutulur.
+<img src="web/public/trackerlogo.png" alt="WIT Logo" width="120" />
 
-## Özellikler
+# Warframe Item Tracker
 
-- **Craft Takip Sistemi** — Üretmek istediğin item'ları ekle, gerekli malzemelerin listesini otomatik çıkar, ilerlemeyi takip et
-- **Relic Takip Sistemi** — Prime parçaların hangi relic'lerden düştüğünü gör, hangilerini topladığını işaretle
-- **Vault** — Envanterdeki prime parçalarını ekle, hangi setleri tamamlayabileceğini gör
-- **3 Tema** — Orokin (altın), Drifter (yeşil), Lotus (açık mavi)
-- **TR / EN** — Tam çift dil desteği
-- **Çift yönlü senkronizasyon** — Craft'ta bir parça tamamlandığında Relic'te de işaretlenir
-- **Tema editörü** — Kendi tema renklerini oluştur ve kaydet
-- **Offline-first** — Tüm veri tarayıcının localStorage'ında tutulur, kayıt gerekmez
+**A modern, theme-aware tracker for Warframe crafting, void relics, and prime part inventory.**
 
-## Hızlı Başlangıç
+[English](./README.md) · [Türkçe](./README.tr.md)
 
-### Gereksinim
-- [Node.js](https://nodejs.org) 18 veya üstü
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Ant Design](https://img.shields.io/badge/Ant_Design-5-0170FE?logo=antdesign&logoColor=white)](https://ant.design)
+[![Zustand](https://img.shields.io/badge/Zustand-5-443E38)](https://zustand-demo.pmnd.rs)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com)
+[![Node](https://img.shields.io/badge/Node-18+-43853D?logo=node.js&logoColor=white)](https://nodejs.org)
+[![License](https://img.shields.io/badge/License-Fan_Made-CA8A04)](#license)
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="WIT Screenshot" width="820" />
+</p>
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap](#roadmap)
+- [License](#license)
+
+---
+
+## Overview
+
+**WIT (Warframe Item Tracker)** is a lightweight, browser-based companion app for Warframe. It helps you keep track of what you want to craft, which void relics drop the prime parts you need, and what's already sitting in your vault — all in one place, with zero account required.
+
+All data stays in your browser's localStorage. No telemetry, no server-side accounts, no sign-ups.
+
+---
+
+## Features
+
+| Page | What it does |
+|------|--------------|
+| **Craft Tracking System** | Add items you want to build, see every resource requirement, mark materials as you collect them, track overall progress |
+| **Relic Tracking System** | View which void relics drop each prime part, mark components as found, auto-syncs with Craft Tracker |
+| **Vault** | Add individual prime parts you own, see which sets you can complete, calculates how many craftable sets you have |
+
+### Additional Capabilities
+
+- **Three themes** — Orokin (gold), Drifter (green), Lotus (light blue) — every UI element adapts dynamically
+- **Theme editor** — Build your own color scheme, save multiple profiles, export/import as JSON
+- **Bilingual** — Full Turkish and English support with instant language switching
+- **Bidirectional sync** — Complete a part in Craft Tracker, it's marked found in Relic Tracker automatically
+- **Fuzzy search** — Typos welcome (powered by Fuse.js)
+- **Import/Export** — Backup your data as JSON, restore across devices
+- **Offline-first** — Works without internet after first load (WFCD data cached)
+- **No install needed** — Just a browser and Node.js
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- [Node.js 18+](https://nodejs.org) — LTS recommended
 
 ### Windows
-```
-start.bat dosyasına çift tıkla
-```
 
-### Mac / Linux
+Double-click **`start.bat`**
+
+### macOS / Linux
+
 ```bash
 ./start.sh
 ```
 
-İlk çalıştırmada paketler otomatik kurulur ve arayüz derlenir (2-3 dakika). Sonraki açılışlar anında olur.
+On first launch, the script will:
+1. Install npm packages (2-3 minutes)
+2. Build the frontend
+3. Start the backend server
+4. Open your browser at **http://localhost:3444**
 
-Tarayıcı otomatik açılır: **http://localhost:3444**
+Subsequent launches are instant. Press `CTRL+C` in the terminal to stop.
 
-Kapatmak için terminal penceresini kapat ya da `CTRL+C` bas.
+---
 
-## Kullanım
+## Usage
 
-### Craft Takip
-1. Sağ üstteki **Ekle** butonuna tıkla
-2. Üretmek istediğin item'ı ara (örn: "Mesa Prime")
-3. Card'a tıklayarak malzeme listesini gör
-4. Her malzeme için sahip olduğun miktarı gir
-5. **Toplam Gerekenler** sekmesinden tüm item'lar için ne kadar malzeme eksik gör
+### Craft Tracking System
 
-### Relic Takip
-- Craft'a eklediğin prime'lar otomatik olarak gelir
-- Her parçayı topladığında card'a tıklayıp işaretle
-- Hangi relic'lerden düştüğünü gör
+1. Click **Add** in the top-right
+2. Search for an item (e.g. *"Mesa Prime"*)
+3. Click the card to see its requirements
+4. Enter how much of each material you own
+5. The **Total Requirements** tab shows aggregate materials across all tracked items
 
-### Vault (Envanter)
-1. **Parça Ekle** ile elindeki parçaları ekle
-2. **Setler** sekmesinde hangi setleri tamamlayabileceğini gör
-3. Aynı parçadan kaç tane olduğunu gir, kaç set yapabileceğini otomatik hesaplar
+### Relic Tracking System
 
-## Teknik Detaylar
+- Prime items added in Craft Tracker appear here automatically
+- Click a card to see which relics drop each component
+- Mark components as found — Craft Tracker updates in sync
 
-### Stack
-- **Frontend**: React 18 + Vite + Ant Design + Zustand + React Query + Framer Motion
-- **Backend**: Express.js + WFCD warframe-items data
-- **State**: Zustand stores (persistent via localStorage)
-- **Data**: [WFCD warframe-items](https://github.com/WFCD/warframe-items) — otomatik snapshot
+### Vault
 
-### Script'ler
-```bash
-npm run dev        # Development (hot reload)
-npm run build      # Production build (web/dist/)
-npm start          # Production server (port 3444)
-npm run snapshot   # WFCD data snapshot'ını güncelle
-npm test           # Backend test
-```
+1. Open the **Add Part** drawer
+2. Search for individual prime components (e.g. *"Ash Neuroptics"*)
+3. Enter quantity
+4. Switch to the **Sets** tab to see which complete prime sets you can build
 
-### Port
-Varsayılan: `3444`
+---
 
-Değiştirmek için: `PORT=8080 npm start`
+## Tech Stack
 
-### Veri Kaynağı
-İlk çalıştırmada WFCD API'sinden Warframe item verileri çekilir ve `data/items.snapshot.json` olarak cache'lenir. Veriler 12 saatte bir güncellenir. İnternet yoksa cache kullanılır.
+### Frontend
+- **[React 18](https://react.dev)** — UI framework
+- **[Vite 5](https://vitejs.dev)** — Build tool & dev server
+- **[Ant Design 5](https://ant.design)** — Component library
+- **[Zustand](https://zustand-demo.pmnd.rs)** — State management (4 stores, no Redux boilerplate)
+- **[Immer](https://immerjs.github.io/immer/)** — Immutable state updates
+- **[React Query](https://tanstack.com/query)** — API cache & data fetching
+- **[React Router 7](https://reactrouter.com)** — Client-side routing
+- **[Framer Motion](https://www.framer.com/motion/)** — Animations
+- **[Fuse.js](https://fusejs.io)** — Fuzzy search
 
-## Dosya Yapısı
+### Backend
+- **[Express](https://expressjs.com)** — HTTP server & API
+- **[WFCD warframe-items](https://github.com/WFCD/warframe-items)** — Authoritative Warframe data
+- **[Node.js 18+](https://nodejs.org)** — Runtime
+
+---
+
+## Project Structure
 
 ```
 warframe-item-tracker/
-├── src/                  Backend (Express + services)
-│   ├── server.js         API endpoints
+├── src/                          Backend
+│   ├── server.js                 Express API
 │   └── services/
-│       ├── itemsService.js
-│       └── craftCalculator.js
+│       ├── itemsService.js       WFCD data loader + search
+│       └── craftCalculator.js    Requirement resolver
 ├── web/
 │   ├── src/
-│   │   ├── App.jsx              Ana routing
-│   │   ├── stores/              Zustand stores
-│   │   ├── hooks/               Custom hooks
+│   │   ├── App.jsx               Root + routing
+│   │   ├── stores/               Zustand stores (4)
+│   │   ├── hooks/                Custom hooks
 │   │   ├── components/
-│   │   │   ├── shared/          Ortak bileşenler
-│   │   │   ├── craft/           Craft Takip
-│   │   │   ├── relic/           Relic Takip
-│   │   │   └── inventory/       Vault
-│   │   ├── styles/              15 modüler CSS
-│   │   ├── constants/           i18n, themes
-│   │   └── utils/
-│   └── dist/                    Production build
-├── data/                 Cached WFCD data
-├── scripts/              Utility scripts
-├── start.bat             Windows başlatıcı
-├── start.sh              Mac/Linux başlatıcı
+│   │   │   ├── shared/           AppHeader, Sidebar, Drawers
+│   │   │   ├── craft/            Craft Tracker pages
+│   │   │   ├── relic/            Relic Tracker pages
+│   │   │   └── inventory/        Vault pages & tabs
+│   │   ├── styles/               15 modular CSS files
+│   │   ├── constants/            i18n, themes
+│   │   └── utils/                helpers, storage, queryClient
+│   └── dist/                     Production build (generated)
+├── data/                         Cached WFCD snapshot
+├── start.bat                     Windows launcher
+├── start.sh                      macOS/Linux launcher
 └── package.json
 ```
 
-## Sorun Giderme
+---
 
-### "Node.js bulunamadı" hatası
-https://nodejs.org adresinden LTS sürümü kurun, bilgisayarı yeniden başlatın.
+## Scripts
 
-### Port 3444 kullanımda
-Başka bir uygulama portu kullanıyor olabilir. `PORT=8080 npm start` ile farklı port kullanın.
+```bash
+npm run dev        # Concurrent backend + Vite dev server (hot reload)
+npm run build      # Production build → web/dist/
+npm start          # Start production server on port 3444
+npm run snapshot   # Fetch latest WFCD data snapshot
+npm test           # Run backend tests
+```
 
-### Veriler kayboldu
-Veriler tarayıcı localStorage'ında tutulur. Tarayıcı geçmişini temizlediysen veya farklı tarayıcı kullandıysan veriler görünmez. Export/Import butonlarıyla yedek almayı unutma.
+### Environment Variables
 
-### Build hatası
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PORT` | `3444` | HTTP server port |
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><b>"Node.js not found" error</b></summary>
+
+Install Node.js 18+ from https://nodejs.org. After installation, restart your terminal or computer.
+</details>
+
+<details>
+<summary><b>Port 3444 already in use</b></summary>
+
+Another app is using the port. Run with a different port:
+```bash
+PORT=8080 npm start
+```
+</details>
+
+<details>
+<summary><b>My tracked items disappeared</b></summary>
+
+All data is stored in your browser's localStorage. It's lost if you clear browser history/cache, switch browsers, or use incognito mode. Use the **Export** button to back up your data.
+</details>
+
+<details>
+<summary><b>Build fails after git pull</b></summary>
+
 ```bash
 rm -rf node_modules web/dist
 npm install
 npm run build
 ```
+</details>
 
-## Lisans
+---
 
-Bu proje Warframe oyununa ait değildir, fan made bir araçtır. Item verileri [WFCD](https://github.com/WFCD) tarafından sağlanır.
+## Roadmap
 
-Warframe ve ilgili tüm tescilli markalar [Digital Extremes](https://www.digitalextremes.com/) firmasına aittir.
+- [ ] PWA support (install as desktop app)
+- [ ] Farm Planner page (mission planning for resources)
+- [ ] Share tracker state via URL
+- [ ] Drag-and-drop item reordering
+- [ ] Export progress as image/PDF
+
+---
+
+## License
+
+This is a **fan-made** companion app. It is not affiliated with, endorsed by, or sponsored by Digital Extremes.
+
+- Warframe item data is provided by the [Warframe Community Developers (WFCD)](https://github.com/WFCD) under their respective licenses.
+- Warframe, the Warframe logo, and all related trademarks belong to [Digital Extremes Ltd.](https://www.digitalextremes.com/)
+- Source code is free to use and modify for personal purposes.
+
+---
+
+<div align="center">
+
+**Made with dedication for the Tenno community**
+
+[⬆ Back to top](#warframe-item-tracker)
+
+</div>
