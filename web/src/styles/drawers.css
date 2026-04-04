@@ -1,0 +1,34 @@
+/* ===== SEARCH DRAWER ===== */
+
+.search-drawer-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  gap: 12px;
+  border-bottom: 1px solid var(--wf-border, rgba(255,255,255,0.06));
+}
+
+.search-drawer-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--wf-bg-elevated, #152344);
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.search-drawer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-drawer-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.search-drawer-type {
+  font-size: 11px;
+  color: var(--wf-text-muted, #3d5280);
+}

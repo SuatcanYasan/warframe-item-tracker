@@ -1,11 +1,13 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   Button, Collapse, Empty, Flex, List, Modal, Progress, Segmented, Spin, Tag, Typography,
 } from "antd";
 import {
   CheckOutlined, DeleteOutlined, GoldOutlined,
 } from "@ant-design/icons";
-import { FALLBACK_ICON, requestJson } from "../utils/helpers";
+import { FALLBACK_ICON } from "../../utils/helpers";
+import { useItemDrops } from "../../hooks/useApiQueries";
+import { useTranslate } from "../../hooks/useTranslate";
 
 const { Text } = Typography;
 
@@ -34,22 +36,9 @@ function groupDropsByRelic(drops) {
   return Array.from(grouped.values());
 }
 
-function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, t, tin, dropCache, setDropCache, onOpenModal }) {
-  // Auto-fetch drops on mount if not cached
-  useEffect(() => {
-    if (dropCache[prime.uniqueName]) return;
-    let cancelled = false;
-    requestJson(`/api/items/drops/${encodeURIComponent(prime.uniqueName)}`)
-      .then((result) => {
-        if (!cancelled) setDropCache((prev) => ({ ...prev, [prime.uniqueName]: result }));
-      })
-      .catch(() => {
-        if (!cancelled) setDropCache((prev) => ({ ...prev, [prime.uniqueName]: { componentDrops: [] } }));
-      });
-    return () => { cancelled = true; };
-  }, [prime.uniqueName, dropCache, setDropCache]);
-
-  const dropData = dropCache[prime.uniqueName] || null;
+function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal }) {
+  const { t, tin } = useTranslate();
+  const { data: dropData } = useItemDrops(prime.uniqueName);
   const componentDrops = dropData?.componentDrops || [];
   const droppableComponents = componentDrops.filter((c) => c.drops && c.drops.length > 0);
   const totalComponents = droppableComponents.length;
@@ -87,29 +76,12 @@ function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, t, tin, drop
   );
 }
 
-function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound, t, tin, dropCache, setDropCache }) {
-  const [loadingDrops, setLoadingDrops] = useState(false);
+function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound }) {
+  const { t, tin } = useTranslate();
   const [componentActiveKeys, setComponentActiveKeys] = useState([]);
   const [refinementLevel, setRefinementLevel] = useState("Intact");
 
-  const dropData = dropCache[prime?.uniqueName] || null;
-
-  useEffect(() => {
-    if (!open || !prime || dropCache[prime.uniqueName]) return;
-    let cancelled = false;
-    setLoadingDrops(true);
-    requestJson(`/api/items/drops/${encodeURIComponent(prime.uniqueName)}`)
-      .then((result) => {
-        if (!cancelled) setDropCache((prev) => ({ ...prev, [prime.uniqueName]: result }));
-      })
-      .catch(() => {
-        if (!cancelled) setDropCache((prev) => ({ ...prev, [prime.uniqueName]: { componentDrops: [] } }));
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingDrops(false);
-      });
-    return () => { cancelled = true; };
-  }, [open, prime?.uniqueName]);
+  const { data: dropData, isLoading: loadingDrops } = useItemDrops(open ? prime?.uniqueName : null);
 
   if (!prime) return null;
 
@@ -142,7 +114,7 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound, t, ti
               type="circle"
               percent={progressPercent}
               size={40}
-              strokeColor={allFound ? "var(--status-complete)" : "var(--accent-cyan)"}
+              strokeColor={allFound ? "var(--status-complete)" : "var(--wf-primary)"}
               style={{ marginLeft: "auto" }}
             />
           )}
@@ -243,23 +215,23 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound, t, ti
   );
 }
 
-export default function RelicCardGrid({ t, tin, watchedPrimes, foundComponents, onToggleFound, onRemovePrime }) {
-  const [dropCache, setDropCache] = useState({});
+export default function RelicCardGrid({ watchedPrimes, foundComponents, onToggleFound, onRemovePrime }) {
+  const { t } = useTranslate();
   const [modalPrime, setModalPrime] = useState(null);
 
-  // Sort: incomplete first, completed last
+  // Sort: incomplete first, completed last (based on foundComponents only, drop data is per-card via React Query)
   const sortedPrimes = useMemo(() => {
     return [...watchedPrimes].sort((a, b) => {
       const aFound = foundComponents[a.uniqueName] || {};
       const bFound = foundComponents[b.uniqueName] || {};
-      const aDrops = dropCache[a.uniqueName]?.componentDrops?.filter((c) => c.drops?.length > 0) || [];
-      const bDrops = dropCache[b.uniqueName]?.componentDrops?.filter((c) => c.drops?.length > 0) || [];
-      const aAllDone = aDrops.length > 0 && aDrops.every((c) => aFound[c.componentName]);
-      const bAllDone = bDrops.length > 0 && bDrops.every((c) => bFound[c.componentName]);
-      if (aAllDone !== bAllDone) return aAllDone ? 1 : -1;
+      const aFoundCount = Object.values(aFound).filter(Boolean).length;
+      const bFoundCount = Object.values(bFound).filter(Boolean).length;
+      // Items with no found components go first
+      if (aFoundCount === 0 && bFoundCount > 0) return -1;
+      if (bFoundCount === 0 && aFoundCount > 0) return 1;
       return 0;
     });
-  }, [watchedPrimes, foundComponents, dropCache]);
+  }, [watchedPrimes, foundComponents]);
 
   if (watchedPrimes.length === 0) {
     return (
@@ -282,10 +254,6 @@ export default function RelicCardGrid({ t, tin, watchedPrimes, foundComponents, 
               foundMap={foundComponents[prime.uniqueName] || {}}
               onToggleFound={onToggleFound}
               onRemove={onRemovePrime}
-              t={t}
-              tin={tin}
-              dropCache={dropCache}
-              setDropCache={setDropCache}
               onOpenModal={setModalPrime}
             />
           ))}
@@ -297,10 +265,6 @@ export default function RelicCardGrid({ t, tin, watchedPrimes, foundComponents, 
         onClose={() => setModalPrime(null)}
         foundMap={modalPrime ? (foundComponents[modalPrime.uniqueName] || {}) : {}}
         onToggleFound={onToggleFound}
-        t={t}
-        tin={tin}
-        dropCache={dropCache}
-        setDropCache={setDropCache}
       />
     </>
   );

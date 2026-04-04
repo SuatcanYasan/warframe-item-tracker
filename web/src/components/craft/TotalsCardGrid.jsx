@@ -1,10 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Empty, Typography, Spin } from "antd";
-import { FALLBACK_ICON } from "../utils/helpers";
+import { FALLBACK_ICON } from "../../utils/helpers";
+import { useTranslate } from "../../hooks/useTranslate";
+import { useCraftStore } from "../../stores/craftStore";
 
 const { Text } = Typography;
 
-export default function TotalsCardGrid({ t, tin, adjustedTotals, loadingCalc, onOpenDetail }) {
+export default function TotalsCardGrid({ adjustedTotals, onOpenDetail }) {
+  const { t, tin } = useTranslate();
+  const loadingCalc = useCraftStore((s) => s.loadingCalc);
   if (loadingCalc) {
     return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Spin /></div>;
   }

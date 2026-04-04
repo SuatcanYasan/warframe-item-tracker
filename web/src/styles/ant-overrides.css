@@ -1,0 +1,147 @@
+/* ===== COLLAPSE ===== */
+.ant-collapse-item {
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle) !important;
+  background: color-mix(in srgb, var(--wf-bg-container) 30%, transparent);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ant-collapse-item:hover {
+  border-color: var(--border-default) !important;
+}
+
+.ant-collapse-item-active {
+  border-color: color-mix(in srgb, var(--wf-primary) 20%, transparent) !important;
+  box-shadow:
+    0 0 20px -4px color-mix(in srgb, var(--wf-primary) 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--wf-primary) 8%, transparent);
+}
+
+.ant-collapse-item + .ant-collapse-item {
+  margin-top: var(--sp-2);
+}
+
+/* ===== PROGRESS BAR ===== */
+.ant-progress-bg {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--wf-primary) 40%, transparent), var(--wf-primary)) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--wf-primary) 30%, transparent);
+  border-radius: 999px !important;
+}
+
+.ant-progress-success-bg {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--status-complete) 50%, black), var(--status-complete)) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--status-complete) 30%, transparent);
+}
+
+.ant-progress-text {
+  font-size: 12px !important;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ===== TAGS ===== */
+.ant-tag {
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+}
+
+/* ===== BUTTONS ===== */
+.ant-btn {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.ant-btn-primary {
+  background: var(--wf-primary) !important;
+  border: 1px solid color-mix(in srgb, var(--wf-primary) 50%, transparent) !important;
+  color: #fff !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.ant-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--wf-text) 15%, transparent), transparent);
+  transition: left 0.5s;
+}
+
+.ant-btn-primary:hover::after {
+  left: 100%;
+}
+
+.ant-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--wf-primary) 35%, transparent) !important;
+  filter: brightness(1.15);
+}
+
+/* ===== INPUTS ===== */
+.ant-input,
+.ant-input-number,
+.ant-select-selector {
+  font-family: var(--font-body);
+  border-radius: var(--radius-sm) !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper-focused {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wf-primary) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--wf-primary) 40%, transparent) !important;
+}
+
+/* ===== ANT SEGMENTED THEME ===== */
+.ant-segmented-item-selected {
+  background: var(--wf-primary) !important;
+  color: #fff !important;
+}
+
+.ant-segmented-item-selected .ant-segmented-item-label {
+  color: #fff !important;
+}
+
+.ant-segmented-thumb {
+  background: var(--wf-primary) !important;
+}
+
+/* ===== DRAWERS & MODALS (themed backgrounds) ===== */
+.ant-drawer-content {
+  background: var(--wf-bg-container) !important;
+}
+
+.ant-drawer-header {
+  background: var(--wf-bg-container) !important;
+  border-bottom: 1px solid var(--wf-border) !important;
+}
+
+.ant-modal-content {
+  background: var(--wf-bg-container) !important;
+}
+
+.ant-modal-header {
+  background: var(--wf-bg-container) !important;
+  border-bottom: 1px solid var(--wf-border) !important;
+}
+
+/* Loading shimmer for spin */
+.ant-spin-nested-loading > .ant-spin-container::after {
+  background: linear-gradient(90deg, transparent 25%, color-mix(in srgb, var(--wf-primary) 4%, transparent) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}

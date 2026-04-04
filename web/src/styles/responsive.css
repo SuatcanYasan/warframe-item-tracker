@@ -1,0 +1,114 @@
+/* ===== RESPONSIVE ===== */
+@media (max-width: 991px) {
+  .app-shell { padding: var(--sp-4); }
+  .panel-card { height: auto; }
+  .panel-card .ant-card-body { height: auto; }
+  .panel-list { max-height: 450px; }
+  .panel-scroll { max-height: 450px; }
+  .resizable-row { flex-direction: column; gap: var(--sp-4); }
+  .resize-handle { display: none; }
+  .resizable-panel { width: 100% !important; }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .app-shell { padding: var(--sp-4) var(--sp-6); }
+}
+
+@media (max-width: 480px) {
+  .app-shell { padding: var(--sp-2); }
+  .hero-card .ant-card-body { padding: var(--sp-4); }
+  .panel-list .ant-list-item { padding: var(--sp-2) var(--sp-3); }
+  .item-thumb { width: 30px; height: 30px; }
+}
+
+/* Responsive: relic tracker stack on small screens */
+@media (max-width: 768px) {
+  .relic-tracker-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "content";
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100vh;
+    z-index: 100;
+    transition: left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .sidebar.mobile-open {
+    left: 0;
+  }
+
+  .item-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .totals-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .summary-bar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .detail-req-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+
+  .app-content {
+    padding: 12px 14px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .item-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .summary-bar {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .relic-tracker-layout {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .relic-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .item-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .totals-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+}

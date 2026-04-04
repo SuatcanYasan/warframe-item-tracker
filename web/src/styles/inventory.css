@@ -1,0 +1,35 @@
+/* --- Inventory Tracker --- */
+.inventory-set-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.inventory-set-part {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid var(--wf-border);
+}
+
+.inventory-set-part.owned {
+  background: color-mix(in srgb, var(--wf-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--wf-primary) 30%, transparent);
+}
+
+.inventory-set-part.missing {
+  opacity: 0.4;
+}
+
+.inventory-set-part-name {
+  color: var(--wf-text);
+}
+
+.inventory-set-part-qty {
+  color: var(--wf-text-muted);
+  font-family: var(--font-mono);
+}

@@ -1,0 +1,62 @@
+/* ===== FLOATING BACKGROUND ORBS ===== */
+.app-shell::before,
+.app-shell::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-shell::before {
+  width: 500px;
+  height: 500px;
+  background: var(--wf-primary);
+  top: -180px;
+  right: -120px;
+  opacity: 0.06;
+  animation: floatOrb 30s ease-in-out infinite alternate;
+}
+
+.app-shell::after {
+  width: 400px;
+  height: 400px;
+  background: var(--wf-primary);
+  bottom: -150px;
+  left: -100px;
+  opacity: 0.04;
+  animation: floatOrb 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(30px, -40px); }
+}
+
+/* ===== DONATE FLASH ===== */
+@keyframes donateFlash {
+  0% { background: color-mix(in srgb, var(--status-complete) 18%, transparent) !important; }
+  100% { background: transparent; }
+}
+
+.donate-flash {
+  animation: donateFlash 1.5s ease-out;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes focusPulse {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--wf-primary) 15%, transparent) inset, 0 0 12px -2px color-mix(in srgb, var(--wf-primary) 10%, transparent); }
+  50%      { box-shadow: 0 0 0 1px color-mix(in srgb, var(--wf-primary) 25%, transparent) inset, 0 0 20px -2px color-mix(in srgb, var(--wf-primary) 20%, transparent); }
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

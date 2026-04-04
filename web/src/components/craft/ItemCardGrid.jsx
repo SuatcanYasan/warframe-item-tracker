@@ -1,12 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Empty, Typography } from "antd";
-import { FALLBACK_ICON } from "../utils/helpers";
-import DropInfoPopover from "./DropInfoPopover";
+import { FALLBACK_ICON } from "../../utils/helpers";
+import DropInfoPopover from "../relic/DropInfoPopover";
+import { useTranslate } from "../../hooks/useTranslate";
 
 const { Text } = Typography;
 
-export default function ItemCardGrid({ t, tin, items, enrichedByItem, onOpenDetail, onRemoveItem }) {
+export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRemoveItem }) {
+  const { t, tin } = useTranslate();
   if (items.length === 0) {
     return (
       <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
@@ -49,11 +51,6 @@ export default function ItemCardGrid({ t, tin, items, enrichedByItem, onOpenDeta
                 <div className="item-card-name">{tin(item.uniqueName, item.name)}</div>
                 <div className="item-card-type">
                   {item.type || item.category || t("unknown")}
-                  {item.buildPrice > 0 && (
-                    <span style={{ marginLeft: 6, color: "var(--accent-gold, #d4a843)", fontWeight: 500 }}>
-                      {(item.buildPrice * item.quantity).toLocaleString()} cr
-                    </span>
-                  )}
                 </div>
                 <div className="item-card-progress-bar">
                   <div

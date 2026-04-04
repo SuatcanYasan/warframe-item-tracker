@@ -1,22 +1,23 @@
 import { App, Flex, Modal, Segmented, Space, Typography } from "antd";
-import { themeOptions } from "../constants/themes";
+import { themeOptions } from "../../constants/themes";
+import { useTranslate } from "../../hooks/useTranslate";
+import { useAppStore } from "../../stores/appStore";
 
 const { Text } = Typography;
 
-export default function WizardModal({
-  t,
-  open,
-  language,
-  setLanguage,
-  themeName,
-  setThemeName,
-  setCustomThemeTokens,
-  onFinish,
-}) {
+export default function WizardModal() {
   const { message } = App.useApp();
+  const { t } = useTranslate();
+  const open = useAppStore((s) => s.wizardOpen);
+  const closeWizard = useAppStore((s) => s.closeWizard);
+  const language = useAppStore((s) => s.language);
+  const setLanguage = useAppStore((s) => s.setLanguage);
+  const themeName = useAppStore((s) => s.themeName);
+  const setThemeName = useAppStore((s) => s.setThemeName);
+  const setCustomThemeTokens = useAppStore((s) => s.setCustomThemeTokens);
 
   function handleFinish() {
-    onFinish();
+    closeWizard();
     message.success(t("wizardFinish"));
   }
 

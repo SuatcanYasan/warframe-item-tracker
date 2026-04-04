@@ -1,0 +1,74 @@
+/* ===== WARFRAME CRAFT TRACKER — AWWWARDS-GRADE UI ===== */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===== DESIGN TOKENS ===== */
+:root {
+  color-scheme: dark;
+
+  /* Depth system */
+  --bg-void:         #030711;
+  --bg-orbiter:      #0A1225;
+  --bg-panel:        #0F1A30;
+  --bg-elevated:     #152040;
+  --bg-hover:        #1A2850;
+
+  /* Orokin accents */
+  --accent-gold:       #C9A84C;
+  --accent-gold-light: #E8D48B;
+  --accent-gold-dim:   #8B7332;
+  --accent-cyan:       #00E8DC;
+  --accent-cyan-dim:   #0A7B74;
+  --accent-blue:       #3B82F6;
+
+  /* Semantic */
+  --status-complete:   #10B981;
+  --status-missing:    #EF4444;
+  --status-crafting:   #F59E0B;
+
+  /* Text */
+  --text-primary:    #E8EDF5;
+  --text-secondary:  #8892A8;
+  --text-tertiary:   #4A5568;
+  --text-accent:     #C9A84C;
+
+  /* Surface */
+  --border-subtle:   color-mix(in srgb, var(--wf-primary) 8%, transparent);
+  --border-default:  color-mix(in srgb, var(--wf-primary) 12%, transparent);
+  --border-active:   color-mix(in srgb, var(--wf-primary) 35%, transparent);
+  --glow-gold:       color-mix(in srgb, var(--wf-primary) 20%, transparent);
+  --glow-cyan:       color-mix(in srgb, var(--wf-primary) 15%, transparent);
+
+  /* Spacing (8px grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* Typography */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Legacy bridge (for Ant Design ConfigProvider) */
+  --wf-bg-base: var(--bg-void);
+  --wf-bg-container: var(--bg-panel);
+  --wf-bg-elevated: var(--bg-elevated);
+  --wf-text: var(--text-primary);
+  --wf-text-muted: var(--text-secondary);
+  --wf-border: color-mix(in srgb, var(--wf-primary) 60%, black);
+  --wf-scrollbar: color-mix(in srgb, var(--wf-primary) 60%, black);
+  --wf-accent-gold: var(--wf-primary);
+  --wf-accent-void: var(--wf-primary);
+}

@@ -6,6 +6,7 @@ const {
   getItemMap,
   getI18nForLanguage,
   searchCraftableItems,
+  searchPrimeComponents,
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
 
@@ -107,6 +108,19 @@ app.get("/api/items/drops/:uniqueName", async (req, res) => {
   } catch (error) {
     console.error("/api/items/drops error:", error);
     res.status(500).json({ error: "Drop data could not be loaded." });
+  }
+});
+
+app.get("/api/items/components", async (req, res) => {
+  try {
+    const search = typeof req.query.search === "string" ? req.query.search : "";
+    const limitRaw = Number(req.query.limit);
+    const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.floor(limitRaw))) : 60;
+    const components = await searchPrimeComponents(search, limit);
+    res.json({ components });
+  } catch (error) {
+    console.error("/api/items/components error:", error);
+    res.status(500).json({ error: "Components could not be loaded." });
   }
 });
 

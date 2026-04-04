@@ -1,0 +1,110 @@
+/* ===== ITEM DETAIL MODAL ===== */
+
+.detail-req-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.detail-req-card {
+  background: color-mix(in srgb, var(--wf-bg-container) 50%, var(--wf-bg-base));
+  border: 1px solid var(--wf-border, rgba(255,255,255,0.06));
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  transition: all 200ms ease;
+}
+
+.detail-req-card:hover {
+  border-color: var(--wf-border, #2f4774);
+}
+
+.detail-req-card.done {
+  opacity: 0.55;
+  border-color: color-mix(in srgb, var(--status-complete) 15%, transparent);
+}
+
+.detail-req-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+
+.detail-req-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.detail-req-name.done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.detail-req-bar {
+  width: 100%;
+  height: 4px;
+  background: color-mix(in srgb, var(--wf-text) 4%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.detail-req-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 500ms ease;
+}
+
+.detail-req-fill.cyan {
+  background: var(--wf-primary, #CA8A04);
+}
+
+.detail-req-fill.green {
+  background: var(--status-complete, #10b981);
+}
+
+.detail-req-nums {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wf-primary, #CA8A04);
+}
+
+.detail-req-nums.ok {
+  color: var(--status-complete, #10b981);
+}
+
+.detail-req-nums.danger {
+  color: var(--status-missing, #EF4444);
+}
+
+.detail-req-input {
+  width: 60px !important;
+}
+
+.detail-req-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.detail-req-tag.ok {
+  background: color-mix(in srgb, var(--status-complete, #10b981) 12%, transparent);
+  color: var(--status-complete, #10b981);
+}
+
+.detail-req-tag.open {
+  background: color-mix(in srgb, var(--wf-primary) 12%, transparent);
+  color: var(--wf-primary, #CA8A04);
+}

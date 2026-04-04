@@ -1,13 +1,15 @@
 import { Modal, InputNumber, Typography } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import { FALLBACK_ICON } from "../utils/helpers";
+import { FALLBACK_ICON } from "../../../utils/helpers";
+import { useTranslate } from "../../../hooks/useTranslate";
 
 const { Text } = Typography;
 
 export default function ItemDetailModal({
-  t, tin, item, open, onClose,
+  item, open, onClose,
   enrichedRequirements, onSetCompleted, onUpdateQuantity,
 }) {
+  const { t, tin } = useTranslate();
   if (!item) return null;
 
   const reqs = enrichedRequirements || [];

@@ -12,25 +12,26 @@ import {
   Typography,
   message,
 } from "antd";
-import { themeOptions, colorFields } from "../constants/themes";
+import { themeOptions, colorFields } from "../../constants/themes";
+import { useTranslate } from "../../hooks/useTranslate";
+import { useAppStore } from "../../stores/appStore";
 
 const { Text } = Typography;
 
-export default function ThemeDrawer({
-  t,
-  open,
-  onClose,
-  themeName,
-  setThemeName,
-  customThemeTokens,
-  setCustomThemeTokens,
-  themeProfiles,
-  setThemeProfiles,
-  selectedProfileName,
-  setSelectedProfileName,
-  themeProfileInput,
-  setThemeProfileInput,
-}) {
+export default function ThemeDrawer() {
+  const { t } = useTranslate();
+  const open = useAppStore((s) => s.themeDrawerOpen);
+  const onClose = useAppStore((s) => s.closeThemeDrawer);
+  const themeName = useAppStore((s) => s.themeName);
+  const setThemeName = useAppStore((s) => s.setThemeName);
+  const customThemeTokens = useAppStore((s) => s.customThemeTokens);
+  const setCustomThemeTokens = useAppStore((s) => s.setCustomThemeTokens);
+  const themeProfiles = useAppStore((s) => s.themeProfiles);
+  const setThemeProfiles = useAppStore((s) => s.setThemeProfiles);
+  const selectedProfileName = useAppStore((s) => s.selectedProfileName);
+  const setSelectedProfileName = useAppStore((s) => s.setSelectedProfileName);
+  const themeProfileInput = useAppStore((s) => s.themeProfileInput);
+  const setThemeProfileInput = useAppStore((s) => s.setThemeProfileInput);
   const importInputRef = useRef(null);
 
   function updateThemeToken(key, value) {

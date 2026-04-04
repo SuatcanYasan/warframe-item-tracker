@@ -1,17 +1,24 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { AppstoreOutlined, SettingOutlined, LeftOutlined } from "@ant-design/icons";
+import { LeftOutlined } from "@ant-design/icons";
+// All nav icons from https://wiki.warframe.com/w/Text_Icons
 import { motion } from "framer-motion";
+import { useTranslate } from "../../hooks/useTranslate";
+import { useAppStore } from "../../stores/appStore";
 
-const IMG_BASE = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/img";
+const WF_ICONS = "https://wiki.warframe.com/images";
 
-export default function Sidebar({ t, collapsed, setCollapsed, onOpenSettings }) {
+export default function Sidebar({ onOpenSettings }) {
+  const { t } = useTranslate();
+  const collapsed = useAppStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const navigate = useNavigate();
   const location = useLocation();
-  const activePage = location.pathname === "/relic" ? "relic" : "craft";
+  const activePage = location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : "craft";
 
   const navItems = [
-    { key: "craft", path: "/", icon: <img src={`${IMG_BASE}/orokin-cell-0d237af036.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
-    { key: "relic", path: "/relic", icon: <img src={`${IMG_BASE}/lith-relic.png`} alt="" className="nav-item-img" />, label: t("relicTracker") },
+    { key: "craft", path: "/", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
+    { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("relicTracker") },
+    { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("inventoryTracker") },
   ];
 
   return (
@@ -41,17 +48,17 @@ export default function Sidebar({ t, collapsed, setCollapsed, onOpenSettings }) 
         <div className="nav-divider" />
         <div className="nav-section">{!collapsed && t("tools")}</div>
         <div className="nav-item disabled">
-          <span className="nav-icon"><AppstoreOutlined /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" /></span>
           {!collapsed && <span className="nav-label">{t("farmPlanner")}</span>}
         </div>
       </nav>
 
       <div className="sidebar-footer">
         <div className="nav-item" onClick={onOpenSettings}>
-          <span className="nav-icon"><SettingOutlined /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" className="nav-item-img" /></span>
           {!collapsed && <span className="nav-label">{t("settings")}</span>}
         </div>
-        <div className="nav-item collapse-btn" onClick={() => setCollapsed(!collapsed)}>
+        <div className="nav-item collapse-btn" onClick={toggleSidebar}>
           <span className="nav-icon">
             <LeftOutlined style={{ transition: "transform 0.25s", transform: collapsed ? "rotate(180deg)" : "none" }} />
           </span>

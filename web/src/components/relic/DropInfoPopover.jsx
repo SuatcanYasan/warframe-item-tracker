@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal, Spin, List, Tag, Typography, Flex, Empty, Collapse } from "antd";
 import { InfoCircleOutlined, EnvironmentOutlined } from "@ant-design/icons";
-import { requestJson } from "../utils/helpers";
+import { requestJson } from "../../utils/helpers";
 
 const { Text } = Typography;
 
@@ -120,7 +120,7 @@ export default function DropInfoPopover({ uniqueName, itemName, t }) {
                   children: (
                     <div style={{ maxHeight: 200, overflowY: "auto" }}>
                       <List size="small" dataSource={comp.drops}
-                        renderItem={(drop) => renderDropRow(drop, "var(--accent-cyan)")}
+                        renderItem={(drop) => renderDropRow(drop, "var(--wf-primary)")}
                       />
                     </div>
                   ),

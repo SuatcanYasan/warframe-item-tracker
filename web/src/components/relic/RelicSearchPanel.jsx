@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Button, Flex, Input, List, Spin, Tag } from "antd";
 import { SearchOutlined, CheckOutlined } from "@ant-design/icons";
-import { FALLBACK_ICON, requestJson } from "../utils/helpers";
-import EmptyState from "./EmptyState";
+import { FALLBACK_ICON, requestJson } from "../../utils/helpers";
+import EmptyState from "../shared/EmptyState";
 
 export default function RelicSearchPanel({ t, tin, watchedPrimes, onWatchPrime }) {
   const [search, setSearch] = useState("");

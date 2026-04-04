@@ -1,0 +1,60 @@
+/* Drifter theme override */
+body[data-theme="drifter"] {
+  background-image:
+    radial-gradient(ellipse at 12% 5%, color-mix(in srgb, var(--wf-primary) 45%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 90%, color-mix(in srgb, var(--wf-primary) 30%, transparent) 0%, transparent 50%);
+}
+
+/* Lotus light theme override */
+body[data-theme="lotus"] {
+  background-color: var(--wf-bg-base);
+  background-image:
+    radial-gradient(ellipse at 10% 5%, color-mix(in srgb, var(--wf-primary) 8%, transparent) 0%, transparent 40%),
+    radial-gradient(ellipse at 90% 90%, color-mix(in srgb, var(--wf-primary) 5%, transparent) 0%, transparent 40%);
+}
+
+body[data-theme="lotus"]::after {
+  opacity: 0.01;
+}
+
+/* ===== LOTUS THEME OVERRIDES ===== */
+body[data-theme="lotus"] .panel-list .ant-list-item {
+  background: color-mix(in srgb, var(--wf-bg-container) 70%, transparent);
+  border-color: color-mix(in srgb, var(--wf-border) 40%, transparent);
+}
+
+body[data-theme="lotus"] .panel-list .ant-list-item:hover {
+  background: color-mix(in srgb, var(--wf-bg-container) 90%, transparent);
+  border-color: color-mix(in srgb, var(--wf-primary) 30%, transparent);
+}
+
+body[data-theme="lotus"] .progress-overview {
+  background: color-mix(in srgb, var(--wf-bg-elevated) 50%, transparent);
+}
+
+body[data-theme="lotus"] .category-tab {
+  background: color-mix(in srgb, var(--wf-bg-container) 60%, transparent);
+}
+
+body[data-theme="lotus"] .category-tab.active {
+  background: color-mix(in srgb, var(--wf-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--wf-primary) 30%, transparent);
+  color: var(--wf-primary);
+}
+
+body[data-theme="lotus"] .hero-card,
+body[data-theme="lotus"] .panel-card {
+  background: color-mix(in srgb, var(--wf-bg-container) 85%, transparent);
+  backdrop-filter: blur(16px);
+  border-color: color-mix(in srgb, var(--wf-border) 40%, transparent);
+}
+
+body[data-theme="lotus"] .hero-card::before,
+body[data-theme="lotus"] .panel-card::before {
+  background: linear-gradient(90deg, transparent, var(--wf-primary), transparent);
+  opacity: 0.2;
+}
+
+body[data-theme="lotus"] .panel-card .ant-card-head-title {
+  color: var(--wf-primary);
+}

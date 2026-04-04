@@ -1,0 +1,65 @@
+/* ===== RELIC TRACKER ===== */
+
+.relic-tracker-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--sp-4, 16px);
+  min-height: 0;
+}
+
+.relic-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-4, 16px);
+  align-content: start;
+  padding: var(--sp-2, 8px);
+}
+
+.relic-prime-card {
+  background: var(--wf-bg-container, #111b34);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--radius-md, 8px);
+  transition: border-color var(--transition-fast, 150ms), box-shadow var(--transition-fast, 150ms);
+  overflow: hidden;
+}
+
+.relic-prime-card:hover {
+  border-color: var(--wf-primary, #CA8A04);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--wf-primary) 10%, transparent);
+}
+
+.relic-prime-card.all-found {
+  border-color: var(--status-complete, #10b981);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--status-complete) 15%, transparent);
+}
+
+.relic-prime-card-header {
+  padding: var(--sp-3, 12px);
+  cursor: pointer;
+  transition: background var(--transition-fast, 150ms);
+}
+
+.relic-prime-card-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.relic-prime-card-body {
+  border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.relic-prime-card-body .ant-collapse-header {
+  padding: 8px 12px !important;
+}
+
+.relic-prime-card-body .ant-collapse-content-box {
+  padding: 4px 12px 8px !important;
+}
+
+.relic-found-btn {
+  min-width: 80px;
+  font-size: 12px;
+}
+
+.relic-found-btn.found {
+  color: #fff;
+}

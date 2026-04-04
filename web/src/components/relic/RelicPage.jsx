@@ -2,12 +2,14 @@ import { useState, useMemo } from "react";
 import { Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import RelicCardGrid from "./RelicCardGrid";
+import { useTranslate } from "../../hooks/useTranslate";
+import { useRelicStore } from "../../stores/relicStore";
 
 const { Text } = Typography;
 
-export default function RelicTrackerContent({
-  t, tin, watchedPrimes, foundComponents, onToggleFound,
-}) {
+export default function RelicTrackerContent({ watchedPrimes, onToggleFound }) {
+  const { t, tin } = useTranslate();
+  const foundComponents = useRelicStore((s) => s.foundComponents);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [filter, setFilter] = useState("all");
@@ -100,8 +102,6 @@ export default function RelicTrackerContent({
       </div>
 
       <RelicCardGrid
-        t={t}
-        tin={tin}
         watchedPrimes={filteredPrimes}
         foundComponents={foundComponents}
         onToggleFound={onToggleFound}

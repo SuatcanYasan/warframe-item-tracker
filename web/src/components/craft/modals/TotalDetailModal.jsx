@@ -1,14 +1,19 @@
 import { Modal, InputNumber, Button, Typography, Flex, App as AntApp } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { FALLBACK_ICON } from "../utils/helpers";
+import { FALLBACK_ICON } from "../../../utils/helpers";
+import { useTranslate } from "../../../hooks/useTranslate";
+import { useCraftStore } from "../../../stores/craftStore";
 
 const { Text } = Typography;
 
 export default function TotalDetailModal({
-  t, tin, material, open, onClose,
-  selectedItems, detailByItem, completedMap, onSetCompleted, onBulkDonate,
+  material, open, onClose,
+  detailByItem, onSetCompleted, onBulkDonate,
 }) {
+  const { t, tin } = useTranslate();
+  const selectedItems = useCraftStore((s) => s.selectedItems);
+  const completedMap = useCraftStore((s) => s.completedMap);
   const { message } = AntApp.useApp();
 
   if (!material) return null;

@@ -306,12 +306,55 @@ async function getI18nForLanguage(lang) {
   return names;
 }
 
+async function searchPrimeComponents(searchText = "", limit = 60) {
+  const { items } = await ensureDataLoaded();
+  const query = searchText.trim().toLowerCase();
+  if (!query) return [];
+
+  const primeItems = items.filter(
+    (item) => isCraftable(item) && item.name.toLowerCase().includes("prime"),
+  );
+
+  // Common crafting materials to exclude from prime component search
+  const materialKeywords = ["cell", "alloy", "ferrite", "polymer", "plastid", "salvage",
+    "circuits", "rubedo", "morphics", "neurodes", "gallium", "tellurium", "oxium",
+    "cryotic", "argon", "nitain", "forma", "orokin", "neural", "control module",
+    "nano spores", "credits"];
+
+  const results = [];
+  for (const item of primeItems) {
+    for (const comp of item.components) {
+      const compLower = comp.name.toLowerCase();
+      // Skip raw materials
+      if (materialKeywords.some((kw) => compLower.includes(kw))) continue;
+      if (
+        compLower.includes(query) ||
+        item.name.toLowerCase().includes(query)
+      ) {
+        results.push({
+          uniqueName: comp.uniqueName,
+          name: comp.name,
+          itemCount: comp.itemCount ?? 1,
+          parentUniqueName: item.uniqueName,
+          parentName: item.name,
+          parentImageUrl: item.imageUrl,
+          parentCategory: item.category || item.type || null,
+        });
+      }
+    }
+  }
+
+  results.sort((a, b) => a.name.localeCompare(b.name));
+  return results.slice(0, limit);
+}
+
 module.exports = {
   ensureDataLoaded,
   getItemByUniqueName,
   getItemMap,
   getI18nForLanguage,
   searchCraftableItems,
+  searchPrimeComponents,
 };
 
 

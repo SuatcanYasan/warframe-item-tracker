@@ -1,0 +1,40 @@
+/* ===== CUSTOM SCROLLBAR (global) ===== */
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--wf-border, rgba(255,255,255,0.1));
+  border-radius: 3px;
+  transition: background 200ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--wf-text-muted, rgba(255,255,255,0.2));
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--wf-border, rgba(255,255,255,0.1)) transparent;
+}
+
+/* Ant Design modal/drawer body scrollbar */
+.ant-modal-body::-webkit-scrollbar-thumb,
+.ant-drawer-body::-webkit-scrollbar-thumb {
+  background: var(--wf-border, rgba(255,255,255,0.12));
+}
+
+.ant-modal-body::-webkit-scrollbar-thumb:hover,
+.ant-drawer-body::-webkit-scrollbar-thumb:hover {
+  background: var(--wf-text-muted, rgba(255,255,255,0.25));
+}

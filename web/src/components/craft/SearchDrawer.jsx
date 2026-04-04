@@ -1,47 +1,32 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button, Drawer, Input, List, Spin } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { FALLBACK_ICON, requestJson } from "../utils/helpers";
-import EmptyState from "./EmptyState";
+import { FALLBACK_ICON } from "../../utils/helpers";
+import { useSearchItemsInitial } from "../../hooks/useApiQueries";
+import EmptyState from "../shared/EmptyState";
+import { useTranslate } from "../../hooks/useTranslate";
 
-export default function SearchDrawer({ t, tin, open, onClose, onAddItem }) {
+export default function SearchDrawer({ open, onClose, onAddItem }) {
+  const { t, tin } = useTranslate();
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
-  const debounceRef = useRef(null);
   const inputRef = useRef(null);
-
-  const runSearch = useCallback(async (query) => {
-    const normalized = query.trim();
-    setLoading(true);
-    try {
-      const url = normalized
-        ? `/api/items?search=${encodeURIComponent(normalized)}&limit=40`
-        : `/api/items?limit=40`;
-      const data = await requestJson(url);
-      setResults(data.items || []);
-    } catch {
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (open && !hasInitialLoad) {
       setHasInitialLoad(true);
-      runSearch("");
     }
-  }, [open, hasInitialLoad, runSearch]);
+  }, [open, hasInitialLoad]);
 
   useEffect(() => {
-    if (!hasInitialLoad) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => runSearch(search), 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [search, runSearch, hasInitialLoad]);
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const { data, isLoading: loading } = useSearchItemsInitial(debouncedSearch, hasInitialLoad);
+  const results = data?.items || [];
 
   useEffect(() => {
     if (open) {
