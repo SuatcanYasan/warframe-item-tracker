@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button, Drawer, Input, List, Spin } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { FALLBACK_ICON } from "../../utils/helpers";
 import { useSearchItemsInitial } from "../../hooks/useApiQueries";
 import EmptyState from "../shared/EmptyState";
@@ -27,6 +28,7 @@ export default function SearchDrawer({ open, onClose, onAddItem }) {
 
   const { data, isLoading: loading } = useSearchItemsInitial(debouncedSearch, hasInitialLoad);
   const results = data?.items || [];
+  const [parent] = useAutoAnimate();
 
   useEffect(() => {
     if (open) {
@@ -55,7 +57,7 @@ export default function SearchDrawer({ open, onClose, onAddItem }) {
         size="large"
       />
 
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div ref={parent} style={{ flex: 1, overflowY: "auto" }}>
         <Spin spinning={loading}>
           <List
             dataSource={results}

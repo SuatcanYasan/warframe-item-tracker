@@ -58,3 +58,10 @@ body[data-theme="lotus"] .panel-card::before {
 body[data-theme="lotus"] .panel-card .ant-card-head-title {
   color: var(--wf-primary);
 }
+
+/* Warframe wiki icons are white PNGs — invert them in light (Lotus) theme so they're visible */
+body[data-theme="lotus"] .nav-item-img,
+body[data-theme="lotus"] .header-icon-btn img,
+body[data-theme="lotus"] .header-shortcut-icon {
+  filter: invert(1) brightness(0.35);
+}

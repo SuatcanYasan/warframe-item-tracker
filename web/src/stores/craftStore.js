@@ -78,6 +78,7 @@ export const useCraftStore = create((set, get) => ({
             category: item.category || item.type || null,
             buildPrice: item.buildPrice || 0,
             quantity: 1,
+            addedAt: Date.now(),
           },
         ],
       };
@@ -106,6 +107,23 @@ export const useCraftStore = create((set, get) => ({
       ),
     }));
   },
+
+  reorderItems: (oldIndex, newIndex) =>
+    set((state) => {
+      if (
+        oldIndex < 0 ||
+        newIndex < 0 ||
+        oldIndex >= state.selectedItems.length ||
+        newIndex >= state.selectedItems.length ||
+        oldIndex === newIndex
+      ) {
+        return state;
+      }
+      const items = [...state.selectedItems];
+      const [moved] = items.splice(oldIndex, 1);
+      items.splice(newIndex, 0, moved);
+      return { selectedItems: items };
+    }),
 
   setCompletedQuantity: (parentUniqueName, requirement, quantity) => {
     const normalized = Math.min(

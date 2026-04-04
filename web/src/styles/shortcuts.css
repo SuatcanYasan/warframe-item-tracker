@@ -1,0 +1,102 @@
+/* ===== HEADER SHORTCUT BUTTON (Navbar cmd+K pill) ===== */
+
+.header-shortcut-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: color-mix(in srgb, var(--wf-bg-base) 50%, var(--wf-bg-container));
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  padding: 5px 10px 5px 12px;
+  color: var(--wf-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all 180ms ease;
+  height: 30px;
+}
+
+.header-shortcut-btn:hover {
+  border-color: color-mix(in srgb, var(--wf-primary) 40%, var(--wf-border));
+  color: var(--wf-text);
+}
+
+.header-shortcut-icon {
+  font-size: 13px;
+}
+
+.header-shortcut-label {
+  font-size: 12px;
+  padding-right: 4px;
+}
+
+.header-shortcut-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 20px;
+  padding: 0 6px;
+  background: color-mix(in srgb, var(--wf-text) 8%, transparent);
+  border: 1px solid var(--wf-border);
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--wf-text-muted);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .header-shortcut-label {
+    display: none;
+  }
+}
+
+/* ===== SHORTCUTS MODAL ===== */
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--wf-border) 50%, transparent);
+}
+
+.shortcut-row:last-child {
+  border-bottom: none;
+}
+
+.shortcut-desc {
+  font-size: 13px;
+  color: var(--wf-text);
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 8px;
+  background: color-mix(in srgb, var(--wf-bg-base) 60%, var(--wf-bg-container));
+  border: 1px solid var(--wf-border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--wf-text);
+  font-weight: 600;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--wf-bg-base) 80%, transparent);
+}

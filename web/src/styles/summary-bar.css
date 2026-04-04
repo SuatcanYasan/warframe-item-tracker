@@ -45,6 +45,12 @@
   color: var(--wf-primary, #d4a843);
 }
 
+.stat-card-donut {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .summary-progress-bar {
   width: 100%;
   height: 4px;

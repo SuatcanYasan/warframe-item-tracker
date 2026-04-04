@@ -3,6 +3,7 @@ import {
   Button, Drawer, Empty, InputNumber, List, Spin, Typography,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { FALLBACK_ICON } from "../../utils/helpers";
 import { useSearchComponents } from "../../hooks/useApiQueries";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -26,6 +27,7 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
 
   const { data, isLoading: loading } = useSearchComponents(debouncedSearch);
   const results = data?.components || [];
+  const [parent] = useAutoAnimate();
 
   function handleSearch(value) {
     setSearch(value);
@@ -59,6 +61,7 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
       ) : results.length === 0 && search.trim() ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("noResults")} />
       ) : (
+        <div ref={parent}>
         <List
           size="small"
           dataSource={results}
@@ -111,6 +114,7 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
             );
           }}
         />
+        </div>
       )}
     </Drawer>
   );

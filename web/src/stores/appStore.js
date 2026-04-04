@@ -10,6 +10,7 @@ export const useAppStore = create((set) => ({
   themeProfileInput: "",
   themeDrawerOpen: false,
   wizardOpen: false,
+  shortcutsOpen: false,
   sidebarCollapsed: false,
 
   setLanguage: (language) => set({ language }),
@@ -32,6 +33,8 @@ export const useAppStore = create((set) => ({
   setThemeProfileInput: (input) => set({ themeProfileInput: input }),
   openThemeDrawer: () => set({ themeDrawerOpen: true }),
   closeThemeDrawer: () => set({ themeDrawerOpen: false }),
+  openShortcuts: () => set({ shortcutsOpen: true }),
+  closeShortcuts: () => set({ shortcutsOpen: false }),
   setWizardOpen: (open) => set({ wizardOpen: open }),
   closeWizard: () => set({ wizardOpen: false }),
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),

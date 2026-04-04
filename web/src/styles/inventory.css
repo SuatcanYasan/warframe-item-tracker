@@ -33,3 +33,78 @@
   color: var(--wf-text-muted);
   font-family: var(--font-mono);
 }
+
+/* ===== VAULT TABLE (react-table) ===== */
+.vault-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--wf-border, rgba(255,255,255,0.06));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--wf-bg-container) 50%, var(--wf-bg-base));
+}
+
+.vault-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--wf-text);
+}
+
+.vault-table thead {
+  background: var(--wf-bg-container);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.vault-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--wf-text-muted);
+  border-bottom: 1px solid var(--wf-border, rgba(255,255,255,0.08));
+  user-select: none;
+}
+
+.vault-table th.sortable {
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.vault-table th.sortable:hover {
+  color: var(--wf-primary);
+}
+
+.vault-th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vault-th-sort {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  color: var(--wf-primary);
+}
+
+.vault-table tbody tr {
+  transition: background 150ms ease;
+  border-bottom: 1px solid var(--wf-border, rgba(255,255,255,0.05));
+}
+
+.vault-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.vault-table tbody tr:hover {
+  background: color-mix(in srgb, var(--wf-primary) 6%, transparent);
+}
+
+.vault-table td {
+  padding: 8px 14px;
+  vertical-align: middle;
+}

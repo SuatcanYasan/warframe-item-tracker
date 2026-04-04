@@ -4,7 +4,7 @@
 
 # Warframe Item Tracker
 
-**A modern, theme-aware tracker for Warframe crafting, void relics, and prime part inventory.**
+**A modern, theme-aware, PWA-enabled tracker for Warframe crafting, void relics, and prime part inventory.**
 
 [English](./README.md) · [Türkçe](./README.tr.md)
 
@@ -12,7 +12,9 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![Ant Design](https://img.shields.io/badge/Ant_Design-5-0170FE?logo=antdesign&logoColor=white)](https://ant.design)
 [![Zustand](https://img.shields.io/badge/Zustand-5-443E38)](https://zustand-demo.pmnd.rs)
-[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com)
+[![React Query](https://img.shields.io/badge/React_Query-5-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query)
+[![i18next](https://img.shields.io/badge/i18next-26-26A69A?logo=i18next&logoColor=white)](https://www.i18next.com)
+[![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![Node](https://img.shields.io/badge/Node-18+-43853D?logo=node.js&logoColor=white)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-Fan_Made-CA8A04)](#license)
 
@@ -28,6 +30,7 @@
 
 - [Overview](#overview)
 - [Features](#features)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Quick Start](#quick-start)
 - [Usage](#usage)
 - [Tech Stack](#tech-stack)
@@ -41,7 +44,9 @@
 
 ## Overview
 
-**WIT (Warframe Item Tracker)** is a lightweight, browser-based companion app for Warframe. It helps you keep track of what you want to craft, which void relics drop the prime parts you need, and what's already sitting in your vault — all in one place, with zero account required.
+**WIT (Warframe Item Tracker)** is a production-grade companion app for Warframe. It helps you track what you want to craft, which void relics drop the prime parts you need, and what's already sitting in your vault — all in one place, with zero account required.
+
+Built as a **Progressive Web App (PWA)**, WIT can be installed directly from your browser, works offline after first load, and includes a bidirectional sync system between crafting progress and relic tracking.
 
 All data stays in your browser's localStorage. No telemetry, no server-side accounts, no sign-ups.
 
@@ -49,22 +54,56 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 
 ## Features
 
+### Core Pages
+
 | Page | What it does |
 |------|--------------|
-| **Craft Tracking System** | Add items you want to build, see every resource requirement, mark materials as you collect them, track overall progress |
-| **Relic Tracking System** | View which void relics drop each prime part, mark components as found, auto-syncs with Craft Tracker |
-| **Vault** | Add individual prime parts you own, see which sets you can complete, calculates how many craftable sets you have |
+| **Craft Tracking System** | Add items you want to build, see every resource requirement, drag-and-drop reorder by priority, mark materials as collected, track overall progress with visual donut chart |
+| **Relic Tracking System** | View which void relics drop each prime part, mark components as found, auto-syncs bidirectionally with Craft Tracker |
+| **Vault** | Add individual prime parts you own, see which sets you can complete, switch between card and sortable table views |
 
-### Additional Capabilities
+### User Experience
 
-- **Three themes** — Orokin (gold), Drifter (green), Lotus (light blue) — every UI element adapts dynamically
-- **Theme editor** — Build your own color scheme, save multiple profiles, export/import as JSON
-- **Bilingual** — Full Turkish and English support with instant language switching
-- **Bidirectional sync** — Complete a part in Craft Tracker, it's marked found in Relic Tracker automatically
-- **Fuzzy search** — Typos welcome (powered by Fuse.js)
+- **Setup Wizard** — Multi-step first-run onboarding (welcome → language → theme → ready) with animated transitions and live theme preview
+- **Three Themes** — Orokin (gold), Drifter (green), Lotus (light blue) — every UI element adapts dynamically including icons
+- **Theme Editor** — Build your own color scheme, save multiple profiles, export/import as JSON
+- **Bilingual** — Full Turkish and English via i18next with instant switching
+- **Drag & Drop** — Reorder tracked items by priority (powered by @dnd-kit)
+- **Fuzzy Search** — Typos welcome (powered by Fuse.js)
+- **Keyboard Shortcuts** — Navigate, search, and switch pages without touching the mouse
+- **Progress Donut Chart** — Visual completion indicator in the summary bar (recharts)
+- **Relative Timestamps** — "Added 2 hours ago" on every tracked item (dayjs)
+- **Screenshot Export** — One-click PNG export of your current view (html-to-image)
+- **Toast Notifications** — Modern, theme-aware toasts (react-hot-toast)
+- **Bidirectional Sync** — Complete a part in Craft Tracker, it's auto-marked found in Relic Tracker
 - **Import/Export** — Backup your data as JSON, restore across devices
-- **Offline-first** — Works without internet after first load (WFCD data cached)
-- **No install needed** — Just a browser and Node.js
+
+### Technical
+
+- **PWA** — Install as desktop/mobile app, works offline with service worker caching
+- **Zustand Stores** — 4 domain stores (app, craft, relic, inventory) — no Redux boilerplate
+- **React Query** — API caching with 5-minute stale time, background refetching
+- **Virtualization Ready** — @tanstack/react-virtual available for large lists
+- **Type-safe Storage** — localStorage normalization with backward compatibility
+- **Theme-aware Everything** — All colors use CSS custom properties with `color-mix()`
+
+---
+
+## Keyboard Shortcuts
+
+Press `?` anywhere to see the full list.
+
+| Shortcut | Action |
+|----------|--------|
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>⌘</kbd> + <kbd>K</kbd> | Open search drawer |
+| <kbd>/</kbd> | Open search drawer |
+| <kbd>1</kbd> | Go to Craft Tracking System |
+| <kbd>2</kbd> | Go to Relic Tracking System |
+| <kbd>3</kbd> | Go to Vault |
+| <kbd>?</kbd> | Show keyboard shortcuts |
+| <kbd>Esc</kbd> | Close modal |
+
+A dedicated `⌘K` pill in the header opens the shortcut help modal with clickable access.
 
 ---
 
@@ -92,17 +131,24 @@ On first launch, the script will:
 
 Subsequent launches are instant. Press `CTRL+C` in the terminal to stop.
 
+### Install as a Desktop App (PWA)
+
+1. Open `http://localhost:3444` in Chrome, Edge, or Brave
+2. Click the install icon in the address bar (or menu → "Install Warframe Item Tracker")
+3. The app opens in its own window, appears in your start menu / dock, and works offline
+
 ---
 
 ## Usage
 
 ### Craft Tracking System
 
-1. Click **Add** in the top-right
+1. Click **Add** or press <kbd>Ctrl</kbd>+<kbd>K</kbd>
 2. Search for an item (e.g. *"Mesa Prime"*)
 3. Click the card to see its requirements
 4. Enter how much of each material you own
 5. The **Total Requirements** tab shows aggregate materials across all tracked items
+6. **Drag the handle** on any card to reorder by priority
 
 ### Relic Tracking System
 
@@ -115,25 +161,35 @@ Subsequent launches are instant. Press `CTRL+C` in the terminal to stop.
 1. Open the **Add Part** drawer
 2. Search for individual prime components (e.g. *"Ash Neuroptics"*)
 3. Enter quantity
-4. Switch to the **Sets** tab to see which complete prime sets you can build
+4. Switch to the **Sets** tab to see complete prime sets you can build
+5. Toggle between **Card** and **Table** views
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-- **[React 18](https://react.dev)** — UI framework
-- **[Vite 5](https://vitejs.dev)** — Build tool & dev server
-- **[Ant Design 5](https://ant.design)** — Component library
-- **[Zustand](https://zustand-demo.pmnd.rs)** — State management (4 stores, no Redux boilerplate)
-- **[Immer](https://immerjs.github.io/immer/)** — Immutable state updates
-- **[React Query](https://tanstack.com/query)** — API cache & data fetching
-- **[React Router 7](https://reactrouter.com)** — Client-side routing
-- **[Framer Motion](https://www.framer.com/motion/)** — Animations
-- **[Fuse.js](https://fusejs.io)** — Fuzzy search
+
+| Category | Libraries |
+|----------|-----------|
+| **Framework** | [React 18](https://react.dev), [Vite 5](https://vitejs.dev), [React Router 7](https://reactrouter.com) |
+| **UI** | [Ant Design 5](https://ant.design), [@ant-design/icons](https://ant.design/components/icon) |
+| **State** | [Zustand](https://zustand-demo.pmnd.rs), [Immer](https://immerjs.github.io/immer/) |
+| **Data Fetching** | [TanStack Query](https://tanstack.com/query), [TanStack Virtual](https://tanstack.com/virtual), [TanStack Table](https://tanstack.com/table) |
+| **Search** | [Fuse.js](https://fusejs.io) (fuzzy) |
+| **Animations** | [Framer Motion](https://www.framer.com/motion/), [@formkit/auto-animate](https://auto-animate.formkit.com) |
+| **Drag & Drop** | [@dnd-kit/core](https://dndkit.com), [@dnd-kit/sortable](https://dndkit.com) |
+| **Charts** | [Recharts](https://recharts.org) |
+| **i18n** | [i18next](https://www.i18next.com), [react-i18next](https://react.i18next.com) |
+| **Dates** | [Day.js](https://day.js.org) |
+| **Notifications** | [react-hot-toast](https://react-hot-toast.com) |
+| **Shortcuts** | [hotkeys-js](https://github.com/jaywcjlove/hotkeys-js) |
+| **Export** | [html-to-image](https://github.com/bubkoo/html-to-image) |
+| **PWA** | [vite-plugin-pwa](https://vite-pwa-org.netlify.app) |
 
 ### Backend
-- **[Express](https://expressjs.com)** — HTTP server & API
+
+- **[Express 4](https://expressjs.com)** — HTTP server & API
 - **[WFCD warframe-items](https://github.com/WFCD/warframe-items)** — Authoritative Warframe data
 - **[Node.js 18+](https://nodejs.org)** — Runtime
 
@@ -150,18 +206,21 @@ warframe-item-tracker/
 │       └── craftCalculator.js    Requirement resolver
 ├── web/
 │   ├── src/
-│   │   ├── App.jsx               Root + routing
-│   │   ├── stores/               Zustand stores (4)
-│   │   ├── hooks/                Custom hooks
+│   │   ├── App.jsx               Root + routing + keyboard shortcuts
+│   │   ├── i18n/                 i18next initialization
+│   │   ├── stores/               Zustand stores (app, craft, relic, inventory)
+│   │   ├── hooks/                Custom hooks (useTranslate, useCraftDerived,
+│   │   │                         useRelicSync, usePersist, useFuzzySearch,
+│   │   │                         useRelativeTime, useApiQueries)
 │   │   ├── components/
-│   │   │   ├── shared/           AppHeader, Sidebar, Drawers
-│   │   │   ├── craft/            Craft Tracker pages
+│   │   │   ├── shared/           AppHeader, Sidebar, Drawers, Modals
+│   │   │   ├── craft/            Craft Tracker + dnd sortable grid
 │   │   │   ├── relic/            Relic Tracker pages
-│   │   │   └── inventory/        Vault pages & tabs
-│   │   ├── styles/               15 modular CSS files
-│   │   ├── constants/            i18n, themes
-│   │   └── utils/                helpers, storage, queryClient
-│   └── dist/                     Production build (generated)
+│   │   │   └── inventory/        Vault pages & tabs (card + table views)
+│   │   ├── styles/               16 modular CSS files
+│   │   ├── constants/            i18n strings, themes
+│   │   └── utils/                helpers, storage, queryClient, screenshot
+│   └── dist/                     Production build with PWA assets
 ├── data/                         Cached WFCD snapshot
 ├── start.bat                     Windows launcher
 ├── start.sh                      macOS/Linux launcher
@@ -176,6 +235,7 @@ warframe-item-tracker/
 npm run dev        # Concurrent backend + Vite dev server (hot reload)
 npm run build      # Production build → web/dist/
 npm start          # Start production server on port 3444
+npm run build:all  # Refresh WFCD snapshot + build
 npm run snapshot   # Fetch latest WFCD data snapshot
 npm test           # Run backend tests
 ```
@@ -199,7 +259,6 @@ Install Node.js 18+ from https://nodejs.org. After installation, restart your te
 <details>
 <summary><b>Port 3444 already in use</b></summary>
 
-Another app is using the port. Run with a different port:
 ```bash
 PORT=8080 npm start
 ```
@@ -208,7 +267,7 @@ PORT=8080 npm start
 <details>
 <summary><b>My tracked items disappeared</b></summary>
 
-All data is stored in your browser's localStorage. It's lost if you clear browser history/cache, switch browsers, or use incognito mode. Use the **Export** button to back up your data.
+All data is stored in your browser's localStorage. It's lost if you clear browser history/cache, switch browsers, or use incognito mode. Use the **Export** button to back up your data as JSON.
 </details>
 
 <details>
@@ -221,15 +280,30 @@ npm run build
 ```
 </details>
 
+<details>
+<summary><b>PWA won't install</b></summary>
+
+- Make sure you're using Chrome, Edge, or Brave (Firefox has limited PWA support)
+- Serve over HTTPS or localhost (PWA won't install on HTTP except localhost)
+- Check browser console for service worker errors
+</details>
+
+<details>
+<summary><b>Icons invisible in Lotus (light) theme</b></summary>
+
+This is a known quirk with Warframe wiki icons (they're white PNGs). The app auto-inverts them in Lotus theme via CSS filter. If you see white-on-white, hard-refresh the page (Ctrl+Shift+R).
+</details>
+
 ---
 
 ## Roadmap
 
-- [ ] PWA support (install as desktop app)
 - [ ] Farm Planner page (mission planning for resources)
 - [ ] Share tracker state via URL
-- [ ] Drag-and-drop item reordering
 - [ ] Export progress as image/PDF
+- [ ] Discord rich presence integration
+- [ ] Mobile-optimized layouts
+- [ ] Trade value integration (warframe.market API)
 
 ---
 

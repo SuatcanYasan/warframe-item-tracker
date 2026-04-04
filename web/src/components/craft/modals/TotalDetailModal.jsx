@@ -1,4 +1,4 @@
-import { Modal, InputNumber, Button, Typography, Flex, App as AntApp } from "antd";
+import { Modal, InputNumber, Button, Typography, Flex } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { FALLBACK_ICON } from "../../../utils/helpers";
@@ -14,7 +14,6 @@ export default function TotalDetailModal({
   const { t, tin } = useTranslate();
   const selectedItems = useCraftStore((s) => s.selectedItems);
   const completedMap = useCraftStore((s) => s.completedMap);
-  const { message } = AntApp.useApp();
 
   if (!material) return null;
 

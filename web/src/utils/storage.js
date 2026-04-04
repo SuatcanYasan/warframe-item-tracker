@@ -55,6 +55,7 @@ export function normalizePersistedState(raw) {
             ...item,
             type: normalizedType,
             category: normalizedCategory,
+            addedAt: typeof item?.addedAt === "number" ? item.addedAt : Date.now(),
           };
         })
       : [],

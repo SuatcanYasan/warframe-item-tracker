@@ -10,8 +10,8 @@ import {
   Select,
   Space,
   Typography,
-  message,
 } from "antd";
+import toast from "react-hot-toast";
 import { themeOptions, colorFields } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
@@ -45,7 +45,7 @@ export default function ThemeDrawer() {
   function saveCurrentThemeProfile() {
     const trimmedName = themeProfileInput.trim();
     if (!trimmedName) {
-      message.warning(t("themeProfileRequired"));
+      toast(t("themeProfileRequired"));
       return;
     }
     setThemeProfiles((prev) => ({
@@ -54,7 +54,7 @@ export default function ThemeDrawer() {
     }));
     setSelectedProfileName(trimmedName);
     setThemeProfileInput("");
-    message.success(t("themeSaved"));
+    toast.success(t("themeSaved"));
   }
 
   function loadThemeProfile(profileName) {
@@ -63,7 +63,7 @@ export default function ThemeDrawer() {
     setThemeName(profile.themeName);
     setCustomThemeTokens(profile.token);
     setSelectedProfileName(profileName);
-    message.success(t("themeLoaded"));
+    toast.success(t("themeLoaded"));
   }
 
   function removeThemeProfile(profileName) {
@@ -101,9 +101,9 @@ export default function ThemeDrawer() {
           setThemeName(parsed.themeName);
         }
         setCustomThemeTokens(parsed.token);
-        message.success(t("themeLoaded"));
+        toast.success(t("themeLoaded"));
       } catch {
-        message.error(t("invalidThemeFile"));
+        toast.error(t("invalidThemeFile"));
       }
     };
     reader.readAsText(file);

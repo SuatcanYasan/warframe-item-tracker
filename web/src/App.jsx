@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { App as AntApp, Button, ConfigProvider } from "antd";
+import toast from "react-hot-toast";
 import {
   PlusOutlined,
   DownloadOutlined,
   UploadOutlined,
   SearchOutlined,
   ClearOutlined,
+  CameraOutlined,
 } from "@ant-design/icons";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import hotkeys from "hotkeys-js";
 import { themeOptions } from "./constants/themes";
 import {
   readStorage,
   normalizePersistedState,
 } from "./utils/storage";
 import { requestJson } from "./utils/helpers";
+import { captureAndDownload } from "./utils/screenshot";
 
 import { useAppStore } from "./stores/appStore";
 import { useCraftStore } from "./stores/craftStore";
@@ -37,13 +41,14 @@ import TotalsCardGrid from "./components/craft/TotalsCardGrid";
 import SearchDrawer from "./components/craft/SearchDrawer";
 import ThemeDrawer from "./components/shared/ThemeDrawer";
 import WizardModal from "./components/shared/WizardModal";
+import ShortcutsModal from "./components/shared/ShortcutsModal";
 import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
 import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
 import RelicTrackerContent from "./components/relic/RelicPage";
 import InventoryTrackerContent from "./components/inventory/InventoryPage";
 
 function CraftAppContent() {
-  const { message, modal } = AntApp.useApp();
+  const { modal } = AntApp.useApp();
   const { t } = useTranslate();
 
   // --- Stores ---
@@ -146,7 +151,7 @@ function CraftAppContent() {
           setCalculation({ perItem: data.perItem || [], totals: data.totals || [] });
         }
       } catch (error) {
-        if (!cancelled) message.error(error.message);
+        if (!cancelled) toast.error(error.message);
       } finally {
         if (!cancelled) setLoadingCalc(false);
       }
@@ -194,7 +199,7 @@ function CraftAppContent() {
   // --- Actions needing message/modal ---
   function handleAddItem(item) {
     addItem(item);
-    message.success(`${item.name} +1`);
+    toast.success(`${item.name} +1`);
   }
 
   function handleRemoveItem(uniqueName) {
@@ -226,7 +231,7 @@ function CraftAppContent() {
 
   function handleBulkDonate(resourceUniqueName, totalAmount) {
     bulkDonate(resourceUniqueName, totalAmount, detailByItem);
-    message.success(t("bulkDonateSuccess", { name: "", amount: totalAmount }));
+    toast.success(t("bulkDonateSuccess", { name: "", amount: totalAmount }));
   }
 
   function exportData() {
@@ -238,7 +243,7 @@ function CraftAppContent() {
     link.download = `wf-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    message.success(t("exportSuccess"));
+    toast.success(t("exportSuccess"));
   }
 
   function importData(event) {
@@ -253,41 +258,53 @@ function CraftAppContent() {
         if (parsed.completedMap && typeof parsed.completedMap === "object") {
           useCraftStore.getState().setCompletedMap(parsed.completedMap);
         }
-        message.success(t("importSuccess"));
+        toast.success(t("importSuccess"));
       } catch {
-        message.error(t("importError"));
+        toast.error(t("importError"));
       }
     };
     reader.readAsText(file);
     event.target.value = "";
   }
 
-  // --- Keyboard shortcuts ---
-  useEffect(() => {
-    function onKeyDown(event) {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      const tagName = String(event.target?.tagName || "").toLowerCase();
-      if (["input", "textarea", "select"].includes(tagName)) return;
-      if (event.key === "/") { event.preventDefault(); openSearchDrawer(); }
-      if (event.key === "?") {
-        event.preventDefault();
-        modal.info({
-          title: t("shortcuts"),
-          content: (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              <li><code>/</code> — {t("searchPlaceholder")}</li>
-              <li><code>?</code> — {t("shortcuts")}</li>
-            </ul>
-          ),
-        });
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
   // --- Document title ---
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // --- Keyboard shortcuts (hotkeys-js) ---
+  useEffect(() => {
+    hotkeys.filter = (event) => {
+      const target = event.target || event.srcElement;
+      const tagName = target?.tagName;
+      return !["INPUT", "TEXTAREA", "SELECT"].includes(tagName);
+    };
+
+    hotkeys("/", (e) => {
+      e.preventDefault();
+      useCraftStore.getState().openSearchDrawer();
+    });
+    hotkeys("ctrl+k,cmd+k", (e) => {
+      e.preventDefault();
+      useCraftStore.getState().openSearchDrawer();
+    });
+    hotkeys("1", () => navigate("/"));
+    hotkeys("2", () => navigate("/relic"));
+    hotkeys("3", () => navigate("/inventory"));
+    hotkeys("shift+/", (e) => {
+      e.preventDefault();
+      useAppStore.getState().openShortcuts();
+    });
+
+    return () => {
+      hotkeys.unbind("/");
+      hotkeys.unbind("ctrl+k,cmd+k");
+      hotkeys.unbind("1");
+      hotkeys.unbind("2");
+      hotkeys.unbind("3");
+      hotkeys.unbind("shift+/");
+    };
+  }, [navigate, modal, t]);
+
   useEffect(() => {
     const pageName =
       location.pathname === "/relic" ? t("relicTracker") :
@@ -325,6 +342,7 @@ function CraftAppContent() {
                   <div className="content-actions">
                     <Button size="small" icon={<DownloadOutlined />} onClick={exportData} disabled={selectedItems.length === 0} title={t("exportData")} />
                     <Button size="small" icon={<UploadOutlined />} onClick={() => importInputRef.current?.click()} title={t("importData")} />
+                    <Button size="small" icon={<CameraOutlined />} onClick={() => captureAndDownload('.app-content', `wit-${new Date().toISOString().slice(0,10)}.png`)} title="Screenshot" />
                     <input ref={importInputRef} type="file" accept="application/json" style={{ display: "none" }} onChange={importData} />
                     {selectedItems.length > 0 && (
                       <Button size="small" danger icon={<ClearOutlined />} onClick={confirmClearAll}>{t("clearAll")}</Button>
@@ -409,6 +427,7 @@ function CraftAppContent() {
 
       <ThemeDrawer />
       <WizardModal />
+      <ShortcutsModal />
     </>
   );
 }
