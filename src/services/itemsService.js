@@ -185,10 +185,13 @@ function shuffleArray(array) {
   return shuffled;
 }
 
-async function searchCraftableItems(searchText = "", limit = 30) {
+async function searchCraftableItems(searchText = "", limit = 30, { primeOnly = false } = {}) {
   const { items } = await ensureDataLoaded();
   const query = searchText.trim().toLowerCase();
-  const craftable = items.filter(isCraftable);
+  const allCraftable = items.filter(isCraftable);
+  const craftable = primeOnly
+    ? allCraftable.filter((item) => item.name.toLowerCase().includes("prime"))
+    : allCraftable;
 
   let filtered;
 

@@ -83,7 +83,7 @@ export default function DropInfoPopover({ uniqueName, itemName, t }) {
                   )}
                   {drop.chance != null && (
                     <Text type="secondary" style={{ fontSize: 10, fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                      {(drop.chance * 100).toFixed(1)}%
+                      {Number(drop.chance).toFixed(1)}%
                     </Text>
                   )}
                 </Flex>
@@ -122,7 +122,7 @@ export default function DropInfoPopover({ uniqueName, itemName, t }) {
                   )}
                   {drop.chance != null && (
                     <Text type="secondary" style={{ fontSize: 10, fontFamily: "var(--font-mono)", whiteSpace: "nowrap" }}>
-                      {(drop.chance * 100).toFixed(1)}%
+                      {Number(drop.chance).toFixed(1)}%
                     </Text>
                   )}
                 </Flex>

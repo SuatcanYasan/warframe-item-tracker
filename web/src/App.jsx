@@ -1,23 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { App as AntApp, ConfigProvider, Space } from "antd";
+import { App as AntApp, Button, ConfigProvider, Segmented } from "antd";
+import { PlusOutlined, DownloadOutlined, UploadOutlined, SearchOutlined, ClearOutlined } from "@ant-design/icons";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { themeOptions } from "./constants/themes";
 import { translate } from "./constants/i18n";
 import {
   readStorage,
   normalizePersistedState,
-  getPersistedState,
   savePersistedState,
 } from "./utils/storage";
-import { requestJson, enrichRequirements, makeRequirementKey } from "./utils/helpers";
+import { requestJson, enrichRequirements } from "./utils/helpers";
 import useItemI18n from "./hooks/useItemI18n";
-import useResizablePanels from "./hooks/useResizablePanels";
-import Header from "./components/Header";
-import SearchPanel from "./components/SearchPanel";
-import SelectedPanel from "./components/SelectedPanel";
-import TotalsPanel from "./components/TotalsPanel";
+import Sidebar from "./components/Sidebar";
+import AppHeader from "./components/AppHeader";
+import SummaryBar from "./components/SummaryBar";
+import ItemCardGrid from "./components/ItemCardGrid";
+import TotalsCardGrid from "./components/TotalsCardGrid";
+import SearchDrawer from "./components/SearchDrawer";
 import ThemeDrawer from "./components/ThemeDrawer";
 import WizardModal from "./components/WizardModal";
-import Footer from "./components/Footer";
+import ItemDetailModal from "./components/ItemDetailModal";
+import TotalDetailModal from "./components/TotalDetailModal";
+import RelicTrackerContent from "./components/RelicTrackerContent";
 
 function CraftAppContent() {
   const { message, modal } = AntApp.useApp();
@@ -31,60 +35,36 @@ function CraftAppContent() {
   const [themeProfileInput, setThemeProfileInput] = useState("");
   const [themeDrawerOpen, setThemeDrawerOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(!initialPersisted.onboardingDone);
-  const [isHydrated, setIsHydrated] = useState(!window.wfDesktop?.isDesktop);
+  const [isHydrated, setIsHydrated] = useState(true);
 
-  const [selectedSearch, setSelectedSearch] = useState("");
   const [selectedItems, setSelectedItems] = useState(initialPersisted.selectedItems);
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState(
-    initialPersisted.selectedCategoryFilter,
-  );
-  const [activeKeys, setActiveKeys] = useState(initialPersisted.activeKeys);
-  const [activeSelected, setActiveSelected] = useState(initialPersisted.activeSelected);
   const [completionView, setCompletionView] = useState(initialPersisted.completionView);
-
   const [completedMap, setCompletedMap] = useState(initialPersisted.completedMap);
   const [calculation, setCalculation] = useState({ perItem: [], totals: [] });
   const [loadingCalc, setLoadingCalc] = useState(false);
-  const [focusRequirementKey, setFocusRequirementKey] = useState(null);
-  const [focusedTotalRequirement, setFocusedTotalRequirement] = useState(null);
-  const [panelOrder, setPanelOrder] = useState(initialPersisted.panelOrder);
-  const [draggedPanel, setDraggedPanel] = useState(null);
 
-  const searchInputRef = useRef(null);
-  const requirementRefs = useRef(new Map());
-  const { widths: panelWidths, setWidths: setPanelWidths, containerRef, onResizeStart } =
-    useResizablePanels(initialPersisted.panelWidths);
-  const lastAutoFocusRequirementRef = useRef(null);
+  // Relic tracker: foundComponents still needs its own state, but watchedPrimes is derived
+  const [foundComponents, setFoundComponents] = useState(initialPersisted.relicFoundComponents);
+
+  // Derive watchedPrimes from selectedItems (no separate state)
+  const watchedPrimes = useMemo(() =>
+    selectedItems.filter((item) => item.name && item.name.toLowerCase().includes("prime")),
+  [selectedItems]);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchDrawerOpen, setSearchDrawerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("selected");
+  const [detailItem, setDetailItem] = useState(null);
+  const [detailMaterial, setDetailMaterial] = useState(null);
+  const [selectedSearch, setSelectedSearch] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all");
+  const importInputRef = useRef(null);
   const t = (key, params) => translate(language, key, params);
   const tin = useItemI18n(language);
 
-  // --- Hydration ---
-  useEffect(() => {
-    if (isHydrated) return undefined;
-    let cancelled = false;
-    getPersistedState().then((persistedState) => {
-      if (cancelled) return;
-      setLanguage(persistedState.language);
-      setThemeName(persistedState.theme);
-      setCustomThemeTokens(persistedState.customThemeTokens);
-      setThemeProfiles(persistedState.themeProfiles);
-      setCompletionView(persistedState.completionView);
-      setSelectedItems(persistedState.selectedItems);
-      setSelectedCategoryFilter(persistedState.selectedCategoryFilter || "all");
-      setActiveKeys(persistedState.activeKeys);
-      setCompletedMap(persistedState.completedMap);
-      setActiveSelected(persistedState.activeSelected || null);
-      setWizardOpen(!persistedState.onboardingDone);
-      setPanelWidths(persistedState.panelWidths);
-      setPanelOrder(persistedState.panelOrder);
-      setIsHydrated(true);
-    });
-    return () => { cancelled = true; };
-  }, [isHydrated]);
 
   // --- Persist ---
   useEffect(() => {
-    if (!isHydrated) return;
     savePersistedState({
       language,
       theme: themeName,
@@ -92,18 +72,14 @@ function CraftAppContent() {
       themeProfiles,
       completionView,
       selectedItems,
-      selectedCategoryFilter,
-      activeKeys,
       completedMap,
-      activeSelected,
       onboardingDone: !wizardOpen,
-      panelWidths,
-      panelOrder,
+      relicFoundComponents: foundComponents,
     });
   }, [
-    isHydrated, language, themeName, customThemeTokens, themeProfiles,
-    completionView, selectedItems, selectedCategoryFilter, activeKeys,
-    completedMap, activeSelected, wizardOpen, panelWidths, panelOrder,
+    language, themeName, customThemeTokens, themeProfiles,
+    completionView, selectedItems, completedMap, wizardOpen,
+    foundComponents,
   ]);
 
   // --- Sync theme to outer shell ---
@@ -160,6 +136,45 @@ function CraftAppContent() {
     return () => { cancelled = true; };
   }, [selectedItems]);
 
+  // --- Metadata resolution ---
+  const missingMetadataNames = useMemo(() => {
+    return selectedItems
+      .filter((item) => {
+        const cat = String(item.category || "").trim().toLowerCase();
+        const typ = String(item.type || "").trim().toLowerCase();
+        return (!cat || cat === "bilinmiyor" || cat === "unknown") && (!typ || typ === "bilinmiyor" || typ === "unknown");
+      })
+      .map((item) => item.uniqueName);
+  }, [selectedItems]);
+
+  useEffect(() => {
+    if (missingMetadataNames.length === 0) return;
+    let cancelled = false;
+    requestJson("/api/items/resolve-metadata", {
+      method: "POST",
+      body: JSON.stringify({ uniqueNames: missingMetadataNames }),
+    }).then((data) => {
+      if (cancelled) return;
+      const resolved = data?.itemsByUniqueName || {};
+      if (Object.keys(resolved).length === 0) return;
+      setSelectedItems((prev) => {
+        let changed = false;
+        const next = prev.map((item) => {
+          const r = resolved[item.uniqueName];
+          if (!r) return item;
+          const nextType = item.type || r.type || null;
+          const nextCategory = item.category || r.category || r.type || null;
+          const nextImageUrl = item.imageUrl || r.imageUrl || null;
+          if (nextType === item.type && nextCategory === item.category && nextImageUrl === item.imageUrl) return item;
+          changed = true;
+          return { ...item, type: nextType, category: nextCategory, imageUrl: nextImageUrl };
+        });
+        return changed ? next : prev;
+      });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [missingMetadataNames]);
+
   // --- Memoized data ---
   const detailByItem = useMemo(() => {
     const map = new Map();
@@ -183,6 +198,93 @@ function CraftAppContent() {
     }
     return map;
   }, [selectedItems, detailByItem, completedMap, completionView]);
+
+  // --- Bidirectional sync: craft completion ↔ relic found ---
+  // Warframe naming: craft uses "X Prime Helmet Component", relic uses "Neuroptics"
+  const COMPONENT_ALIASES = {
+    helmet: "neuroptics", neuroptics: "helmet",
+  };
+
+  function matchReqToComponent(reqName, componentName) {
+    const rn = (reqName || "").toLowerCase();
+    const cn = (componentName || "").toLowerCase();
+    // Direct substring match
+    if (rn.includes(cn) || cn.includes(rn)) return true;
+    // Alias match (helmet ↔ neuroptics)
+    const alias = COMPONENT_ALIASES[cn];
+    if (alias && rn.includes(alias)) return true;
+    const reverseAlias = COMPONENT_ALIASES[Object.keys(COMPONENT_ALIASES).find((k) => rn.includes(k))];
+    if (reverseAlias && reverseAlias === cn) return true;
+    return false;
+  }
+
+  // Unfiltered enrichment for sync (completionView filter can hide items)
+  const enrichedByItemUnfiltered = useMemo(() => {
+    const map = new Map();
+    for (const item of selectedItems) {
+      map.set(
+        item.uniqueName,
+        enrichRequirements(
+          detailByItem.get(item.uniqueName) || [],
+          completedMap[item.uniqueName] || {},
+          "all",
+        ),
+      );
+    }
+    return map;
+  }, [selectedItems, detailByItem, completedMap]);
+
+  // Map craft requirement names → relic component names for each prime
+  const STANDARD_COMPONENT_NAMES = ["Blueprint", "Chassis", "Neuroptics", "Systems",
+    "Barrel", "Receiver", "Stock", "Blade", "Handle", "Head",
+    "Upper Limb", "Lower Limb", "Grip", "String", "Pouch",
+    "Link", "Band", "Buckle", "Gauntlet", "Boot",
+    "Cerebrum", "Carapace"];
+
+  const craftToRelicMap = useMemo(() => {
+    const map = new Map();
+    for (const item of watchedPrimes) {
+      const reqs = detailByItem.get(item.uniqueName) || [];
+      const reqMap = {};
+      for (const req of reqs) {
+        // Also check existing foundComponents keys
+        const existingKeys = Object.keys(foundComponents[item.uniqueName] || {});
+        const fromExisting = existingKeys.find((k) => matchReqToComponent(req.name, k));
+        const fromStandard = STANDARD_COMPONENT_NAMES.find((sn) => matchReqToComponent(req.name, sn));
+        const relicName = fromExisting || fromStandard;
+        if (relicName) reqMap[req.name] = relicName;
+      }
+      map.set(item.uniqueName, reqMap);
+    }
+    return map;
+  }, [watchedPrimes, detailByItem, foundComponents]);
+
+  useEffect(() => {
+    if (watchedPrimes.length === 0) return;
+
+    setFoundComponents((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const item of watchedPrimes) {
+        const reqs = enrichedByItemUnfiltered.get(item.uniqueName) || [];
+        if (reqs.length === 0) continue;
+        if (!next[item.uniqueName]) next[item.uniqueName] = {};
+
+        const reqMap = craftToRelicMap.get(item.uniqueName) || {};
+        for (const req of reqs) {
+          const relicName = reqMap[req.name];
+          if (!relicName) continue; // skip resources
+
+          const currentFound = !!next[item.uniqueName][relicName];
+          if (req.isDone !== currentFound) {
+            next[item.uniqueName] = { ...next[item.uniqueName], [relicName]: req.isDone };
+            changed = true;
+          }
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [enrichedByItemUnfiltered, watchedPrimes, craftToRelicMap]);
 
   const adjustedTotals = useMemo(() => {
     const deduction = new Map();
@@ -212,159 +314,23 @@ function CraftAppContent() {
     });
   }, [calculation.totals, completedMap, detailByItem, selectedItems]);
 
-  const selectedCategoryOptions = useMemo(() => {
-    const optionMap = new Map();
-    for (const item of selectedItems) {
-      const label = item.category || item.type || t("unknown");
-      const value = label.toLowerCase();
-      if (!optionMap.has(value)) optionMap.set(value, label);
-    }
-    const sorted = Array.from(optionMap.entries())
-      .sort((a, b) => a[1].localeCompare(b[1]))
-      .map(([value, label]) => ({ value, label }));
-    return [{ value: "all", label: t("allCategories") }, ...sorted];
-  }, [selectedItems, language]);
-
-  const requirementParentMap = useMemo(() => {
-    const map = new Map();
-    for (const item of calculation.perItem || []) {
-      for (const requirement of item.requirements || []) {
-        if (!map.has(requirement.uniqueName)) map.set(requirement.uniqueName, new Set());
-        map.get(requirement.uniqueName).add(item.uniqueName);
-      }
-    }
-    return map;
-  }, [calculation.perItem]);
-
-  const focusedRequirementParents = useMemo(() => {
-    if (!focusedTotalRequirement?.uniqueName) return null;
-    return requirementParentMap.get(focusedTotalRequirement.uniqueName) || new Set();
-  }, [focusedTotalRequirement, requirementParentMap]);
-
   const filteredSelectedItems = useMemo(() => {
-    const normalizedQuery = selectedSearch.trim().toLowerCase();
-    const normalizedCategory = selectedCategoryFilter;
+    const query = selectedSearch.trim().toLowerCase();
     return selectedItems.filter((item) => {
-      if (focusedRequirementParents) {
-        return focusedRequirementParents.has(item.uniqueName);
-      }
-      const categoryLabel = (item.category || item.type || t("unknown")).toLowerCase();
-      const matchesQuery =
-        !normalizedQuery ||
-        item.name.toLowerCase().includes(normalizedQuery) ||
-        item.uniqueName.toLowerCase().includes(normalizedQuery);
-      const matchesCategory = normalizedCategory === "all" || categoryLabel === normalizedCategory;
-      return matchesQuery && matchesCategory;
+      const matchesQuery = !query || item.name.toLowerCase().includes(query) || item.uniqueName.toLowerCase().includes(query);
+      if (!matchesQuery) return false;
+      if (selectedFilter === "all") return true;
+      const reqs = enrichedByItem.get(item.uniqueName) || [];
+      const total = reqs.length;
+      const done = reqs.filter((r) => r.isDone).length;
+      const allDone = total > 0 && done === total;
+      if (selectedFilter === "done") return allDone;
+      if (selectedFilter === "open") return !allDone;
+      return true;
     });
-  }, [selectedItems, selectedSearch, selectedCategoryFilter, focusedRequirementParents, language]);
+  }, [selectedItems, selectedSearch, selectedFilter, enrichedByItem]);
 
-  // --- Focus effects ---
-  useEffect(() => {
-    const focusedKey = focusedTotalRequirement?.uniqueName || null;
-    if (!focusedKey) {
-      lastAutoFocusRequirementRef.current = null;
-      return;
-    }
-    const matchedItems = selectedItems.filter((item) => focusedRequirementParents?.has(item.uniqueName));
-    if (matchedItems.length === 0) return;
-    if (lastAutoFocusRequirementRef.current !== focusedKey) {
-      setActiveKeys((prev) => {
-        const next = new Set(prev);
-        for (const item of matchedItems) next.add(item.uniqueName);
-        return Array.from(next);
-      });
-      setActiveSelected(matchedItems[0].uniqueName);
-      lastAutoFocusRequirementRef.current = focusedKey;
-      return;
-    }
-    if (!activeSelected || !focusedRequirementParents?.has(activeSelected)) {
-      setActiveSelected(matchedItems[0].uniqueName);
-    }
-  }, [focusedTotalRequirement, focusedRequirementParents, selectedItems, activeSelected]);
-
-  useEffect(() => {
-    if (!focusedTotalRequirement?.uniqueName) return;
-    if ((focusedRequirementParents?.size || 0) === 0) setFocusedTotalRequirement(null);
-  }, [focusedTotalRequirement, focusedRequirementParents]);
-
-  // --- Metadata resolution ---
-  const missingSelectedMetadataUniqueNames = useMemo(() => {
-    return selectedItems
-      .filter((item) => {
-        const category = String(item.category || "").trim().toLowerCase();
-        const type = String(item.type || "").trim().toLowerCase();
-        const hasCategory = category.length > 0 && category !== "bilinmiyor" && category !== "unknown";
-        const hasType = type.length > 0 && type !== "bilinmiyor" && type !== "unknown";
-        return !hasCategory && !hasType;
-      })
-      .map((item) => item.uniqueName);
-  }, [selectedItems]);
-
-  useEffect(() => {
-    if (missingSelectedMetadataUniqueNames.length === 0) return;
-    let cancelled = false;
-    async function resolveMissingSelectedMetadata() {
-      try {
-        const data = await requestJson("/api/items/resolve-metadata", {
-          method: "POST",
-          body: JSON.stringify({ uniqueNames: missingSelectedMetadataUniqueNames }),
-        });
-        if (cancelled) return;
-        const itemsByUniqueName =
-          data?.itemsByUniqueName && typeof data.itemsByUniqueName === "object"
-            ? data.itemsByUniqueName : {};
-        if (Object.keys(itemsByUniqueName).length === 0) return;
-        setSelectedItems((prev) => {
-          let changed = false;
-          const next = prev.map((item) => {
-            const resolved = itemsByUniqueName[item.uniqueName];
-            if (!resolved) return item;
-            const nextType = item.type || resolved.type || null;
-            const nextCategory = item.category || resolved.category || resolved.type || null;
-            const nextName = item.name || resolved.name || item.name;
-            const nextImageUrl = item.imageUrl || resolved.imageUrl || null;
-            if (
-              nextType === item.type && nextCategory === item.category &&
-              nextName === item.name && nextImageUrl === item.imageUrl
-            ) return item;
-            changed = true;
-            return { ...item, type: nextType, category: nextCategory, name: nextName, imageUrl: nextImageUrl };
-          });
-          return changed ? next : prev;
-        });
-      } catch {
-        // Keep UI responsive when metadata resolution fails.
-      }
-    }
-    resolveMissingSelectedMetadata();
-    return () => { cancelled = true; };
-  }, [missingSelectedMetadataUniqueNames]);
-
-  useEffect(() => {
-    if (selectedCategoryFilter === "all") return;
-    const stillExists = selectedCategoryOptions.some((o) => o.value === selectedCategoryFilter);
-    if (!stillExists) setSelectedCategoryFilter("all");
-  }, [selectedCategoryFilter, selectedCategoryOptions]);
-
-  // --- Auto-focus requirement ---
-  useEffect(() => {
-    if (!activeSelected || !activeKeys.includes(activeSelected)) {
-      setFocusRequirementKey(null);
-      return;
-    }
-    const entries = enrichedByItem.get(activeSelected) || [];
-    const firstMissing = entries.find((entry) => !entry.isDone);
-    if (!firstMissing) {
-      setFocusRequirementKey(null);
-      return;
-    }
-    const key = makeRequirementKey(activeSelected, firstMissing.uniqueName);
-    setFocusRequirementKey(key);
-    requestAnimationFrame(() => {
-      const targetNode = requirementRefs.current.get(key);
-      if (targetNode) targetNode.scrollIntoView({ block: "center", behavior: "smooth" });
-    });
-  }, [activeSelected, activeKeys, enrichedByItem]);
+  // (old panel-specific memos removed — card grid doesn't need them)
 
   // --- Actions ---
   function addItem(item) {
@@ -394,27 +360,21 @@ function CraftAppContent() {
         },
       ];
     });
-    setActiveSelected(item.uniqueName);
     message.success(`${item.name} +1`);
   }
 
   function removeItem(uniqueName) {
-    setSelectedItems((prev) => prev.filter((item) => item.uniqueName !== uniqueName));
+    setSelectedItems((prev) => prev.filter((i) => i.uniqueName !== uniqueName));
     setCompletedMap((prev) => {
       const next = { ...prev };
       delete next[uniqueName];
       return next;
     });
-    setActiveKeys((prev) => prev.filter((key) => key !== uniqueName));
-    if (activeSelected === uniqueName) setActiveSelected(null);
-  }
-
-  function clearAllItems() {
-    setSelectedItems([]);
-    setCompletedMap({});
-    setActiveKeys([]);
-    setActiveSelected(null);
-    setFocusedTotalRequirement(null);
+    setFoundComponents((prev) => {
+      const next = { ...prev };
+      delete next[uniqueName];
+      return next;
+    });
   }
 
   function updateQuantity(uniqueName, quantity) {
@@ -438,8 +398,32 @@ function CraftAppContent() {
     }));
   }
 
+  // Relic toggle → also update craft completion
+  function handleRelicToggleFound(primeUniqueName, componentName) {
+    // Toggle relic found state
+    setFoundComponents((prev) => {
+      const primeMap = { ...(prev[primeUniqueName] || {}) };
+      const newFound = !primeMap[componentName];
+      primeMap[componentName] = newFound;
+
+      // Sync to craft completedMap: find matching requirement by name
+      const reqs = detailByItem.get(primeUniqueName) || [];
+      const matchingReq = reqs.find((r) => matchReqToComponent(r.name, componentName));
+      if (matchingReq) {
+        setCompletedMap((prevMap) => ({
+          ...prevMap,
+          [primeUniqueName]: {
+            ...(prevMap[primeUniqueName] || {}),
+            [matchingReq.uniqueName]: newFound ? matchingReq.quantity : 0,
+          },
+        }));
+      }
+
+      return { ...prev, [primeUniqueName]: primeMap };
+    });
+  }
+
   function bulkDonate(resourceUniqueName, totalAmount) {
-    // Find all selected items that need this resource and distribute the amount
     const consumers = [];
     for (const parent of selectedItems) {
       const requirements = detailByItem.get(parent.uniqueName) || [];
@@ -455,7 +439,6 @@ function CraftAppContent() {
       }
     }
     if (consumers.length === 0) return;
-
     let left = totalAmount;
     setCompletedMap((prev) => {
       const next = { ...prev };
@@ -471,209 +454,260 @@ function CraftAppContent() {
       }
       return next;
     });
+    message.success(t("bulkDonateSuccess", { name: "", amount: totalAmount }));
   }
 
-  function importBackupData(data) {
-    if (Array.isArray(data.selectedItems)) {
-      setSelectedItems(data.selectedItems);
-    }
-    if (data.completedMap && typeof data.completedMap === "object") {
-      setCompletedMap(data.completedMap);
-    }
-    setActiveKeys([]);
-    setActiveSelected(null);
-  }
-
-  function onPanelDragStart(panelId) {
-    setDraggedPanel(panelId);
-  }
-
-  function onPanelDrop(targetPanelId) {
-    if (!draggedPanel || draggedPanel === targetPanelId) {
-      setDraggedPanel(null);
-      return;
-    }
-    setPanelOrder((prev) => {
-      const next = [...prev];
-      const fromIdx = next.indexOf(draggedPanel);
-      const toIdx = next.indexOf(targetPanelId);
-      next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, draggedPanel);
-      return next;
+  function removeItemWithConfirm(item) {
+    modal.confirm({
+      title: t("confirmRemoveTitle"),
+      content: t("confirmRemoveContent", { name: item.name }),
+      okText: t("confirmRemoveOk"),
+      cancelText: t("confirmRemoveCancel"),
+      okButtonProps: { danger: true },
+      onOk: () => removeItem(item.uniqueName),
     });
-    setDraggedPanel(null);
   }
 
-  function showShortcuts() {
-    modal.info({
-      title: t("shortcuts"),
-      content: (
-        <ul>
-          <li>/ - search focus</li>
-          <li>Enter - search</li>
-          <li>ArrowUp/ArrowDown - active selected</li>
-          <li>Delete - remove active selected</li>
-          <li>? - shortcut dialog</li>
-        </ul>
-      ),
+  function clearAllItems() {
+    setSelectedItems([]);
+    setCompletedMap({});
+    setDetailItem(null);
+    setDetailMaterial(null);
+  }
+
+  function confirmClearAll() {
+    modal.confirm({
+      title: t("confirmClearAllTitle"),
+      content: t("confirmClearAllContent"),
+      okText: t("confirmRemoveOk"),
+      cancelText: t("confirmRemoveCancel"),
+      okButtonProps: { danger: true },
+      onOk: () => clearAllItems(),
     });
+  }
+
+  function exportData() {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      selectedItems,
+      completedMap,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `wf-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    message.success(t("exportSuccess"));
+  }
+
+  function importData(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        if (!Array.isArray(parsed.selectedItems)) throw new Error("invalid");
+        setSelectedItems(parsed.selectedItems);
+        if (parsed.completedMap && typeof parsed.completedMap === "object") {
+          setCompletedMap(parsed.completedMap);
+        }
+        message.success(t("importSuccess"));
+      } catch {
+        message.error(t("importError"));
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
   }
 
   // --- Keyboard shortcuts ---
   useEffect(() => {
     function onKeyDown(event) {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const tagName = String(event.target?.tagName || "").toLowerCase();
+      if (["input", "textarea", "select"].includes(tagName)) return;
       if (event.key === "/") {
         event.preventDefault();
-        searchInputRef.current?.focus();
-        return;
+        setSearchDrawerOpen(true);
       }
       if (event.key === "?") {
         event.preventDefault();
-        showShortcuts();
-        return;
-      }
-      const tagName = String(event.target?.tagName || "").toLowerCase();
-      if (["input", "textarea", "select"].includes(tagName)) return;
-      if (event.key === "Delete" && activeSelected) {
-        event.preventDefault();
-        removeItem(activeSelected);
-        return;
-      }
-      const currentIndex = selectedItems.findIndex((item) => item.uniqueName === activeSelected);
-      if (event.key === "ArrowDown" && selectedItems.length > 0) {
-        event.preventDefault();
-        const next = currentIndex < 0 ? 0 : (currentIndex + 1) % selectedItems.length;
-        setActiveSelected(selectedItems[next].uniqueName);
-        setActiveKeys((prev) =>
-          prev.includes(selectedItems[next].uniqueName)
-            ? prev
-            : [...prev, selectedItems[next].uniqueName],
-        );
-        return;
-      }
-      if (event.key === "ArrowUp" && selectedItems.length > 0) {
-        event.preventDefault();
-        const next = currentIndex <= 0 ? selectedItems.length - 1 : currentIndex - 1;
-        setActiveSelected(selectedItems[next].uniqueName);
-        setActiveKeys((prev) =>
-          prev.includes(selectedItems[next].uniqueName)
-            ? prev
-            : [...prev, selectedItems[next].uniqueName],
-        );
+        modal.info({
+          title: t("shortcuts"),
+          content: (
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              <li><code>/</code> — {t("searchPlaceholder")}</li>
+              <li><code>?</code> — {t("shortcuts")}</li>
+            </ul>
+          ),
+        });
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeSelected, selectedItems]);
+  }, []);
 
   // --- Render ---
   return (
     <>
-      <div className="app-shell" role="application" aria-label="Warframe Craft Tracker">
-        <Space direction="vertical" size="middle" style={{ width: "100%" }} className="hero-stack" component="main">
-          <Header
-            t={t}
-            language={language}
-            setLanguage={setLanguage}
-            themeName={themeName}
-            setThemeName={setThemeName}
-            setCustomThemeTokens={setCustomThemeTokens}
-            setThemeDrawerOpen={setThemeDrawerOpen}
-            setWizardOpen={setWizardOpen}
-            showShortcuts={showShortcuts}
-            adjustedTotals={adjustedTotals}
-            selectedItems={selectedItems}
-          />
+      <div className="app-shell-layout">
+        <Sidebar
+          t={t}
+          collapsed={sidebarCollapsed}
+          setCollapsed={setSidebarCollapsed}
+          onOpenSettings={() => setThemeDrawerOpen(true)}
+        />
 
-          {(() => {
-            const panelRegistry = {
-              search: (
-                <SearchPanel
-                  t={t}
-                  tin={tin}
-                  onAddItem={addItem}
-                  searchInputRef={searchInputRef}
-                />
-              ),
-              selected: (
-                <SelectedPanel
-                  t={t}
-                  tin={tin}
-                  selectedItems={selectedItems}
-                  filteredSelectedItems={filteredSelectedItems}
-                  selectedSearch={selectedSearch}
-                  setSelectedSearch={setSelectedSearch}
-                  selectedCategoryFilter={selectedCategoryFilter}
-                  setSelectedCategoryFilter={setSelectedCategoryFilter}
-                  selectedCategoryOptions={selectedCategoryOptions}
-                  completionView={completionView}
-                  setCompletionView={setCompletionView}
-                  activeKeys={activeKeys}
-                  setActiveKeys={setActiveKeys}
-                  activeSelected={activeSelected}
-                  setActiveSelected={setActiveSelected}
-                  detailByItem={detailByItem}
-                  completedMap={completedMap}
-                  enrichedByItem={enrichedByItem}
-                  focusRequirementKey={focusRequirementKey}
-                  requirementRefs={requirementRefs}
-                  focusedTotalRequirement={focusedTotalRequirement}
-                  setFocusedTotalRequirement={setFocusedTotalRequirement}
-                  focusRequirementKeyValue={focusRequirementKey}
-                  removeItem={removeItem}
-                  updateQuantity={updateQuantity}
-                  setCompletedQuantity={setCompletedQuantity}
-                  clearAllItems={clearAllItems}
-                  onImportData={importBackupData}
-                />
-              ),
-              totals: (
-                <TotalsPanel
-                  t={t}
-                  tin={tin}
-                  adjustedTotals={adjustedTotals}
-                  loadingCalc={loadingCalc}
-                  focusedTotalRequirement={focusedTotalRequirement}
-                  setFocusedTotalRequirement={setFocusedTotalRequirement}
-                  requirementParentMap={requirementParentMap}
-                  onBulkDonate={bulkDonate}
-                />
-              ),
-            };
+        <AppHeader
+          t={t}
+          language={language}
+          setLanguage={setLanguage}
+          themeName={themeName}
+          setThemeName={setThemeName}
+          setCustomThemeTokens={setCustomThemeTokens}
+          onOpenSettings={() => setThemeDrawerOpen(true)}
+        />
 
-            return (
-              <div className="resizable-row" ref={containerRef}>
-                {panelOrder.map((panelId, index) => (
-                  <div key={panelId} style={{ display: "contents" }}>
-                    <div
-                      className={`resizable-panel ${draggedPanel === panelId ? "dragging" : ""} ${draggedPanel && draggedPanel !== panelId ? "drag-target" : ""}`}
-                      style={{ width: `${panelWidths[panelId]}%` }}
-                      draggable
-                      onDragStart={() => onPanelDragStart(panelId)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => onPanelDrop(panelId)}
-                      onDragEnd={() => setDraggedPanel(null)}
-                    >
-                      {panelRegistry[panelId]}
+        <main className="app-content">
+          <Routes>
+            <Route
+              path="/relic"
+              element={
+                <RelicTrackerContent
+                  t={t} tin={tin} language={language}
+                  watchedPrimes={watchedPrimes}
+                  foundComponents={foundComponents}
+                  onToggleFound={handleRelicToggleFound}
+                />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <>
+                  <SummaryBar
+                    t={t}
+                    selectedItems={selectedItems}
+                    adjustedTotals={adjustedTotals}
+                  />
+
+                  <div className="content-header">
+                    <div className="content-tabs">
+                      <button
+                        className={`content-tab ${activeTab === "selected" ? "active" : ""}`}
+                        onClick={() => setActiveTab("selected")}
+                      >
+                        {t("selected")} <span className="content-tab-badge">{selectedItems.length}</span>
+                      </button>
+                      <button
+                        className={`content-tab ${activeTab === "totals" ? "active" : ""}`}
+                        onClick={() => setActiveTab("totals")}
+                      >
+                        {t("totals")} <span className="content-tab-badge">{adjustedTotals.length}</span>
+                      </button>
                     </div>
-                    {index < panelOrder.length - 1 && (
-                      <div
-                        className="resize-handle"
-                        onMouseDown={(e) =>
-                          onResizeStart(panelOrder[index], panelOrder[index + 1], e)
-                        }
-                      />
-                    )}
+                    <div className="content-actions">
+                      <Button size="small" icon={<DownloadOutlined />} onClick={exportData} disabled={selectedItems.length === 0} title={t("exportData")} />
+                      <Button size="small" icon={<UploadOutlined />} onClick={() => importInputRef.current?.click()} title={t("importData")} />
+                      <input ref={importInputRef} type="file" accept="application/json" style={{ display: "none" }} onChange={importData} />
+                      {selectedItems.length > 0 && (
+                        <Button size="small" danger icon={<ClearOutlined />} onClick={confirmClearAll}>
+                          {t("clearAll")}
+                        </Button>
+                      )}
+                      <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setSearchDrawerOpen(true)}>
+                        {t("addItem")}
+                      </Button>
+                    </div>
                   </div>
-                ))}
-              </div>
-            );
-          })()}
-        </Space>
 
-        <Footer />
+                  {activeTab === "selected" && (
+                    <>
+                      <div className="craft-toolbar">
+                        <div className="craft-search-wrap">
+                          <SearchOutlined className="craft-search-icon" />
+                          <input
+                            className="craft-search-input"
+                            placeholder={t("selectedSearchPlaceholder")}
+                            value={selectedSearch}
+                            onChange={(e) => setSelectedSearch(e.target.value)}
+                          />
+                        </div>
+                        <div className="craft-filter-group">
+                          {["all", "open", "done"].map((f) => (
+                            <button
+                              key={f}
+                              className={`craft-filter-btn ${selectedFilter === f ? "active" : ""}`}
+                              onClick={() => setSelectedFilter(f)}
+                            >
+                              {t(f === "all" ? "completionAll" : f === "open" ? "completionOpen" : "completionDone")}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <ItemCardGrid
+                        t={t}
+                        tin={tin}
+                        items={filteredSelectedItems}
+                        enrichedByItem={enrichedByItem}
+                        onOpenDetail={setDetailItem}
+                        onRemoveItem={removeItemWithConfirm}
+                      />
+                    </>
+                  )}
+
+                  {activeTab === "totals" && (
+                    <TotalsCardGrid
+                      t={t}
+                      tin={tin}
+                      adjustedTotals={adjustedTotals}
+                      loadingCalc={loadingCalc}
+                      onOpenDetail={setDetailMaterial}
+                    />
+                  )}
+                </>
+              }
+            />
+          </Routes>
+        </main>
       </div>
+
+      <SearchDrawer
+        t={t}
+        tin={tin}
+        open={searchDrawerOpen}
+        onClose={() => setSearchDrawerOpen(false)}
+        onAddItem={(item) => {
+          addItem(item);
+        }}
+      />
+
+      <ItemDetailModal
+        t={t}
+        tin={tin}
+        item={detailItem}
+        open={!!detailItem}
+        onClose={() => setDetailItem(null)}
+        enrichedRequirements={detailItem ? enrichedByItem.get(detailItem.uniqueName) || [] : []}
+        onSetCompleted={setCompletedQuantity}
+        onUpdateQuantity={updateQuantity}
+      />
+
+      <TotalDetailModal
+        t={t}
+        tin={tin}
+        material={detailMaterial}
+        open={!!detailMaterial}
+        onClose={() => setDetailMaterial(null)}
+        selectedItems={selectedItems}
+        detailByItem={detailByItem}
+        completedMap={completedMap}
+        onSetCompleted={setCompletedQuantity}
+        onBulkDonate={bulkDonate}
+      />
 
       <ThemeDrawer
         t={t}

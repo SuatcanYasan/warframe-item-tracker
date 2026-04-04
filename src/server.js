@@ -1,5 +1,4 @@
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
 
 const {
@@ -14,16 +13,10 @@ const PORT = process.env.PORT || 3444;
 const APP_SIGNATURE = "warframe-craft-tracker";
 const STARTED_AT = new Date().toISOString();
 const webDistPath = path.join(__dirname, "..", "web", "dist");
-const legacyPublicPath = path.join(__dirname, "..", "public");
-const hasWebBuild = fs.existsSync(path.join(webDistPath, "index.html"));
 
 const app = express();
 app.use(express.json());
-if (hasWebBuild) {
-  app.use(express.static(webDistPath));
-} else {
-  app.use(express.static(legacyPublicPath));
-}
+app.use(express.static(webDistPath));
 
 app.get("/api/health", (_req, res) => {
   res.json({
@@ -42,7 +35,8 @@ app.get("/api/items", async (req, res) => {
       ? Math.max(1, Math.min(100, Math.floor(limitRaw)))
       : 30;
 
-    const items = await searchCraftableItems(search, limit);
+    const primeOnly = req.query.primeOnly === "true";
+    const items = await searchCraftableItems(search, limit, { primeOnly });
     res.json({ items });
   } catch (error) {
     console.error("/api/items error:", error);
@@ -159,11 +153,7 @@ app.use((req, res) => {
     return res.status(404).json({ error: "Not found" });
   }
 
-  const fallbackIndexPath = hasWebBuild
-    ? path.join(webDistPath, "index.html")
-    : path.join(legacyPublicPath, "index.html");
-
-  return res.sendFile(fallbackIndexPath);
+  return res.sendFile(path.join(webDistPath, "index.html"));
 });
 
 async function startServer() {

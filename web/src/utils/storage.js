@@ -19,13 +19,10 @@ export function createDefaultPersistedState() {
     themeProfiles: {},
     completionView: "all",
     selectedItems: [],
-    activeKeys: [],
     completedMap: {},
-    activeSelected: null,
-    selectedCategoryFilter: "all",
     onboardingDone: false,
-    panelWidths: { search: 20, selected: 45, totals: 35 },
-    panelOrder: ["search", "selected", "totals"],
+    relicWatchedPrimes: [],
+    relicFoundComponents: {},
   };
 }
 
@@ -60,47 +57,21 @@ export function normalizePersistedState(raw) {
           };
         })
       : [],
-    activeKeys: Array.isArray(next.activeKeys) ? next.activeKeys : [],
     themeProfiles:
       next.themeProfiles && typeof next.themeProfiles === "object" ? next.themeProfiles : {},
     completedMap: next.completedMap && typeof next.completedMap === "object" ? next.completedMap : {},
-    selectedCategoryFilter:
-      typeof next.selectedCategoryFilter === "string" && next.selectedCategoryFilter.length > 0
-        ? next.selectedCategoryFilter
-        : "all",
-    panelWidths:
-      next.panelWidths && typeof next.panelWidths === "object" &&
-      next.panelWidths.search && next.panelWidths.selected && next.panelWidths.totals
-        ? next.panelWidths
-        : fallback.panelWidths,
-    panelOrder:
-      Array.isArray(next.panelOrder) && next.panelOrder.length === 3 &&
-      ["search", "selected", "totals"].every((id) => next.panelOrder.includes(id))
-        ? next.panelOrder
-        : fallback.panelOrder,
+    relicWatchedPrimes: Array.isArray(next.relicWatchedPrimes) ? next.relicWatchedPrimes : [],
+    relicFoundComponents:
+      next.relicFoundComponents && typeof next.relicFoundComponents === "object"
+        ? next.relicFoundComponents
+        : {},
   };
 }
 
-export async function getPersistedState() {
-  if (window.wfDesktop?.storage?.get) {
-    try {
-      const fromDesktop = await window.wfDesktop.storage.get();
-      return normalizePersistedState(fromDesktop);
-    } catch {
-      return normalizePersistedState(readStorage());
-    }
-  }
+export function getPersistedState() {
   return normalizePersistedState(readStorage());
 }
 
-export async function savePersistedState(payload) {
-  if (window.wfDesktop?.storage?.set) {
-    try {
-      await window.wfDesktop.storage.set(payload);
-      return;
-    } catch {
-      // Fallback to localStorage when desktop save fails.
-    }
-  }
+export function savePersistedState(payload) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 }
