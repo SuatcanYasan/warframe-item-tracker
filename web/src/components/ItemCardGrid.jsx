@@ -46,7 +46,14 @@ export default function ItemCardGrid({ t, tin, items, enrichedByItem, onOpenDeta
               </div>
               <div className="item-card-body">
                 <div className="item-card-name">{tin(item.uniqueName, item.name)}</div>
-                <div className="item-card-type">{item.type || item.category || t("unknown")}</div>
+                <div className="item-card-type">
+                  {item.type || item.category || t("unknown")}
+                  {item.buildPrice > 0 && (
+                    <span style={{ marginLeft: 6, color: "var(--accent-gold, #d4a843)", fontWeight: 500 }}>
+                      {(item.buildPrice * item.quantity).toLocaleString()} cr
+                    </span>
+                  )}
+                </div>
                 <div className="item-card-progress-bar">
                   <div
                     className={`item-card-progress-fill ${allDone ? "green" : "cyan"}`}

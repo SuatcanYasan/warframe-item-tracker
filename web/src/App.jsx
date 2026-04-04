@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { App as AntApp, Button, ConfigProvider, Segmented } from "antd";
+import { App as AntApp, Button, ConfigProvider, Segmented, Select } from "antd";
 import { PlusOutlined, DownloadOutlined, UploadOutlined, SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { themeOptions } from "./constants/themes";
@@ -58,6 +58,9 @@ function CraftAppContent() {
   const [detailMaterial, setDetailMaterial] = useState(null);
   const [selectedSearch, setSelectedSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [totalsSearch, setTotalsSearch] = useState("");
+  const [totalsFilter, setTotalsFilter] = useState("all");
   const importInputRef = useRef(null);
   const t = (key, params) => translate(language, key, params);
   const tin = useItemI18n(language);
@@ -314,11 +317,24 @@ function CraftAppContent() {
     });
   }, [calculation.totals, completedMap, detailByItem, selectedItems]);
 
+  const categoryOptions = useMemo(() => {
+    const cats = new Set();
+    for (const item of selectedItems) {
+      const cat = item.category || item.type || "";
+      if (cat) cats.add(cat);
+    }
+    return ["all", ...Array.from(cats).sort()];
+  }, [selectedItems]);
+
   const filteredSelectedItems = useMemo(() => {
     const query = selectedSearch.trim().toLowerCase();
     return selectedItems.filter((item) => {
       const matchesQuery = !query || item.name.toLowerCase().includes(query) || item.uniqueName.toLowerCase().includes(query);
       if (!matchesQuery) return false;
+      if (selectedCategory !== "all") {
+        const cat = (item.category || item.type || "").toLowerCase();
+        if (cat !== selectedCategory.toLowerCase()) return false;
+      }
       if (selectedFilter === "all") return true;
       const reqs = enrichedByItem.get(item.uniqueName) || [];
       const total = reqs.length;
@@ -328,7 +344,19 @@ function CraftAppContent() {
       if (selectedFilter === "open") return !allDone;
       return true;
     });
-  }, [selectedItems, selectedSearch, selectedFilter, enrichedByItem]);
+  }, [selectedItems, selectedSearch, selectedFilter, selectedCategory, enrichedByItem]);
+
+  const filteredTotals = useMemo(() => {
+    const query = totalsSearch.trim().toLowerCase();
+    return adjustedTotals.filter((item) => {
+      const matchesQuery = !query || item.name.toLowerCase().includes(query) || item.uniqueName.toLowerCase().includes(query);
+      if (!matchesQuery) return false;
+      if (totalsFilter === "all") return true;
+      if (totalsFilter === "done") return item.status === "done";
+      if (totalsFilter === "open") return item.status !== "done";
+      return true;
+    });
+  }, [adjustedTotals, totalsSearch, totalsFilter]);
 
   // (old panel-specific memos removed — card grid doesn't need them)
 
@@ -356,6 +384,7 @@ function CraftAppContent() {
           imageUrl: item.imageUrl || null,
           type: item.type || null,
           category: item.category || item.type || null,
+          buildPrice: item.buildPrice || 0,
           quantity: 1,
         },
       ];
@@ -627,14 +656,35 @@ function CraftAppContent() {
                   {activeTab === "selected" && (
                     <>
                       <div className="craft-toolbar">
-                        <div className="craft-search-wrap">
-                          <SearchOutlined className="craft-search-icon" />
-                          <input
-                            className="craft-search-input"
-                            placeholder={t("selectedSearchPlaceholder")}
-                            value={selectedSearch}
-                            onChange={(e) => setSelectedSearch(e.target.value)}
-                          />
+                        <div className="craft-toolbar-left">
+                          <div className="craft-search-compact">
+                            <SearchOutlined className="craft-search-compact-icon" />
+                            <input
+                              className="craft-search-compact-input"
+                              placeholder={t("search")}
+                              value={selectedSearch}
+                              onChange={(e) => setSelectedSearch(e.target.value)}
+                            />
+                            {selectedSearch && (
+                              <button className="craft-search-clear" onClick={() => setSelectedSearch("")}>&times;</button>
+                            )}
+                          </div>
+                          {categoryOptions.length > 1 && (
+                            <>
+                              <div className="craft-toolbar-divider" />
+                              <div className="craft-category-pills">
+                                {categoryOptions.map((c) => (
+                                  <button
+                                    key={c}
+                                    className={`craft-category-pill ${selectedCategory === c ? "active" : ""}`}
+                                    onClick={() => setSelectedCategory(c)}
+                                  >
+                                    {c === "all" ? t("allCategories") : c}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
                         <div className="craft-filter-group">
                           {["all", "open", "done"].map((f) => (
@@ -660,13 +710,42 @@ function CraftAppContent() {
                   )}
 
                   {activeTab === "totals" && (
-                    <TotalsCardGrid
-                      t={t}
-                      tin={tin}
-                      adjustedTotals={adjustedTotals}
-                      loadingCalc={loadingCalc}
-                      onOpenDetail={setDetailMaterial}
-                    />
+                    <>
+                      <div className="craft-toolbar">
+                        <div className="craft-toolbar-left">
+                          <div className="craft-search-compact">
+                            <SearchOutlined className="craft-search-compact-icon" />
+                            <input
+                              className="craft-search-compact-input"
+                              placeholder={t("search")}
+                              value={totalsSearch}
+                              onChange={(e) => setTotalsSearch(e.target.value)}
+                            />
+                            {totalsSearch && (
+                              <button className="craft-search-clear" onClick={() => setTotalsSearch("")}>&times;</button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="craft-filter-group">
+                          {["all", "open", "done"].map((f) => (
+                            <button
+                              key={f}
+                              className={`craft-filter-btn ${totalsFilter === f ? "active" : ""}`}
+                              onClick={() => setTotalsFilter(f)}
+                            >
+                              {t(f === "all" ? "completionAll" : f === "open" ? "completionOpen" : "completionDone")}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <TotalsCardGrid
+                        t={t}
+                        tin={tin}
+                        adjustedTotals={filteredTotals}
+                        loadingCalc={loadingCalc}
+                        onOpenDetail={setDetailMaterial}
+                      />
+                    </>
                   )}
                 </>
               }

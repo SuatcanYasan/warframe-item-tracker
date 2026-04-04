@@ -217,6 +217,7 @@ async function searchCraftableItems(searchText = "", limit = 30, { primeOnly = f
     imageUrl: item.imageUrl,
     type: item.type,
     category: item.category,
+    buildPrice: item.buildPrice || 0,
   }));
 }
 

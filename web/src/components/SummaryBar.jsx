@@ -6,7 +6,8 @@ export default function SummaryBar({ t, selectedItems, adjustedTotals }) {
     const total = adjustedTotals.length;
     const done = adjustedTotals.filter((r) => r.status === "done").length;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { tracking: selectedItems.length, done, total, percent };
+    const totalCredits = selectedItems.reduce((sum, item) => sum + ((item.buildPrice || 0) * (item.quantity || 1)), 0);
+    return { tracking: selectedItems.length, done, total, percent, totalCredits };
   }, [selectedItems, adjustedTotals]);
 
   return (
@@ -19,7 +20,13 @@ export default function SummaryBar({ t, selectedItems, adjustedTotals }) {
       >
         <div className="stat-label">{t("selected")}</div>
         <div className="stat-value">{stats.tracking}</div>
-        <div className="stat-sub">{t("trackingItems", { count: stats.tracking })}</div>
+        <div className="stat-sub">
+          {stats.totalCredits > 0 && (
+            <span style={{ color: "var(--accent-gold, #d4a843)" }}>
+              {stats.totalCredits.toLocaleString()} cr
+            </span>
+          )}
+        </div>
       </motion.div>
 
       <motion.div
