@@ -106,6 +106,7 @@ function CraftAppContent() {
       "--wf-scrollbar",
       customThemeTokens.colorScrollbar || customThemeTokens.colorBorder || "#2f4774",
     );
+    root.style.setProperty("--wf-primary", customThemeTokens.colorPrimary || "#CA8A04");
   }, [customThemeTokens, themeName]);
 
   // --- Calculate ---

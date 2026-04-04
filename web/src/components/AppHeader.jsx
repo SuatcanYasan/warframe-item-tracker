@@ -5,11 +5,16 @@ import { themeOptions } from "../constants/themes";
 
 export default function AppHeader({ t, language, setLanguage, themeName, setThemeName, setCustomThemeTokens, onOpenSettings }) {
   const location = useLocation();
-  const pageTitle = location.pathname === "/relic" ? t("relicTracker") : t("craftTracker");
+  const isRelic = location.pathname === "/relic";
+  const pageTitle = isRelic ? t("relicTracker") : t("craftTracker");
+  const pageDesc = isRelic ? t("relicTrackerDesc") : t("craftTrackerDesc");
 
   return (
     <header className="app-header">
-      <span className="app-header-title">{pageTitle}</span>
+      <div className="app-header-left">
+        <span className="app-header-title">{pageTitle}</span>
+        <span className="app-header-desc">{pageDesc}</span>
+      </div>
       <div className="app-header-right">
         <Segmented
           size="small"

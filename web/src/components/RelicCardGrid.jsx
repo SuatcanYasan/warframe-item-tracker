@@ -193,6 +193,7 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound, t, ti
                   </Flex>
                 ),
                 children: (
+                  <div style={{ maxHeight: 200, overflowY: "auto" }}>
                   <List
                     size="small"
                     dataSource={groupedRelics}
@@ -226,6 +227,7 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound, t, ti
                       );
                     }}
                   />
+                  </div>
                 ),
               };
             })}

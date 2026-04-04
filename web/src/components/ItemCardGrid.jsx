@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { DeleteOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import { Empty, Typography } from "antd";
 import { FALLBACK_ICON } from "../utils/helpers";
+import DropInfoPopover from "./DropInfoPopover";
 
 const { Text } = Typography;
 
@@ -64,14 +65,8 @@ export default function ItemCardGrid({ t, tin, items, enrichedByItem, onOpenDeta
                   <span className={`item-card-progress-text ${allDone ? "done" : ""}`}>
                     {done} / {total}
                   </span>
-                  <div className="item-card-actions">
-                    <button
-                      className="item-card-action-btn"
-                      onClick={(e) => { e.stopPropagation(); }}
-                      title={t("detail")}
-                    >
-                      <InfoCircleOutlined />
-                    </button>
+                  <div className="item-card-actions" onClick={(e) => e.stopPropagation()}>
+                    <DropInfoPopover uniqueName={item.uniqueName} itemName={item.name} t={t} />
                     <button
                       className="item-card-action-btn danger"
                       onClick={(e) => { e.stopPropagation(); onRemoveItem(item); }}

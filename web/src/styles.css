@@ -957,9 +957,9 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 }
 
 .nav-item.active {
-  background: rgba(212, 168, 67, 0.08);
-  color: var(--accent-gold, #d4a843);
-  border-color: rgba(212, 168, 67, 0.15);
+  background: color-mix(in srgb, var(--wf-primary, #d4a843) 10%, transparent);
+  color: var(--wf-primary, #d4a843);
+  border-color: color-mix(in srgb, var(--wf-primary, #d4a843) 20%, transparent);
 }
 
 .nav-item.disabled {
@@ -1017,12 +1017,24 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
   padding: 0 24px;
 }
 
+.app-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
 .app-header-title {
   font-family: var(--font-display, 'Rajdhani', sans-serif);
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.5px;
   color: var(--wf-text, #eaf0ff);
+}
+
+.app-header-desc {
+  font-size: 12px;
+  color: var(--wf-text-muted, #7b93c2);
+  opacity: 0.7;
 }
 
 .app-header-right {
@@ -1067,7 +1079,7 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 
 .summary-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
@@ -1102,12 +1114,12 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 }
 
 .stat-card.gold {
-  border-color: rgba(212, 168, 67, 0.15);
-  box-shadow: 0 0 20px rgba(212, 168, 67, 0.08);
+  border-color: color-mix(in srgb, var(--wf-primary, #d4a843) 20%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--wf-primary, #d4a843) 10%, transparent);
 }
 
 .stat-card.gold .stat-value {
-  color: var(--accent-gold, #d4a843);
+  color: var(--wf-primary, #d4a843);
 }
 
 .summary-progress-bar {
@@ -1479,8 +1491,8 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 }
 
 .content-tab.active {
-  color: var(--accent-gold, #d4a843);
-  border-bottom-color: var(--accent-gold, #d4a843);
+  color: var(--wf-primary, #d4a843);
+  border-bottom-color: var(--wf-primary, #d4a843);
 }
 
 .content-tab-badge {
@@ -1498,8 +1510,8 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 }
 
 .content-tab.active .content-tab-badge {
-  background: rgba(212, 168, 67, 0.15);
-  color: var(--accent-gold, #d4a843);
+  background: color-mix(in srgb, var(--wf-primary, #d4a843) 15%, transparent);
+  color: var(--wf-primary, #d4a843);
 }
 
 .content-actions {
@@ -1683,7 +1695,7 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
   }
 
   .summary-bar {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 8px;
   }
 }
@@ -1831,7 +1843,48 @@ body[data-theme="lotus"] .panel-card .ant-card-head-title {
 }
 
 .craft-category-pill.active {
-  background: rgba(212, 168, 67, 0.12);
-  border-color: rgba(212, 168, 67, 0.3);
-  color: var(--accent-gold, #d4a843);
+  background: color-mix(in srgb, var(--wf-primary, #CA8A04) 15%, transparent);
+  border-color: color-mix(in srgb, var(--wf-primary, #CA8A04) 35%, transparent);
+  color: var(--wf-primary, #CA8A04);
+}
+
+/* ===== CUSTOM SCROLLBAR (global) ===== */
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--wf-border, rgba(255,255,255,0.1));
+  border-radius: 3px;
+  transition: background 200ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--wf-text-muted, rgba(255,255,255,0.2));
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--wf-border, rgba(255,255,255,0.1)) transparent;
+}
+
+/* Ant Design modal/drawer body scrollbar */
+.ant-modal-body::-webkit-scrollbar-thumb,
+.ant-drawer-body::-webkit-scrollbar-thumb {
+  background: var(--wf-border, rgba(255,255,255,0.12));
+}
+
+.ant-modal-body::-webkit-scrollbar-thumb:hover,
+.ant-drawer-body::-webkit-scrollbar-thumb:hover {
+  background: var(--wf-text-muted, rgba(255,255,255,0.25));
 }

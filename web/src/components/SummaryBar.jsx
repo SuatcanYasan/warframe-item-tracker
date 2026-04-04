@@ -20,13 +20,7 @@ export default function SummaryBar({ t, selectedItems, adjustedTotals }) {
       >
         <div className="stat-label">{t("selected")}</div>
         <div className="stat-value">{stats.tracking}</div>
-        <div className="stat-sub">
-          {stats.totalCredits > 0 && (
-            <span style={{ color: "var(--accent-gold, #d4a843)" }}>
-              {stats.totalCredits.toLocaleString()} cr
-            </span>
-          )}
-        </div>
+        <div className="stat-sub">{t("trackingItems", { count: stats.tracking })}</div>
       </motion.div>
 
       <motion.div
@@ -53,6 +47,19 @@ export default function SummaryBar({ t, selectedItems, adjustedTotals }) {
         <div className="summary-progress-bar">
           <div className="summary-progress-fill gold" style={{ width: `${stats.percent}%` }} />
         </div>
+      </motion.div>
+
+      <motion.div
+        className="stat-card"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <div className="stat-label">{t("totalCredits")}</div>
+        <div className="stat-value" style={{ color: "var(--accent-gold, #d4a843)" }}>
+          {stats.totalCredits.toLocaleString()}
+        </div>
+        <div className="stat-sub">Credits</div>
       </motion.div>
     </div>
   );

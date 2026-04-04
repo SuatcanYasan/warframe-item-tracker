@@ -118,6 +118,10 @@ export const i18n = {
     addItem: "Ekle",
     primeAutoSynced: "{name} Relic Takipci'ye de eklendi",
     relicAutoSyncHint: "Prime parcalar Craft Takipci'den otomatik eklenir",
+    totalCredits: "Toplam Kredi",
+    craftTrackerDesc: "Esyalari ekle, malzemeleri takip et, ilerlemeyi gor.",
+    relicTrackerDesc: "Prime parcalarin hangi reliclerden dustugunu takip et.",
+    save: "Kaydet",
   },
   en: {
     subtitle: "Add items, track direct recipes, and subtract completed parts from totals.",
@@ -238,6 +242,10 @@ export const i18n = {
     addItem: "Add",
     primeAutoSynced: "{name} also added to Relic Tracker",
     relicAutoSyncHint: "Prime items are synced from Craft Tracker automatically",
+    totalCredits: "Total Credits",
+    craftTrackerDesc: "Add items, track materials, and monitor your progress.",
+    relicTrackerDesc: "Track which relics drop the prime parts you need.",
+    save: "Save",
   },
 };
 

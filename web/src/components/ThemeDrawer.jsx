@@ -147,8 +147,8 @@ export default function ThemeDrawer({
             placeholder={t("themeProfilePlaceholder")}
             onChange={(e) => setThemeProfileInput(e.target.value)}
           />
-          <Button type="primary" onClick={saveCurrentThemeProfile}>
-            {t("saveThemeProfile")}
+          <Button type="primary" onClick={saveCurrentThemeProfile} style={{ whiteSpace: "nowrap" }}>
+            {t("save")}
           </Button>
         </Flex>
 
