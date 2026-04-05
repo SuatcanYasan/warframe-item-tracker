@@ -1,0 +1,25 @@
+name: Keep Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes (GitHub Actions minimum granularity is 5 min)
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          URL="${{ secrets.KEEPALIVE_URL }}"
+          if [ -z "$URL" ]; then
+            echo "::warning::KEEPALIVE_URL secret not set. Skipping."
+            exit 0
+          fi
+          echo "Pinging $URL"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" --max-time 30 || echo "000")
+          echo "Response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::warning::Non-200 response ($STATUS). Server may be cold-starting."
+          fi

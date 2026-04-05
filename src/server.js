@@ -170,10 +170,28 @@ app.use((req, res) => {
   return res.sendFile(path.join(webDistPath, "index.html"));
 });
 
+// Self-ping to prevent free-tier hosts (Render, etc.) from sleeping.
+// Pings own /api/health every 10 minutes when SELF_PING_URL is set.
+function startSelfPing() {
+  const url = process.env.SELF_PING_URL;
+  if (!url) return;
+  const intervalMs = 10 * 60 * 1000; // 10 minutes
+  setInterval(async () => {
+    try {
+      const res = await fetch(url);
+      console.log(`[self-ping] ${new Date().toISOString()} → ${res.status}`);
+    } catch (error) {
+      console.warn(`[self-ping] failed: ${error?.message || error}`);
+    }
+  }, intervalMs);
+  console.log(`[self-ping] enabled → ${url} every ${intervalMs / 60000}min`);
+}
+
 async function startServer() {
   try {
     const server = app.listen(PORT, () => {
       console.log(`Warframe craft tracker is running on http://localhost:${PORT}`);
+      startSelfPing();
     });
 
     server.on("error", (error) => {
