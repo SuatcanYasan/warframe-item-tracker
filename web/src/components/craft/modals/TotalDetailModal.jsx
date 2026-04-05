@@ -31,6 +31,13 @@ export default function TotalDetailModal({
     })
     .filter(Boolean);
 
+  // Live-calculated header stats (material prop is a snapshot, recompute from consumers)
+  const liveTotal = consumers.reduce((sum, c) => sum + c.needed, 0);
+  const liveCompleted = consumers.reduce((sum, c) => sum + c.completed, 0);
+  const liveRemaining = Math.max(0, liveTotal - liveCompleted);
+  const livePercent = liveTotal > 0 ? Math.round((liveCompleted / liveTotal) * 100) : 100;
+  const liveStatus = liveRemaining === 0 ? "done" : liveCompleted > 0 ? "partial" : "open";
+
   return (
     <Modal
       open={open}
@@ -48,7 +55,7 @@ export default function TotalDetailModal({
           <div style={{ flex: 1 }}>
             <Text strong style={{ fontSize: 16 }}>{tin(material.uniqueName, material.name)}</Text>
             <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
-              {material.completedAmount} / {material.quantity} — {t("remaining")}: {material.remaining}
+              {liveCompleted} / {liveTotal} — {t("remaining")}: {liveRemaining}
             </Text>
           </div>
         </Flex>
@@ -57,8 +64,8 @@ export default function TotalDetailModal({
       <div style={{ marginBottom: 16 }}>
         <div className="summary-progress-bar" style={{ height: 6, marginTop: 0 }}>
           <div
-            className={`summary-progress-fill ${material.status === "done" ? "green" : "cyan"}`}
-            style={{ width: `${material.completionPercent}%`, height: 6 }}
+            className={`summary-progress-fill ${liveStatus === "done" ? "green" : "cyan"}`}
+            style={{ width: `${livePercent}%`, height: 6 }}
           />
         </div>
       </div>
@@ -119,7 +126,7 @@ export default function TotalDetailModal({
         </AnimatePresence>
       </div>
 
-      {material.remaining > 0 && (
+      {liveRemaining > 0 && (
         <Flex align="center" gap={10} style={{
           padding: "12px 14px", marginTop: 16,
           background: "var(--wf-bg-container, #0f1a30)",
@@ -129,7 +136,7 @@ export default function TotalDetailModal({
           <Text style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("bulkDonate")}:</Text>
           <InputNumber
             min={0}
-            max={material.remaining}
+            max={liveRemaining}
             placeholder={t("bulkDonatePlaceholder")}
             style={{ flex: 1 }}
             id="bulk-donate-input"

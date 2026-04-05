@@ -285,7 +285,7 @@ function CraftAppContent() {
     });
     hotkeys("ctrl+k,cmd+k", (e) => {
       e.preventDefault();
-      useCraftStore.getState().openSearchDrawer();
+      useAppStore.getState().openShortcuts();
     });
     hotkeys("1", () => navigate("/"));
     hotkeys("2", () => navigate("/relic"));

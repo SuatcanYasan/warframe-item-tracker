@@ -14,6 +14,15 @@ const { Text } = Typography;
 const rarityColors = { Common: "default", Uncommon: "green", Rare: "blue", Legendary: "gold" };
 const REFINEMENT_LEVELS = ["Intact", "Exceptional", "Flawless", "Radiant"];
 
+// WFCD rarity tags are unreliable — compute correct rarity from Intact chance.
+// Warframe Intact rates: Common 25.33%, Uncommon 11%, Rare 2%.
+function detectRarity(intactChance) {
+  if (intactChance == null) return null;
+  if (intactChance >= 20) return "Common";
+  if (intactChance >= 8) return "Uncommon";
+  return "Rare";
+}
+
 function parseRefinement(location) {
   const match = location.match(/\((\w+)\)$/);
   return match ? match[1] : "Intact";
@@ -32,6 +41,12 @@ function groupDropsByRelic(drops) {
       grouped.set(base, { baseName: base, rarity: drop.rarity, byRefinement: {} });
     }
     grouped.get(base).byRefinement[refinement] = drop.chance;
+  }
+  // After grouping, override rarity using the Intact chance (more reliable than WFCD's label)
+  for (const group of grouped.values()) {
+    const intact = group.byRefinement["Intact"];
+    const computed = detectRarity(intact);
+    if (computed) group.rarity = computed;
   }
   return Array.from(grouped.values());
 }
@@ -135,9 +150,15 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound }) {
               size="small"
               value={refinementLevel}
               onChange={setRefinementLevel}
-              options={REFINEMENT_LEVELS.map((level) => ({ value: level, label: level }))}
+              options={REFINEMENT_LEVELS.map((level) => ({
+                value: level,
+                label: t(`refinement${level}`),
+              }))}
             />
           </div>
+          <Text type="secondary" style={{ fontSize: 11, display: "block", marginBottom: 10, fontStyle: "italic" }}>
+            {t("refinementHint")}
+          </Text>
           <Collapse
             activeKey={componentActiveKeys}
             onChange={setComponentActiveKeys}
