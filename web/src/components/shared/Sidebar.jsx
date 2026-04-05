@@ -11,9 +11,16 @@ export default function Sidebar({ onOpenSettings }) {
   const { t } = useTranslate();
   const collapsed = useAppStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
+  const mobileOpen = useAppStore((s) => s.mobileSidebarOpen);
+  const closeMobileSidebar = useAppStore((s) => s.closeMobileSidebar);
   const navigate = useNavigate();
   const location = useLocation();
   const activePage = location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : "craft";
+
+  function handleNavClick(path) {
+    navigate(path);
+    closeMobileSidebar();
+  }
 
   const navItems = [
     { key: "craft", path: "/", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
@@ -22,11 +29,13 @@ export default function Sidebar({ onOpenSettings }) {
   ];
 
   return (
-    <motion.aside
-      className={`sidebar ${collapsed ? "collapsed" : ""}`}
-      animate={{ width: collapsed ? 64 : 240 }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-    >
+    <>
+      {mobileOpen && <div className="sidebar-backdrop" onClick={closeMobileSidebar} />}
+      <motion.aside
+        className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}
+        animate={{ width: collapsed ? 64 : 240 }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+      >
       <div className="sidebar-brand">
         <img src="/trackerlogo.png" alt="WIT" className="sidebar-logo-img" />
         {!collapsed && <span className="sidebar-logo-text">WIT</span>}
@@ -38,7 +47,7 @@ export default function Sidebar({ onOpenSettings }) {
           <div
             key={item.key}
             className={`nav-item ${activePage === item.key ? "active" : ""}`}
-            onClick={() => navigate(item.path)}
+            onClick={() => handleNavClick(item.path)}
           >
             <span className="nav-icon">{item.icon}</span>
             {!collapsed && <span className="nav-label">{item.label}</span>}
@@ -65,6 +74,7 @@ export default function Sidebar({ onOpenSettings }) {
           {!collapsed && <span className="nav-label">{t("collapse")}</span>}
         </div>
       </div>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 }

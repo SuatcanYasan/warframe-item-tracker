@@ -12,6 +12,7 @@ export const useAppStore = create((set) => ({
   wizardOpen: false,
   shortcutsOpen: false,
   sidebarCollapsed: false,
+  mobileSidebarOpen: false,
 
   setLanguage: (language) => set({ language }),
   setThemeName: (themeName) => set({ themeName }),
@@ -39,6 +40,9 @@ export const useAppStore = create((set) => ({
   closeWizard: () => set({ wizardOpen: false }),
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  openMobileSidebar: () => set({ mobileSidebarOpen: true }),
+  closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
+  toggleMobileSidebar: () => set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
 
   hydrate: (persisted) =>
     set({

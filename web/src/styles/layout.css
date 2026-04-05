@@ -563,8 +563,17 @@
 
 .app-header-left {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.app-header-titles {
+  display: flex;
   align-items: baseline;
   gap: 12px;
+  min-width: 0;
 }
 
 .app-header-title {

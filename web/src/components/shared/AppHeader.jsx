@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { Segmented } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, MenuOutlined } from "@ant-design/icons";
 const WF_ICONS = "https://wiki.warframe.com/images";
 import { themeOptions } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -18,6 +18,7 @@ export default function AppHeader() {
   const setCustomThemeTokens = useAppStore((s) => s.setCustomThemeTokens);
   const openThemeDrawer = useAppStore((s) => s.openThemeDrawer);
   const openShortcuts = useAppStore((s) => s.openShortcuts);
+  const openMobileSidebar = useAppStore((s) => s.openMobileSidebar);
 
   const location = useLocation();
   const isRelic = location.pathname === "/relic";
@@ -28,8 +29,13 @@ export default function AppHeader() {
   return (
     <header className="app-header">
       <div className="app-header-left">
-        <span className="app-header-title">{pageTitle}</span>
-        <span className="app-header-desc">{pageDesc}</span>
+        <button className="header-hamburger" onClick={openMobileSidebar} aria-label="Menu">
+          <MenuOutlined />
+        </button>
+        <div className="app-header-titles">
+          <span className="app-header-title">{pageTitle}</span>
+          <span className="app-header-desc">{pageDesc}</span>
+        </div>
       </div>
       <div className="app-header-right">
         <button className="header-shortcut-btn" onClick={openShortcuts} title={t("shortcutsTitle")}>
