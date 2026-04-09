@@ -23,6 +23,7 @@ import { useAppStore } from "./stores/appStore";
 import { useCraftStore } from "./stores/craftStore";
 import { useRelicStore } from "./stores/relicStore";
 import { useInventoryStore } from "./stores/inventoryStore";
+import { useMasteryStore } from "./stores/masteryStore";
 
 import { useTranslate } from "./hooks/useTranslate";
 import {
@@ -42,10 +43,14 @@ import SearchDrawer from "./components/craft/SearchDrawer";
 import ThemeDrawer from "./components/shared/ThemeDrawer";
 import WizardModal from "./components/shared/WizardModal";
 import ShortcutsModal from "./components/shared/ShortcutsModal";
+import UpdateNotesModal from "./components/shared/UpdateNotesModal";
 import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
 import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
 import RelicTrackerContent from "./components/relic/RelicPage";
 import InventoryTrackerContent from "./components/inventory/InventoryPage";
+import MasteryPage from "./components/mastery/MasteryPage";
+import DashboardPage from "./components/dashboard/DashboardPage";
+import TimersPage from "./components/timers/TimersPage";
 
 function CraftAppContent() {
   const { modal } = AntApp.useApp();
@@ -283,13 +288,20 @@ function CraftAppContent() {
       e.preventDefault();
       useCraftStore.getState().openSearchDrawer();
     });
+    hotkeys("ctrl+space,cmd+space", (e) => {
+      e.preventDefault();
+      useCraftStore.getState().openSearchDrawer();
+    });
     hotkeys("ctrl+k,cmd+k", (e) => {
       e.preventDefault();
       useAppStore.getState().openShortcuts();
     });
-    hotkeys("1", () => navigate("/"));
+    hotkeys("0", () => navigate("/"));
+    hotkeys("1", () => navigate("/craft"));
     hotkeys("2", () => navigate("/relic"));
     hotkeys("3", () => navigate("/inventory"));
+    hotkeys("4", () => navigate("/mastery"));
+    hotkeys("5", () => navigate("/timers"));
     hotkeys("shift+/", (e) => {
       e.preventDefault();
       useAppStore.getState().openShortcuts();
@@ -297,19 +309,26 @@ function CraftAppContent() {
 
     return () => {
       hotkeys.unbind("/");
+      hotkeys.unbind("ctrl+space,cmd+space");
       hotkeys.unbind("ctrl+k,cmd+k");
+      hotkeys.unbind("0");
       hotkeys.unbind("1");
       hotkeys.unbind("2");
       hotkeys.unbind("3");
+      hotkeys.unbind("4");
+      hotkeys.unbind("5");
       hotkeys.unbind("shift+/");
     };
   }, [navigate, modal, t]);
 
   useEffect(() => {
     const pageName =
+      location.pathname === "/craft" ? t("craftTracker") :
       location.pathname === "/relic" ? t("relicTracker") :
       location.pathname === "/inventory" ? t("inventoryTracker") :
-      t("craftTracker");
+      location.pathname === "/mastery" ? t("masteryTracker") :
+      location.pathname === "/timers" ? t("timersTracker") :
+      t("dashboard");
     document.title = `WIT | ${pageName}`;
   }, [location.pathname]);
 
@@ -322,11 +341,14 @@ function CraftAppContent() {
 
         <main className="app-content">
           <Routes>
+            <Route path="/" element={<DashboardPage />} />
             <Route path="/relic" element={
               <RelicTrackerContent watchedPrimes={watchedPrimes} onToggleFound={handleRelicToggleFound} />
             } />
             <Route path="/inventory" element={<InventoryTrackerContent />} />
-            <Route path="*" element={
+            <Route path="/mastery" element={<MasteryPage />} />
+            <Route path="/timers" element={<TimersPage />} />
+            <Route path="/craft" element={
               <>
                 <SummaryBar adjustedTotals={adjustedTotals} />
 
@@ -409,6 +431,13 @@ function CraftAppContent() {
               </>
             } />
           </Routes>
+          <footer className="app-footer">
+            <span className="footer-text">&copy; {new Date().getFullYear()} Suatcan Yasan — WIT (Warframe Item Tracker)</span>
+            <span className="footer-divider">|</span>
+            <a href="https://github.com/SuatcanYasan" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
+            <span className="footer-divider">|</span>
+            <span className="footer-text">Fan-made, not affiliated with Digital Extremes</span>
+          </footer>
         </main>
       </div>
 
@@ -428,6 +457,7 @@ function CraftAppContent() {
       <ThemeDrawer />
       <WizardModal />
       <ShortcutsModal />
+      <UpdateNotesModal />
     </>
   );
 }
@@ -441,6 +471,7 @@ function CraftApp() {
     useCraftStore.getState().hydrate(initialPersisted);
     useRelicStore.getState().hydrate(initialPersisted);
     useInventoryStore.getState().hydrate(initialPersisted);
+    useMasteryStore.getState().hydrate(initialPersisted);
     return true;
   });
 

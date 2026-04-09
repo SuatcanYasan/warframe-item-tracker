@@ -1,13 +1,13 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Segmented } from "antd";
-import { SearchOutlined, MenuOutlined } from "@ant-design/icons";
+import { SearchOutlined, MenuOutlined, RightOutlined } from "@ant-design/icons";
 const WF_ICONS = "https://wiki.warframe.com/images";
 import { themeOptions } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-const CMD_KEY = isMac ? "⌘" : "Ctrl";
+const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent || navigator.platform);
+const MOD_KEY = isMac ? "⌘" : "Ctrl";
 
 export default function AppHeader() {
   const { t } = useTranslate();
@@ -21,10 +21,9 @@ export default function AppHeader() {
   const openMobileSidebar = useAppStore((s) => s.openMobileSidebar);
 
   const location = useLocation();
-  const isRelic = location.pathname === "/relic";
-  const isInventory = location.pathname === "/inventory";
-  const pageTitle = isInventory ? t("inventoryTracker") : isRelic ? t("relicTracker") : t("craftTracker");
-  const pageDesc = isInventory ? t("inventoryTrackerDesc") : isRelic ? t("relicTrackerDesc") : t("craftTrackerDesc");
+  const p = location.pathname;
+  const pageTitle = p === "/craft" ? t("craftTracker") : p === "/relic" ? t("relicTracker") : p === "/inventory" ? t("inventoryTracker") : p === "/mastery" ? t("masteryTracker") : p === "/timers" ? t("timersTracker") : t("dashboard");
+  const isDashboard = p === "/";
 
   return (
     <header className="app-header">
@@ -32,16 +31,22 @@ export default function AppHeader() {
         <button className="header-hamburger" onClick={openMobileSidebar} aria-label="Menu">
           <MenuOutlined />
         </button>
-        <div className="app-header-titles">
-          <span className="app-header-title">{pageTitle}</span>
-          <span className="app-header-desc">{pageDesc}</span>
-        </div>
+        <nav className="app-header-breadcrumb">
+          <Link to="/" className="breadcrumb-root">WIT</Link>
+          {!isDashboard && (
+            <>
+              <RightOutlined className="breadcrumb-sep" />
+              <span className="breadcrumb-current">{pageTitle}</span>
+            </>
+          )}
+          {isDashboard && <span className="breadcrumb-current">{pageTitle}</span>}
+        </nav>
       </div>
       <div className="app-header-right">
         <button className="header-shortcut-btn" onClick={openShortcuts} title={t("shortcutsTitle")}>
           <SearchOutlined className="header-shortcut-icon" />
           <span className="header-shortcut-label">{t("search")}</span>
-          <span className="header-shortcut-kbd">{CMD_KEY}K</span>
+          <span className="header-shortcut-kbd">{MOD_KEY}K</span>
         </button>
         <Segmented
           size="small"

@@ -4,7 +4,7 @@
 
 # Warframe Item Tracker
 
-**Craft, void relic ve prime parça envanteri için modern, tema duyarlı, PWA destekli takip uygulaması.**
+**Craft, void relic, prime envanter, ustalasma takibi ve acik dunya zamanlayicilari icin modern, tema duyarli, PWA destekli takip uygulamasi.**
 
 [English](./README.md) · [Türkçe](./README.tr.md)
 
@@ -19,7 +19,7 @@
 [![Lisans](https://img.shields.io/badge/Lisans-Fan_Made-CA8A04)](#lisans)
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="WIT Ekran Görüntüsü" width="820" />
+  <img src="web/public/screenshot.png" alt="WIT Ekran Goruntusi" width="820" />
 </p>
 
 </div>

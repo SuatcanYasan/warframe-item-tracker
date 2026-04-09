@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { LeftOutlined } from "@ant-design/icons";
+import { LeftOutlined, ClockCircleOutlined } from "@ant-design/icons";
 // All nav icons from https://wiki.warframe.com/w/Text_Icons
 import { motion } from "framer-motion";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -15,7 +15,7 @@ export default function Sidebar({ onOpenSettings }) {
   const closeMobileSidebar = useAppStore((s) => s.closeMobileSidebar);
   const navigate = useNavigate();
   const location = useLocation();
-  const activePage = location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : "craft";
+  const activePage = location.pathname === "/craft" ? "craft" : location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : location.pathname === "/mastery" ? "mastery" : location.pathname === "/timers" ? "timers" : "dashboard";
 
   function handleNavClick(path) {
     navigate(path);
@@ -23,9 +23,11 @@ export default function Sidebar({ onOpenSettings }) {
   }
 
   const navItems = [
-    { key: "craft", path: "/", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
+    { key: "dashboard", path: "/", icon: <img src="/trackerlogo.png" alt="" className="nav-item-img" />, label: t("dashboard") },
+    { key: "craft", path: "/craft", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
     { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("relicTracker") },
     { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("inventoryTracker") },
+    { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" />, label: t("masteryTracker") },
   ];
 
   return (
@@ -56,6 +58,10 @@ export default function Sidebar({ onOpenSettings }) {
 
         <div className="nav-divider" />
         <div className="nav-section">{!collapsed && t("tools")}</div>
+        <div className={`nav-item ${activePage === "timers" ? "active" : ""}`} onClick={() => handleNavClick("/timers")}>
+          <span className="nav-icon"><ClockCircleOutlined style={{ fontSize: 18, opacity: 0.8 }} /></span>
+          {!collapsed && <span className="nav-label">{t("timersTracker")}</span>}
+        </div>
         <div className="nav-item disabled">
           <span className="nav-icon"><img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" /></span>
           {!collapsed && <span className="nav-label">{t("farmPlanner")}</span>}

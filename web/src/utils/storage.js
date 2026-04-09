@@ -24,6 +24,8 @@ export function createDefaultPersistedState() {
     relicWatchedPrimes: [],
     relicFoundComponents: {},
     inventoryParts: {},
+    masteredItems: {},
+    storedVersion: null,
   };
 }
 
@@ -71,6 +73,11 @@ export function normalizePersistedState(raw) {
       next.inventoryParts && typeof next.inventoryParts === "object"
         ? next.inventoryParts
         : {},
+    masteredItems:
+      next.masteredItems && typeof next.masteredItems === "object"
+        ? next.masteredItems
+        : {},
+    storedVersion: next.storedVersion || null,
   };
 }
 

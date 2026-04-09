@@ -4,7 +4,7 @@
 
 # Warframe Item Tracker
 
-**A modern, theme-aware, PWA-enabled tracker for Warframe crafting, void relics, and prime part inventory.**
+**A modern, theme-aware, PWA-enabled tracker for Warframe crafting, void relics, prime inventory, mastery progress, and open-world timers.**
 
 [English](./README.md) · [Türkçe](./README.tr.md)
 
@@ -19,7 +19,7 @@
 [![License](https://img.shields.io/badge/License-Fan_Made-CA8A04)](#license)
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="WIT Screenshot" width="820" />
+  <img src="web/public/screenshot.png" alt="WIT Screenshot" width="820" />
 </p>
 
 </div>
@@ -44,7 +44,7 @@
 
 ## Overview
 
-**WIT (Warframe Item Tracker)** is a production-grade companion app for Warframe. It helps you track what you want to craft, which void relics drop the prime parts you need, and what's already sitting in your vault — all in one place, with zero account required.
+**WIT (Warframe Item Tracker)** is a production-grade companion app for Warframe. It helps you track what you want to craft, which void relics drop the prime parts you need, what's in your vault, your mastery progress across 820+ items, and live open-world cycle timers — all in one place, with zero account required.
 
 Built as a **Progressive Web App (PWA)**, WIT can be installed directly from your browser, works offline after first load, and includes a bidirectional sync system between crafting progress and relic tracking.
 
@@ -58,9 +58,12 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 
 | Page | What it does |
 |------|--------------|
+| **Dashboard** | Overview of all trackers with progress charts, live world timers slider, item previews, and tips |
 | **Craft Tracking System** | Add items you want to build, see every resource requirement, drag-and-drop reorder by priority, mark materials as collected, track overall progress with visual donut chart |
 | **Relic Tracking System** | View which void relics drop each prime part, mark components as found, auto-syncs bidirectionally with Craft Tracker |
 | **Vault** | Add individual prime parts you own, see which sets you can complete, switch between card and sortable table views |
+| **Mastery Tracker** | Browse all 820+ weapons, warframes, and companions — mark as owned or mastered with a 3-state toggle, track per-category progress |
+| **World Timers** | Live countdown for Cetus day/night, Fortuna warm/cold, Deimos Fass/Vome cycles with open-world background images, plus Baro Ki'Teer arrival tracker |
 
 ### User Experience
 
@@ -77,6 +80,9 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 - **Toast Notifications** — Modern, theme-aware toasts (react-hot-toast)
 - **Bidirectional Sync** — Complete a part in Craft Tracker, it's auto-marked found in Relic Tracker
 - **Import/Export** — Backup your data as JSON, restore across devices
+- **Update Notes** — Automatic changelog modal when a new version is deployed
+- **Breadcrumb Navigation** — Clear page hierarchy with clickable WIT root link
+- **Live World Timers** — Real-time open world cycle countdowns powered by WarframeStatus API
 
 ### Technical
 
@@ -95,15 +101,19 @@ Press `?` anywhere to see the full list.
 
 | Shortcut | Action |
 |----------|--------|
-| <kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>⌘</kbd> + <kbd>K</kbd> | Open search drawer |
+| <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Space</kbd> | Open search drawer |
 | <kbd>/</kbd> | Open search drawer |
+| <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> | Show keyboard shortcuts |
+| <kbd>0</kbd> | Go to Dashboard |
 | <kbd>1</kbd> | Go to Craft Tracking System |
 | <kbd>2</kbd> | Go to Relic Tracking System |
 | <kbd>3</kbd> | Go to Vault |
+| <kbd>4</kbd> | Go to Mastery Tracker |
+| <kbd>5</kbd> | Go to World Timers |
 | <kbd>?</kbd> | Show keyboard shortcuts |
 | <kbd>Esc</kbd> | Close modal |
 
-A dedicated `⌘K` pill in the header opens the shortcut help modal with clickable access.
+Platform-aware: Mac users see <kbd>⌘</kbd>, Windows/Linux users see <kbd>Ctrl</kbd>.
 
 ---
 
@@ -191,6 +201,7 @@ Subsequent launches are instant. Press `CTRL+C` in the terminal to stop.
 
 - **[Express 4](https://expressjs.com)** — HTTP server & API
 - **[WFCD warframe-items](https://github.com/WFCD/warframe-items)** — Authoritative Warframe data
+- **[WarframeStatus API](https://warframestat.us)** — Live world cycle & Baro Ki'Teer data
 - **[Node.js 18+](https://nodejs.org)** — Runtime
 
 ---
@@ -208,16 +219,19 @@ warframe-item-tracker/
 │   ├── src/
 │   │   ├── App.jsx               Root + routing + keyboard shortcuts
 │   │   ├── i18n/                 i18next initialization
-│   │   ├── stores/               Zustand stores (app, craft, relic, inventory)
+│   │   ├── stores/               Zustand stores (app, craft, relic, inventory, mastery)
 │   │   ├── hooks/                Custom hooks (useTranslate, useCraftDerived,
 │   │   │                         useRelicSync, usePersist, useFuzzySearch,
 │   │   │                         useRelativeTime, useApiQueries)
 │   │   ├── components/
 │   │   │   ├── shared/           AppHeader, Sidebar, Drawers, Modals
+│   │   │   ├── dashboard/        Dashboard with charts, timer slider, tips
 │   │   │   ├── craft/            Craft Tracker + dnd sortable grid
 │   │   │   ├── relic/            Relic Tracker pages
-│   │   │   └── inventory/        Vault pages & tabs (card + table views)
-│   │   ├── styles/               16 modular CSS files
+│   │   │   ├── inventory/        Vault pages & tabs (card + table views)
+│   │   │   ├── mastery/          Mastery Tracker (820+ items, 3-state toggle)
+│   │   │   └── timers/           World Timers (live API + background images)
+│   │   ├── styles/               20 modular CSS files
 │   │   ├── constants/            i18n strings, themes
 │   │   └── utils/                helpers, storage, queryClient, screenshot
 │   └── dist/                     Production build with PWA assets
@@ -298,12 +312,15 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 
 ## Roadmap
 
+- [x] Dashboard with progress charts and live timers
+- [x] Mastery Tracker (820+ items)
+- [x] World Timers (Cetus, Fortuna, Deimos, Baro Ki'Teer)
+- [x] Update notes system
 - [ ] Farm Planner page (mission planning for resources)
-- [ ] Share tracker state via URL
-- [ ] Export progress as image/PDF
-- [ ] Discord rich presence integration
-- [ ] Mobile-optimized layouts
+- [ ] Mastery Rank XP calculator
 - [ ] Trade value integration (warframe.market API)
+- [ ] Share tracker state via URL
+- [ ] Discord rich presence integration
 
 ---
 
@@ -320,6 +337,8 @@ This is a **fan-made** companion app. It is not affiliated with, endorsed by, or
 <div align="center">
 
 **Made with dedication for the Tenno community**
+
+Created by [Suatcan Yasan](https://github.com/SuatcanYasan)
 
 [⬆ Back to top](#warframe-item-tracker)
 

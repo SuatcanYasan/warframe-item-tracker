@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { themeOptions } from "../constants/themes";
 
+export const APP_VERSION = "2.1.0";
+
 export const useAppStore = create((set) => ({
   language: "en",
   themeName: "orokin",
@@ -13,6 +15,8 @@ export const useAppStore = create((set) => ({
   shortcutsOpen: false,
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
+  updateNotesOpen: false,
+  storedVersion: null,
 
   setLanguage: (language) => set({ language }),
   setThemeName: (themeName) => set({ themeName }),
@@ -43,13 +47,20 @@ export const useAppStore = create((set) => ({
   openMobileSidebar: () => set({ mobileSidebarOpen: true }),
   closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
   toggleMobileSidebar: () => set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
+  openUpdateNotes: () => set({ updateNotesOpen: true }),
+  closeUpdateNotes: () => set({ updateNotesOpen: false, storedVersion: APP_VERSION }),
+  setStoredVersion: (v) => set({ storedVersion: v }),
 
-  hydrate: (persisted) =>
+  hydrate: (persisted) => {
+    const versionMismatch = persisted.storedVersion !== APP_VERSION;
     set({
       language: persisted.language,
       themeName: persisted.theme,
       customThemeTokens: persisted.customThemeTokens,
       themeProfiles: persisted.themeProfiles,
       wizardOpen: !persisted.onboardingDone,
-    }),
+      storedVersion: persisted.storedVersion || null,
+      updateNotesOpen: versionMismatch && persisted.onboardingDone,
+    });
+  },
 }));

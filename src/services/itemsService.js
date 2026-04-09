@@ -348,6 +348,36 @@ async function searchPrimeComponents(searchText = "", limit = 60) {
   return results.slice(0, limit);
 }
 
+const MASTERY_CATEGORIES = [
+  { key: "Warframes", filter: (i) => i.category === "Warframes" },
+  { key: "Primary", filter: (i) => i.category === "Primary" },
+  { key: "Secondary", filter: (i) => i.category === "Secondary" },
+  { key: "Melee", filter: (i) => i.category === "Melee" },
+  { key: "Companions", filter: (i) => (i.category === "Pets" && i.type === "Pets") || i.category === "Sentinels" },
+  { key: "Archwing", filter: (i) => i.category === "Archwing" },
+  { key: "Arch-Gun", filter: (i) => i.category === "Arch-Gun" },
+  { key: "Arch-Melee", filter: (i) => i.category === "Arch-Melee" },
+];
+
+async function getMasteryItems() {
+  const { items } = await ensureDataLoaded();
+  const result = {};
+  for (const { key, filter } of MASTERY_CATEGORIES) {
+    result[key] = items
+      .filter(filter)
+      .map((i) => ({
+        uniqueName: i.uniqueName,
+        name: i.name,
+        imageName: i.imageName,
+        imageUrl: i.imageUrl,
+        type: i.type,
+        category: i.category,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return result;
+}
+
 module.exports = {
   ensureDataLoaded,
   getItemByUniqueName,
@@ -355,6 +385,7 @@ module.exports = {
   getI18nForLanguage,
   searchCraftableItems,
   searchPrimeComponents,
+  getMasteryItems,
 };
 
 

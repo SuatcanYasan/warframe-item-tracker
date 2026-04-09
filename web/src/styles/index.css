@@ -11,7 +11,11 @@
 @import './toolbar.css';
 @import './relic.css';
 @import './inventory.css';
+@import './dashboard.css';
+@import './mastery.css';
+@import './timers.css';
 @import './wizard.css';
 @import './shortcuts.css';
+@import './update-notes.css';
 @import './scrollbar.css';
 @import './responsive.css';

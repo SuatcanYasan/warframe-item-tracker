@@ -7,6 +7,7 @@ const {
   getI18nForLanguage,
   searchCraftableItems,
   searchPrimeComponents,
+  getMasteryItems,
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
 
@@ -159,6 +160,45 @@ app.post("/api/calculate", async (req, res) => {
   } catch (error) {
     console.error("/api/calculate error:", error);
     res.status(500).json({ error: "Requirements could not be calculated." });
+  }
+});
+
+app.get("/api/mastery/items", async (_req, res) => {
+  try {
+    const categorized = await getMasteryItems();
+    res.json(categorized);
+  } catch (error) {
+    console.error("/api/mastery/items error:", error);
+    res.status(500).json({ error: "Could not fetch mastery items." });
+  }
+});
+
+const WF_STAT_BASE = "https://api.warframestat.us/pc";
+let timerCache = { data: null, ts: 0 };
+
+app.get("/api/timers", async (_req, res) => {
+  try {
+    const now = Date.now();
+    const cacheValid = timerCache.data && (now - timerCache.ts < 30000);
+    const anyExpired = timerCache.data && [timerCache.data.cetus, timerCache.data.vallis, timerCache.data.cambion]
+      .some((c) => c?.expiry && new Date(c.expiry).getTime() <= now);
+    if (cacheValid && !anyExpired) {
+      return res.json(timerCache.data);
+    }
+    const endpoints = ["cetusCycle", "vallisCycle", "cambionCycle", "voidTrader"];
+    const results = await Promise.all(
+      endpoints.map((e) =>
+        fetch(`${WF_STAT_BASE}/${e}/`, { signal: AbortSignal.timeout(8000) })
+          .then((r) => r.json())
+          .catch(() => null)
+      )
+    );
+    const data = { cetus: results[0], vallis: results[1], cambion: results[2], voidTrader: results[3] };
+    timerCache = { data, ts: Date.now() };
+    res.json(data);
+  } catch (error) {
+    console.error("/api/timers error:", error);
+    res.status(500).json({ error: "Could not fetch timers." });
   }
 });
 

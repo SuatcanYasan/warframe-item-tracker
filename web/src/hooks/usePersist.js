@@ -3,6 +3,7 @@ import { useAppStore } from "../stores/appStore";
 import { useCraftStore } from "../stores/craftStore";
 import { useRelicStore } from "../stores/relicStore";
 import { useInventoryStore } from "../stores/inventoryStore";
+import { useMasteryStore } from "../stores/masteryStore";
 import { savePersistedState } from "../utils/storage";
 
 export function usePersist() {
@@ -11,6 +12,7 @@ export function usePersist() {
   const customThemeTokens = useAppStore((s) => s.customThemeTokens);
   const themeProfiles = useAppStore((s) => s.themeProfiles);
   const wizardOpen = useAppStore((s) => s.wizardOpen);
+  const storedVersion = useAppStore((s) => s.storedVersion);
 
   const selectedItems = useCraftStore((s) => s.selectedItems);
   const completedMap = useCraftStore((s) => s.completedMap);
@@ -19,6 +21,8 @@ export function usePersist() {
   const foundComponents = useRelicStore((s) => s.foundComponents);
 
   const inventoryParts = useInventoryStore((s) => s.inventoryParts);
+
+  const masteredItems = useMasteryStore((s) => s.masteredItems);
 
   useEffect(() => {
     savePersistedState({
@@ -32,6 +36,8 @@ export function usePersist() {
       onboardingDone: !wizardOpen,
       relicFoundComponents: foundComponents,
       inventoryParts,
+      masteredItems,
+      storedVersion,
     });
   }, [
     language,
@@ -44,5 +50,7 @@ export function usePersist() {
     wizardOpen,
     foundComponents,
     inventoryParts,
+    masteredItems,
+    storedVersion,
   ]);
 }

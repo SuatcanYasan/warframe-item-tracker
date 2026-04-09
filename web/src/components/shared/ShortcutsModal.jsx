@@ -2,8 +2,8 @@ import { Modal } from "antd";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-const CMD = isMac ? "⌘" : "Ctrl";
+const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent || navigator.platform);
+const MOD = isMac ? "⌘" : "Ctrl";
 
 export default function ShortcutsModal() {
   const { t } = useTranslate();
@@ -11,11 +11,15 @@ export default function ShortcutsModal() {
   const closeShortcuts = useAppStore((s) => s.closeShortcuts);
 
   const shortcuts = [
-    { keys: [CMD, "K"], description: t("shortcutShowHelp") },
+    { keys: [MOD, "Space"], description: t("shortcutOpenSearch") },
     { keys: ["/"], description: t("shortcutOpenSearch") },
+    { keys: [MOD, "K"], description: t("shortcutShowHelp") },
+    { keys: ["0"], description: t("dashboard") },
     { keys: ["1"], description: t("shortcutGoCraft") },
     { keys: ["2"], description: t("shortcutGoRelic") },
     { keys: ["3"], description: t("shortcutGoInventory") },
+    { keys: ["4"], description: t("shortcutGoMastery") },
+    { keys: ["5"], description: t("timersTracker") },
     { keys: ["?"], description: t("shortcutShowHelp") },
     { keys: ["Esc"], description: t("shortcutCloseModal") },
   ];
