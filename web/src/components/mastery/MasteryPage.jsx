@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -46,6 +46,18 @@ export default function MasteryPage() {
       });
     return () => { cancelled = true; };
   }, []);
+
+  const scrollRef = useRef(null);
+
+  // Wrap cycleStatus to preserve scroll
+  const handleCycle = (uniqueName) => {
+    const container = document.querySelector('.app-content');
+    const scrollTop = container?.scrollTop || 0;
+    cycleStatus(uniqueName);
+    requestAnimationFrame(() => {
+      if (container) container.scrollTop = scrollTop;
+    });
+  };
 
   const filteredCategories = useMemo(() => {
     if (!categorizedItems) return [];
@@ -223,19 +235,17 @@ export default function MasteryPage() {
               </span>
             </div>
             <div className="mastery-grid">
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {cat.items.map((item) => {
                   const status = masteredItems[item.uniqueName];
                   return (
                     <motion.div
                       key={item.uniqueName}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.15 }}
                       className={`mastery-card ${status || ""}`}
-                      onClick={() => cycleStatus(item.uniqueName)}
+                      onClick={() => handleCycle(item.uniqueName)}
                     >
                       <div className="mastery-card-hover-hint">
                         {getNextAction(status, t)}

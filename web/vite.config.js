@@ -9,6 +9,7 @@ module.exports = defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: { enabled: false },
       includeAssets: ["trackerlogo.png", "logo.svg"],
       manifest: {
         name: "Warframe Item Tracker",

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Button, Modal } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, CheckSquareOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
+import { App as AntApp } from "antd";
 import { useQueries } from "@tanstack/react-query";
 import { requestJson } from "../../utils/helpers";
 import { useFuzzySearch } from "../../hooks/useFuzzySearch";
@@ -12,11 +13,14 @@ import { useInventoryStore } from "../../stores/inventoryStore";
 
 export default function InventoryTrackerContent() {
   const { t, tin } = useTranslate();
+  const { modal } = AntApp.useApp();
   const inventoryParts = useInventoryStore((s) => s.inventoryParts);
   const setInventoryParts = useInventoryStore((s) => s.setInventoryParts);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("parts");
   const [search, setSearch] = useState("");
+  const [multiMode, setMultiMode] = useState(false);
+  const [multiIds, setMultiIds] = useState(new Set());
 
   const { message } = Modal.useModal ? {} : {};
 
@@ -60,6 +64,20 @@ export default function InventoryTrackerContent() {
       return next;
     });
   }, [setInventoryParts]);
+
+  const toggleMultiId = useCallback((id) => {
+    setMultiIds((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }, []);
+
+  const removeMultiSelected = useCallback(() => {
+    setInventoryParts((prev) => {
+      const next = { ...prev };
+      multiIds.forEach((id) => delete next[id]);
+      return next;
+    });
+    setMultiIds(new Set());
+    setMultiMode(false);
+  }, [multiIds, setInventoryParts]);
 
   // Parts list sorted by name
   const sortedParts = useMemo(() => {
@@ -159,9 +177,32 @@ export default function InventoryTrackerContent() {
           </button>
         </div>
         <div className="content-actions">
-          <Button size="small" type="default" icon={<PlusOutlined />} onClick={() => setDrawerOpen(true)}>
-            {t("addPart")}
-          </Button>
+          {multiMode ? (
+            <>
+              <span className="multi-select-count">{multiIds.size} {t("multiSelected")}</span>
+              <Button size="small" onClick={() => setMultiIds(new Set(sortedParts.map((p) => p.uniqueName)))}>{t("multiSelectAll")}</Button>
+              <Button size="small" danger icon={<DeleteOutlined />} disabled={multiIds.size === 0} onClick={() => {
+                modal.confirm({
+                  title: t("confirmRemoveTitle"),
+                  content: t("multiRemoveContent", { count: multiIds.size }),
+                  okText: t("confirmRemoveOk"),
+                  cancelText: t("confirmRemoveCancel"),
+                  okButtonProps: { danger: true },
+                  onOk: removeMultiSelected,
+                });
+              }}>{t("multiRemove")}</Button>
+              <Button size="small" icon={<CloseOutlined />} onClick={() => { setMultiMode(false); setMultiIds(new Set()); }}>{t("multiCancel")}</Button>
+            </>
+          ) : (
+            <>
+              {sortedParts.length > 1 && (
+                <Button size="small" icon={<CheckSquareOutlined />} onClick={() => setMultiMode(true)}>{t("multiSelect")}</Button>
+              )}
+              <Button size="small" type="default" icon={<PlusOutlined />} onClick={() => setDrawerOpen(true)}>
+                {t("addPart")}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -187,6 +228,9 @@ export default function InventoryTrackerContent() {
           partsList={partsList}
           onUpdateQty={updateQty}
           onRemove={removePart}
+          multiMode={multiMode}
+          multiIds={multiIds}
+          onToggleMulti={toggleMultiId}
         />
       )}
 

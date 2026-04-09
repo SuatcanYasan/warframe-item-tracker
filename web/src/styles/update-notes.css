@@ -17,12 +17,31 @@
   margin: 0;
 }
 
+.update-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.update-category-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--wf-text-muted);
+  padding-bottom: 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--wf-border) 20%, transparent);
+}
+
 .update-notes-list {
   margin: 0;
   padding: 0 0 0 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .update-note-item {
@@ -33,6 +52,22 @@
 
 .update-note-item::marker {
   color: var(--wf-primary);
+}
+
+.update-close-btn {
+  padding: 8px 28px;
+  border-radius: 8px;
+  border: 1px solid var(--wf-primary);
+  background: color-mix(in srgb, var(--wf-primary) 12%, transparent);
+  color: var(--wf-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.update-close-btn:hover {
+  background: color-mix(in srgb, var(--wf-primary) 25%, transparent);
 }
 
 .update-notes-version {

@@ -16,6 +16,8 @@ export const useCraftStore = create((set, get) => ({
   selectedCategory: "all",
   totalsSearch: "",
   totalsFilter: "all",
+  multiSelectMode: false,
+  multiSelectedIds: new Set(),
 
   // State setters
   setSelectedItems: (itemsOrFn) =>
@@ -46,6 +48,25 @@ export const useCraftStore = create((set, get) => ({
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setTotalsSearch: (search) => set({ totalsSearch: search }),
   setTotalsFilter: (filter) => set({ totalsFilter: filter }),
+  toggleMultiSelect: () => set((state) => ({ multiSelectMode: !state.multiSelectMode, multiSelectedIds: new Set() })),
+  exitMultiSelect: () => set({ multiSelectMode: false, multiSelectedIds: new Set() }),
+  toggleMultiId: (uniqueName) => set((state) => {
+    const next = new Set(state.multiSelectedIds);
+    if (next.has(uniqueName)) next.delete(uniqueName); else next.add(uniqueName);
+    return { multiSelectedIds: next };
+  }),
+  selectAllMulti: (ids) => set({ multiSelectedIds: new Set(ids) }),
+  clearMultiSelection: () => set({ multiSelectedIds: new Set() }),
+  removeMultiSelected: () => set((state) => {
+    const nextCompleted = { ...state.completedMap };
+    state.multiSelectedIds.forEach((id) => delete nextCompleted[id]);
+    return {
+      selectedItems: state.selectedItems.filter((i) => !state.multiSelectedIds.has(i.uniqueName)),
+      completedMap: nextCompleted,
+      multiSelectedIds: new Set(),
+      multiSelectMode: false,
+    };
+  }),
 
   // Business logic actions
   addItem: (item) => {

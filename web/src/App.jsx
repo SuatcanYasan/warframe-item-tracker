@@ -8,6 +8,9 @@ import {
   SearchOutlined,
   ClearOutlined,
   CameraOutlined,
+  CheckSquareOutlined,
+  CloseOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import hotkeys from "hotkeys-js";
@@ -92,6 +95,12 @@ function CraftAppContent() {
   const clearAll = useCraftStore((s) => s.clearAll);
   const completedMap = useCraftStore((s) => s.completedMap);
   const loadingCalc = useCraftStore((s) => s.loadingCalc);
+  const multiSelectMode = useCraftStore((s) => s.multiSelectMode);
+  const multiSelectedIds = useCraftStore((s) => s.multiSelectedIds);
+  const toggleMultiSelect = useCraftStore((s) => s.toggleMultiSelect);
+  const exitMultiSelect = useCraftStore((s) => s.exitMultiSelect);
+  const selectAllMulti = useCraftStore((s) => s.selectAllMulti);
+  const removeMultiSelected = useCraftStore((s) => s.removeMultiSelected);
 
   const removeItemFromRelic = useRelicStore((s) => s.clearForItem);
 
@@ -362,14 +371,39 @@ function CraftAppContent() {
                     </button>
                   </div>
                   <div className="content-actions">
-                    <Button size="small" icon={<DownloadOutlined />} onClick={exportData} disabled={selectedItems.length === 0} title={t("exportData")} />
-                    <Button size="small" icon={<UploadOutlined />} onClick={() => importInputRef.current?.click()} title={t("importData")} />
-                    <Button size="small" icon={<CameraOutlined />} onClick={() => captureAndDownload('.app-content', `wit-${new Date().toISOString().slice(0,10)}.png`)} title="Screenshot" />
-                    <input ref={importInputRef} type="file" accept="application/json" style={{ display: "none" }} onChange={importData} />
-                    {selectedItems.length > 0 && (
-                      <Button size="small" danger icon={<ClearOutlined />} onClick={confirmClearAll}>{t("clearAll")}</Button>
+                    {multiSelectMode ? (
+                      <>
+                        <span className="multi-select-count">{multiSelectedIds.size} {t("multiSelected")}</span>
+                        <Button size="small" onClick={() => selectAllMulti(selectedItems.map((i) => i.uniqueName))}>{t("multiSelectAll")}</Button>
+                        <Button size="small" danger icon={<DeleteOutlined />} disabled={multiSelectedIds.size === 0} onClick={() => {
+                          if (multiSelectedIds.size > 0) {
+                            modal.confirm({
+                              title: t("confirmRemoveTitle"),
+                              content: t("multiRemoveContent", { count: multiSelectedIds.size }),
+                              okText: t("confirmRemoveOk"),
+                              cancelText: t("confirmRemoveCancel"),
+                              okButtonProps: { danger: true },
+                              onOk: () => removeMultiSelected(),
+                            });
+                          }
+                        }}>{t("multiRemove")}</Button>
+                        <Button size="small" icon={<CloseOutlined />} onClick={exitMultiSelect}>{t("multiCancel")}</Button>
+                      </>
+                    ) : (
+                      <>
+                        {selectedItems.length > 1 && (
+                          <Button size="small" icon={<CheckSquareOutlined />} onClick={toggleMultiSelect}>{t("multiSelect")}</Button>
+                        )}
+                        <Button size="small" icon={<DownloadOutlined />} onClick={exportData} disabled={selectedItems.length === 0} title={t("exportData")} />
+                        <Button size="small" icon={<UploadOutlined />} onClick={() => importInputRef.current?.click()} title={t("importData")} />
+                        <Button size="small" icon={<CameraOutlined />} onClick={() => captureAndDownload('.app-content', `wit-${new Date().toISOString().slice(0,10)}.png`)} title="Screenshot" />
+                        <input ref={importInputRef} type="file" accept="application/json" style={{ display: "none" }} onChange={importData} />
+                        {selectedItems.length > 0 && (
+                          <Button size="small" danger icon={<ClearOutlined />} onClick={confirmClearAll}>{t("clearAll")}</Button>
+                        )}
+                        <Button size="small" type="default" icon={<PlusOutlined />} onClick={openSearchDrawer}>{t("addItem")}</Button>
+                      </>
                     )}
-                    <Button size="small" type="default" icon={<PlusOutlined />} onClick={openSearchDrawer}>{t("addItem")}</Button>
                   </div>
                 </div>
 

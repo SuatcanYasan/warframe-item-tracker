@@ -18,7 +18,13 @@ const webDistPath = path.join(__dirname, "..", "web", "dist");
 
 const app = express();
 app.use(express.json());
-app.use(express.static(webDistPath));
+app.use(express.static(webDistPath, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    }
+  },
+}));
 
 app.get("/api/health", (_req, res) => {
   res.json({

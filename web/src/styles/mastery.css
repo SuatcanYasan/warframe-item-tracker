@@ -159,6 +159,7 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
   padding-top: 36px;
+  overflow-anchor: none;
 }
 
 /* Individual card */

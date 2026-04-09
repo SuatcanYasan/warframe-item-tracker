@@ -219,6 +219,13 @@ export const i18n = {
     timersTracker: "Zamanlayicilar",
     updateNotesTitle: "Guncelleme Notu",
     updateNotesIntro: "Yeni neler geldi?",
+    updateNotesClose: "Anladim, Devam Et",
+    multiSelect: "Sec",
+    multiSelected: "secili",
+    multiSelectAll: "Tumunu Sec",
+    multiRemove: "Secilenleri Sil",
+    multiCancel: "Vazgec",
+    multiRemoveContent: "{count} item silinecek. Devam edilsin mi?",
   },
   en: {
     subtitle: "Add items, track direct recipes, and subtract completed parts from totals.",
@@ -440,6 +447,13 @@ export const i18n = {
     timersTracker: "Timers",
     updateNotesTitle: "Update Notes",
     updateNotesIntro: "What's new?",
+    updateNotesClose: "Got it, Continue",
+    multiSelect: "Select",
+    multiSelected: "selected",
+    multiSelectAll: "Select All",
+    multiRemove: "Remove Selected",
+    multiCancel: "Cancel",
+    multiRemoveContent: "{count} items will be removed. Continue?",
   },
 };
 

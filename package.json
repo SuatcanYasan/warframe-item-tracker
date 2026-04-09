@@ -1,6 +1,6 @@
 {
   "name": "warframe-item-tracker",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "Warframe Item Tracker — Craft, Relic & Inventory tracking with Express API and React + Vite frontend",
   "main": "src/server.js",
   "scripts": {

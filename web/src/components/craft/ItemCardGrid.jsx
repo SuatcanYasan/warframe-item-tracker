@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { DeleteOutlined, HolderOutlined } from "@ant-design/icons";
+import { DeleteOutlined, HolderOutlined, CheckOutlined } from "@ant-design/icons";
 import { Empty, Typography } from "antd";
 import {
   DndContext,
@@ -35,7 +35,7 @@ function AddedAtLabel({ timestamp }) {
   );
 }
 
-function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveItem, t, tin, sortingDisabled }) {
+function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveItem, t, tin, sortingDisabled, multiSelectMode, isMultiSelected, onToggleMulti }) {
   const {
     attributes,
     listeners,
@@ -60,15 +60,20 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
     <motion.div
       ref={setNodeRef}
       style={style}
-      className={`item-card ${allDone ? "done" : ""} ${isDragging ? "dragging" : ""}`}
+      className={`item-card ${allDone ? "done" : ""} ${isDragging ? "dragging" : ""} ${isMultiSelected ? "multi-selected" : ""}`}
       layout
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2, delay: index * 0.03 }}
-      onClick={() => onOpenDetail(item)}
+      onClick={() => multiSelectMode ? onToggleMulti(item.uniqueName) : onOpenDetail(item)}
     >
-      {!sortingDisabled && (
+      {multiSelectMode && (
+        <div className={`item-card-checkbox ${isMultiSelected ? "checked" : ""}`} onClick={(e) => { e.stopPropagation(); onToggleMulti(item.uniqueName); }}>
+          {isMultiSelected && <CheckOutlined />}
+        </div>
+      )}
+      {!sortingDisabled && !multiSelectMode && (
         <button
           type="button"
           className="item-card-drag-handle"
@@ -127,6 +132,9 @@ export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRe
   const selectedFilter = useCraftStore((s) => s.selectedFilter);
   const selectedCategory = useCraftStore((s) => s.selectedCategory);
   const reorderItems = useCraftStore((s) => s.reorderItems);
+  const multiSelectMode = useCraftStore((s) => s.multiSelectMode);
+  const multiSelectedIds = useCraftStore((s) => s.multiSelectedIds);
+  const toggleMultiId = useCraftStore((s) => s.toggleMultiId);
 
   const sortingDisabled =
     Boolean(selectedSearch) ||
@@ -177,7 +185,10 @@ export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRe
                 onRemoveItem={onRemoveItem}
                 t={t}
                 tin={tin}
-                sortingDisabled={sortingDisabled}
+                sortingDisabled={sortingDisabled || multiSelectMode}
+                multiSelectMode={multiSelectMode}
+                isMultiSelected={multiSelectedIds.has(item.uniqueName)}
+                onToggleMulti={toggleMultiId}
               />
             ))}
           </AnimatePresence>

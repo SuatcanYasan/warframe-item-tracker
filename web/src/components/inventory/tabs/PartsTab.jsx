@@ -6,6 +6,7 @@ import {
   TableOutlined,
   CaretUpOutlined,
   CaretDownOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 import { Empty, Typography } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,17 +21,23 @@ import { useTranslate } from "../../../hooks/useTranslate";
 
 const { Text } = Typography;
 
-function PartCard({ part, onUpdateQty, onRemove }) {
+function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggleMulti }) {
   const { t, tin } = useTranslate();
   return (
     <motion.div
-      className="item-card"
+      className={`item-card ${isSelected ? "multi-selected" : ""}`}
+      onClick={multiMode ? () => onToggleMulti(part.uniqueName) : undefined}
       layout
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
     >
+      {multiMode && (
+        <div className={`item-card-checkbox ${isSelected ? "checked" : ""}`} onClick={(e) => { e.stopPropagation(); onToggleMulti(part.uniqueName); }}>
+          {isSelected && <CheckOutlined />}
+        </div>
+      )}
       <div className="item-card-img">
         <img
           src={part.parentImageUrl || FALLBACK_ICON}
@@ -179,7 +186,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
   );
 }
 
-export default function PartsTab({ partsList, onUpdateQty, onRemove }) {
+export default function PartsTab({ partsList, onUpdateQty, onRemove, multiMode, multiIds, onToggleMulti }) {
   const { t, tin } = useTranslate();
   const [viewMode, setViewMode] = useState("card");
 
@@ -214,6 +221,9 @@ export default function PartsTab({ partsList, onUpdateQty, onRemove }) {
                 part={part}
                 onUpdateQty={onUpdateQty}
                 onRemove={onRemove}
+                multiMode={multiMode}
+                isSelected={multiIds?.has(part.uniqueName)}
+                onToggleMulti={onToggleMulti}
               />
             ))}
           </AnimatePresence>

@@ -1,3 +1,40 @@
+/* ===== MULTI SELECT ===== */
+.item-card-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid color-mix(in srgb, var(--wf-border) 60%, transparent);
+  background: color-mix(in srgb, var(--wf-bg-base) 80%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  font-size: 12px;
+  color: transparent;
+  transition: all 0.15s;
+}
+
+.item-card-checkbox.checked {
+  border-color: var(--wf-primary);
+  background: var(--wf-primary);
+  color: #fff;
+}
+
+.item-card.multi-selected {
+  border-color: color-mix(in srgb, var(--wf-primary) 50%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wf-primary) 20%, transparent);
+}
+
+.multi-select-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wf-primary);
+}
+
 /* ===== ITEM CARD GRID ===== */
 
 .item-card-grid {
