@@ -112,6 +112,7 @@ export default function ThemeDrawer() {
 
   return (
     <Drawer
+      rootClassName="theme-drawer"
       title={t("customize")}
       placement="right"
       width={360}
@@ -168,7 +169,7 @@ export default function ThemeDrawer() {
         <Divider />
 
         {colorFields.map(([tokenKey, labelKey]) => (
-          <Flex key={tokenKey} align="center" justify="space-between">
+          <Flex key={tokenKey} className="theme-color-row" align="center" justify="space-between">
             <Text>{t(labelKey)}</Text>
             <ColorPicker
               value={customThemeTokens[tokenKey]}
@@ -179,7 +180,7 @@ export default function ThemeDrawer() {
         ))}
 
         <Divider />
-        <Flex align="center" justify="space-between" gap={8}>
+        <Flex className="theme-color-row" align="center" justify="space-between" gap={8}>
           <Text>{t("customRadius")}</Text>
           <InputNumber
             min={2}

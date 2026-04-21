@@ -12,6 +12,47 @@ const CAT_META = {
 
 const CHANGELOG = [
   {
+    version: "2.3.0",
+    categories: {
+      new: {
+        tr: [
+          "Mobil icin yeni navigasyon tasarimi — alt barda merkez menu butonuyla tum sayfalara hizli erisim",
+          "Warframe temali ozel imlecler — butonlarda altin nisangah, metin alanlarinda altin I-beam ve surukleme sirasinda tutma isareti",
+          "Warframe oyununun yazi tipi artik projede — Orbitron ve Exo 2 ile sci-fi bir hava",
+        ],
+        en: [
+          "New mobile navigation design — quick access to all pages via the center menu button on the bottom bar",
+          "Warframe-themed custom cursors — gold reticle on buttons, gold I-beam in text fields, and a grab handle while dragging",
+          "Warframe game fonts now in the project — sci-fi feel with Orbitron and Exo 2",
+        ],
+      },
+      fix: {
+        tr: [
+          "Lotus (acik) temada mobil menu gorunurluk sorunu giderildi",
+          "Scroll rengi artik secilen tema rengine gore degisiyor",
+        ],
+        en: [
+          "Fixed mobile menu visibility issue in Lotus (light) theme",
+          "Scroll color now matches the selected theme color",
+        ],
+      },
+      improve: {
+        tr: [
+          "Mobilde tema editoru ve arama cekmeceleri tam ekran ve okunakli hale geldi",
+          "Filtreler ve aksiyon butonlari mobilde duzgun kaydirilabilir pill tasarimina gecti",
+          "Mobil menu asagi surukleyerek kapatilabiliyor",
+          "Mobilde tema ve dil secicileri menu icinde kolay erisilebilir hale getirildi",
+        ],
+        en: [
+          "Theme editor and search drawers are now full-screen and readable on mobile",
+          "Filters and action buttons switched to smooth scrollable pill design on mobile",
+          "Mobile menu can be closed by swiping down",
+          "Theme and language switchers are now easily accessible inside the mobile menu",
+        ],
+      },
+    },
+  },
+  {
     version: "2.2.0",
     categories: {
       new: {

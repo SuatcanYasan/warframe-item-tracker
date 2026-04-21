@@ -1,6 +1,6 @@
 /* ===== WARFRAME CRAFT TRACKER — AWWWARDS-GRADE UI ===== */
 
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap');
 
 /* ===== DESIGN TOKENS ===== */
 :root {
@@ -49,10 +49,10 @@
   --sp-8: 32px;
   --sp-10: 40px;
 
-  /* Typography */
-  --font-display: 'Rajdhani', sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Typography — Warframe-inspired */
+  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
+  --font-body: 'Exo 2', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
 
   --radius-sm: 8px;
   --radius-md: 12px;

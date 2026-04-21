@@ -21,6 +21,7 @@ import {
 } from "./utils/storage";
 import { requestJson } from "./utils/helpers";
 import { captureAndDownload } from "./utils/screenshot";
+import { applyCursorVars } from "./utils/cursors";
 
 import { useAppStore } from "./stores/appStore";
 import { useCraftStore } from "./stores/craftStore";
@@ -39,6 +40,7 @@ import { usePersist } from "./hooks/usePersist";
 
 import Sidebar from "./components/shared/Sidebar";
 import AppHeader from "./components/shared/AppHeader";
+import MobileNav from "./components/shared/MobileNav";
 import SummaryBar from "./components/craft/SummaryBar";
 import ItemCardGrid from "./components/craft/ItemCardGrid";
 import TotalsCardGrid from "./components/craft/TotalsCardGrid";
@@ -141,6 +143,7 @@ function CraftAppContent() {
     root.style.setProperty("--wf-border", customThemeTokens.colorBorder || "#2f4774");
     root.style.setProperty("--wf-scrollbar", customThemeTokens.colorScrollbar || customThemeTokens.colorBorder || "#2f4774");
     root.style.setProperty("--wf-primary", customThemeTokens.colorPrimary || "#CA8A04");
+    applyCursorVars(customThemeTokens.colorPrimary || "#CA8A04");
   }, [customThemeTokens, themeName]);
 
   // --- Calculate ---
@@ -492,6 +495,7 @@ function CraftAppContent() {
       <WizardModal />
       <ShortcutsModal />
       <UpdateNotesModal />
+      <MobileNav />
     </>
   );
 }
@@ -526,7 +530,7 @@ function CraftApp() {
     <ConfigProvider
       theme={{
         algorithm: themeOptions[themeName]?.algorithm || themeOptions.orokin.algorithm,
-        token: customThemeTokens,
+        token: { fontFamily: "'Exo 2', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif", ...customThemeTokens },
       }}
     >
       <AntApp>

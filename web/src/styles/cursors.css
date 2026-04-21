@@ -1,0 +1,189 @@
+/* ===== WARFRAME CUSTOM CURSOR SET (desktop only) =====
+ * 14 custom gold SVG cursors — applied with !important to survive
+ * :active / :hover / drag interactions (e.g. framer-motion). */
+
+:root {
+  /* Default arrow — hotspot 3 3 */
+  --cur-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M4 3 L4 22 L10 17 L14 26 L18 24 L14 15 L22 15 Z' fill='%23CA8A04' stroke='%23000' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M4 3 L4 22 L10 17 L14 26 L18 24 L14 15 L22 15 Z' fill='%23F4C23C' opacity='0.35'/%3E%3C/svg%3E") 3 3;
+
+  /* Pointer — Warframe crosshair reticle, hotspot 13 13 */
+  --cur-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='10' fill='none' stroke='%23CA8A04' stroke-width='2'/%3E%3Ccircle cx='13' cy='13' r='2.5' fill='%23CA8A04'/%3E%3Cline x1='13' y1='1' x2='13' y2='5' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='13' y1='21' x2='13' y2='25' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='1' y1='13' x2='5' y2='13' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='21' y1='13' x2='25' y2='13' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 13 13;
+
+  /* Text I-beam gold — hotspot 8 12 */
+  --cur-text: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='24' viewBox='0 0 16 24'%3E%3Cline x1='8' y1='3' x2='8' y2='21' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4' y1='3' x2='12' y2='3' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4' y1='21' x2='12' y2='21' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 8 12;
+
+  /* Move — 4-way arrows, hotspot 14 14 */
+  --cur-move: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg stroke='%23CA8A04' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cpath d='M14 3 L14 25 M3 14 L25 14'/%3E%3Cpolyline points='10,7 14,3 18,7'/%3E%3Cpolyline points='10,21 14,25 18,21'/%3E%3Cpolyline points='7,10 3,14 7,18'/%3E%3Cpolyline points='21,10 25,14 21,18'/%3E%3C/g%3E%3C/svg%3E") 14 14;
+
+  /* Grab — 3 vertical bars like a drag handle, hotspot 14 14 */
+  --cur-grab: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg stroke='%23CA8A04' stroke-width='2.5' stroke-linecap='round'%3E%3Cline x1='10' y1='9' x2='10' y2='19'/%3E%3Cline x1='14' y1='9' x2='14' y2='19'/%3E%3Cline x1='18' y1='9' x2='18' y2='19'/%3E%3C/g%3E%3C/svg%3E") 14 14;
+
+  /* Grabbing — bars thicker + glow ring, hotspot 14 14 */
+  --cur-grabbing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%23CA8A04' stroke-width='1.5' opacity='0.5'/%3E%3Cg stroke='%23F4C23C' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='10' y1='11' x2='10' y2='17'/%3E%3Cline x1='14' y1='11' x2='14' y2='17'/%3E%3Cline x1='18' y1='11' x2='18' y2='17'/%3E%3C/g%3E%3C/svg%3E") 14 14;
+
+  /* Crosshair — precision +, hotspot 12 12 */
+  --cur-crosshair: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='0' x2='12' y2='24' stroke='%23CA8A04' stroke-width='2'/%3E%3Cline x1='0' y1='12' x2='24' y2='12' stroke='%23CA8A04' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23CA8A04'/%3E%3C/svg%3E") 12 12;
+
+  /* Help — ? badge, hotspot 13 13 */
+  --cur-help: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='10' fill='none' stroke='%23CA8A04' stroke-width='2'/%3E%3Cpath d='M9.5 10 Q13 6 16.5 10 Q16.5 13 13 14 L13 16' fill='none' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='13' cy='19' r='1.2' fill='%23CA8A04'/%3E%3C/svg%3E") 13 13;
+
+  /* Wait — dashed ring, hotspot 13 13 */
+  --cur-wait: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='10' fill='none' stroke='%23CA8A04' stroke-width='2.2' stroke-dasharray='4 3'/%3E%3Ccircle cx='13' cy='13' r='2.5' fill='%23CA8A04'/%3E%3C/svg%3E") 13 13;
+
+  /* Not-allowed — red × circle, hotspot 13 13 */
+  --cur-not-allowed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='10' fill='none' stroke='%23EF4444' stroke-width='2.5'/%3E%3Cline x1='7' y1='7' x2='19' y2='19' stroke='%23EF4444' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='19' y1='7' x2='7' y2='19' stroke='%23EF4444' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 13 13;
+
+  /* Zoom-in — lens +, hotspot 10 10 */
+  --cur-zoom-in: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='10' cy='10' r='7' fill='none' stroke='%23CA8A04' stroke-width='2'/%3E%3Cline x1='10' y1='7' x2='10' y2='13' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='7' y1='10' x2='13' y2='10' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='15' y1='15' x2='25' y2='25' stroke='%23CA8A04' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 10 10;
+
+  /* Zoom-out — lens -, hotspot 10 10 */
+  --cur-zoom-out: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='10' cy='10' r='7' fill='none' stroke='%23CA8A04' stroke-width='2'/%3E%3Cline x1='7' y1='10' x2='13' y2='10' stroke='%23CA8A04' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='15' y1='15' x2='25' y2='25' stroke='%23CA8A04' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 10 10;
+
+  /* Col-resize — horizontal double arrow, hotspot 13 10 */
+  --cur-col-resize: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='20' viewBox='0 0 26 20'%3E%3Cg stroke='%23CA8A04' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cline x1='4' y1='10' x2='22' y2='10'/%3E%3Cpolyline points='8,6 4,10 8,14'/%3E%3Cpolyline points='18,6 22,10 18,14'/%3E%3C/g%3E%3C/svg%3E") 13 10;
+
+  /* Row-resize — vertical double arrow, hotspot 10 13 */
+  --cur-row-resize: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='26' viewBox='0 0 20 26'%3E%3Cg stroke='%23CA8A04' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'%3E%3Cline x1='10' y1='4' x2='10' y2='22'/%3E%3Cpolyline points='6,8 10,4 14,8'/%3E%3Cpolyline points='6,18 10,22 14,18'/%3E%3C/g%3E%3C/svg%3E") 10 13;
+}
+
+/* ============================================================
+ * Desktop only — touch devices keep native
+ * ============================================================ */
+@media (hover: hover) and (pointer: fine) {
+  /* Global default — arrow */
+  html,
+  body,
+  body *,
+  body *::before,
+  body *::after {
+    cursor: var(--cur-default), auto;
+  }
+
+  /* Interactive — pointer reticle (with !important to survive
+   * framer-motion drag / :active / Ant Design resets) */
+  a,
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  [role="switch"],
+  [onclick],
+  summary,
+  label,
+  .ant-btn,
+  .ant-btn *,
+  .ant-segmented-item,
+  .ant-segmented-item *,
+  .ant-select,
+  .ant-select *,
+  .ant-select-selector,
+  .ant-select-item,
+  .ant-dropdown-menu-item,
+  .ant-checkbox,
+  .ant-checkbox-wrapper,
+  .ant-radio,
+  .ant-radio-wrapper,
+  .ant-switch,
+  .ant-picker,
+  .ant-color-picker-trigger,
+  .ant-modal-close,
+  .ant-drawer-close,
+  .ant-list-item,
+  .ant-tabs-tab,
+  .ant-menu-item,
+  .nav-item,
+  .content-tab,
+  .craft-filter-btn,
+  .craft-category-pill,
+  .item-card,
+  .mastery-card,
+  .dashboard-card,
+  .timer-card,
+  .mobile-nav-item,
+  .mobile-nav-sheet-item,
+  .mobile-nav-fab,
+  .breadcrumb-root {
+    cursor: var(--cur-pointer), pointer !important;
+  }
+
+  /* Text fields — gold I-beam */
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  input[type="tel"],
+  input:not([type]),
+  textarea,
+  [contenteditable="true"],
+  .ant-input,
+  .ant-input-number-input,
+  .craft-search-compact-input {
+    cursor: var(--cur-text), text !important;
+  }
+
+  /* Drag handles — grab / grabbing */
+  [draggable="true"],
+  .item-card-drag-handle,
+  .mobile-nav-sheet-handle {
+    cursor: var(--cur-grab), grab !important;
+  }
+
+  [draggable="true"]:active,
+  .item-card-drag-handle:active,
+  .mobile-nav-sheet-handle:active,
+  .mobile-nav-sheet.dragging,
+  *[style*="cursor: grabbing"] {
+    cursor: var(--cur-grabbing), grabbing !important;
+  }
+
+  /* Disabled — red not-allowed */
+  [disabled],
+  :disabled,
+  .ant-btn-disabled,
+  .ant-btn:disabled,
+  .nav-item.disabled {
+    cursor: var(--cur-not-allowed), not-allowed !important;
+  }
+
+  /* Help — when title/[data-help] is used */
+  [title]:not(a):not(button):not(input):not(textarea):not(.ant-btn),
+  [data-cursor="help"] {
+    cursor: var(--cur-help), help;
+  }
+
+  /* Explicit cursor semantics via CSS keyword */
+  [style*="cursor: move"],
+  .item-card-drag-handle.moving {
+    cursor: var(--cur-move), move !important;
+  }
+
+  [style*="cursor: crosshair"] {
+    cursor: var(--cur-crosshair), crosshair !important;
+  }
+
+  [style*="cursor: wait"],
+  [aria-busy="true"],
+  .ant-spin-container.ant-spin-blur {
+    cursor: var(--cur-wait), wait !important;
+  }
+
+  [style*="cursor: zoom-in"] {
+    cursor: var(--cur-zoom-in), zoom-in !important;
+  }
+
+  [style*="cursor: zoom-out"] {
+    cursor: var(--cur-zoom-out), zoom-out !important;
+  }
+
+  [style*="cursor: col-resize"],
+  .ant-table-resizing {
+    cursor: var(--cur-col-resize), col-resize !important;
+  }
+
+  [style*="cursor: row-resize"] {
+    cursor: var(--cur-row-resize), row-resize !important;
+  }
+}
