@@ -3,7 +3,7 @@ import { Button, Drawer, Input, List, Spin } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { FALLBACK_ICON } from "../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import { useSearchItemsInitial } from "../../hooks/useApiQueries";
 import EmptyState from "../shared/EmptyState";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -68,7 +68,7 @@ export default function SearchDrawer({ open, onClose, onAddItem }) {
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
                   className="search-drawer-img"
-                  onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                  onError={handleImgError}
                 />
                 <div className="search-drawer-info">
                   <div className="search-drawer-name">{tin(item.uniqueName, item.name)}</div>

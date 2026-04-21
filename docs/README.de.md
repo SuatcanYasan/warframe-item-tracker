@@ -41,6 +41,10 @@
 - **Amp System** — Operator-Amp-Builder, Teile-Tracker, Eidolon-Planer, Meta-Sets
 - **10 Sprachen** — Deutsch, Englisch, Türkisch, Französisch, Spanisch, Italienisch, Portugiesisch, Russisch, Japanisch, Arabisch
 - **3 Themes + Editor** — Orokin (Gold), Drifter (Grün), Lotus (Hell) mit dynamischen Custom-Cursorn
+- **Aktivitäten** — Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration live in einem Feed, alle 60s aktualisiert
+- **Checkliste** — Tägliche/wöchentliche Warframe-Aufgaben mit automatischem UTC 00:00 Reset und Preset-Paket
+- **URL-Freigabe** — Tracker-Daten als DEFLATE-komprimierten Link teilen, ohne Backend
+- **Discord Webhook** — Milestone-Embeds ("Geehrter Tenno ...") in deinem Discord-Kanal bei Amp/Craft/Prime/Mastery-Abschluss, mit Anti-Spam-Cooldown
 - **PWA** — Installierbar als Desktop-/Mobile-App, funktioniert offline
 
 ---

@@ -1,7 +1,7 @@
 import { Modal, InputNumber, Button, Typography, Flex } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useCraftStore } from "../../../stores/craftStore";
 
@@ -50,7 +50,7 @@ export default function TotalDetailModal({
             src={material.imageUrl || FALLBACK_ICON}
             alt={material.name}
             style={{ width: 48, height: 48, objectFit: "contain", borderRadius: 8, background: "var(--wf-bg-elevated, #152344)", padding: 4 }}
-            onError={(e) => { e.target.src = FALLBACK_ICON; }}
+            onError={handleImgError}
           />
           <div style={{ flex: 1 }}>
             <Text strong style={{ fontSize: 16 }}>{tin(material.uniqueName, material.name)}</Text>
@@ -90,7 +90,7 @@ export default function TotalDetailModal({
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
                   className="detail-req-img"
-                  onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                  onError={handleImgError}
                 />
                 <div className={`detail-req-name ${isDone ? "done" : ""}`}>
                   {tin(item.uniqueName, item.name)}

@@ -9,7 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { FALLBACK_ICON, requestJson } from "../../../utils/helpers";
+import { FALLBACK_ICON, requestJson, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useAmpStore } from "../../../stores/ampStore";
 
@@ -64,7 +64,7 @@ function SetCard({ set, allParts, onRemove, onTogglePart, t }) {
             onClick={() => onTogglePart(set.id, p.key)}
           >
             <div className="amp-set-part-check">{p.data.done && <CheckOutlined />}</div>
-            <img src={resolveImage(p.data, allParts)} alt="" className="amp-set-part-img" onError={(e) => { e.target.src = FALLBACK_ICON; }} />
+            <img src={resolveImage(p.data, allParts)} alt="" className="amp-set-part-img" onError={handleImgError} />
             <div className="amp-set-part-info">
               <div className="amp-set-part-slot">{t(p.labelKey)}</div>
               <div className="amp-set-part-name">
@@ -227,7 +227,7 @@ export default function AmpTrackerTab({ allParts }) {
                     src={img}
                     alt=""
                     className="amp-material-img"
-                    onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                    onError={handleImgError}
                   />
                   <span className="amp-material-name">{m.name}</span>
                   <span className="amp-material-qty">×{m.itemCount}</span>

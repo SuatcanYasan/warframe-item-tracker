@@ -1,6 +1,6 @@
 import { Modal, InputNumber, Typography } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 
 const { Text } = Typography;
@@ -33,7 +33,7 @@ export default function ItemDetailModal({
               background: "var(--wf-bg-elevated, #152344)", padding: 4,
               clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
             }}
-            onError={(e) => { e.target.src = FALLBACK_ICON; }}
+            onError={handleImgError}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
             <Text strong style={{ fontSize: 16 }}>{tin(item.uniqueName, item.name)}</Text>
@@ -82,7 +82,7 @@ export default function ItemDetailModal({
                 src={req.imageUrl || FALLBACK_ICON}
                 alt={req.name}
                 className="detail-req-img"
-                onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                onError={handleImgError}
               />
               <div className={`detail-req-name ${req.isDone ? "done" : ""}`}>
                 {tin(req.uniqueName, req.name)}

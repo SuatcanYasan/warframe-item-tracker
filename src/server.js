@@ -9,6 +9,7 @@ const {
   searchPrimeComponents,
   getMasteryItems,
   getAmps,
+  searchResources,
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
 
@@ -190,29 +191,135 @@ app.get("/api/amps", async (_req, res) => {
   }
 });
 
+app.get("/api/resources/search", async (req, res) => {
+  try {
+    const search = typeof req.query.search === "string" ? req.query.search : "";
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit) || 20));
+    const results = await searchResources(search, limit);
+    res.json({ results });
+  } catch (error) {
+    console.error("/api/resources/search error:", error);
+    res.status(500).json({ error: "Resources could not be loaded." });
+  }
+});
+
+// Drop search proxy — warframestat.us /drops/search/{query}/
+// Each distinct resource name is cached for 30 minutes (resources don't
+// change frequently, saves upstream calls).
+const dropsCache = new Map();  // name -> { data, ts }
+const DROPS_TTL_MS = 30 * 60 * 1000;
+
+app.get("/api/drops/search/:name", async (req, res) => {
+  try {
+    const raw = String(req.params.name || "").trim();
+    if (!raw) return res.status(400).json({ error: "Missing query" });
+    const key = raw.toLowerCase();
+    const now = Date.now();
+    const cached = dropsCache.get(key);
+    if (cached && now - cached.ts < DROPS_TTL_MS) {
+      return res.json(cached.data);
+    }
+    const url = `https://api.warframestat.us/drops/search/${encodeURIComponent(raw)}/`;
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
+        "Accept": "application/json",
+      },
+    });
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `Upstream ${response.status}` });
+    }
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : [];
+    dropsCache.set(key, { data, ts: now });
+    // Cleanup old entries (>2h)
+    for (const [k, v] of dropsCache.entries()) {
+      if (now - v.ts > 2 * 60 * 60 * 1000) dropsCache.delete(k);
+    }
+    res.json(data);
+  } catch (error) {
+    console.error("/api/drops error:", error);
+    res.status(500).json({ error: "Could not search drops." });
+  }
+});
+
+app.get("/api/activities", async (_req, res) => {
+  try {
+    const ws = await getWorldstate();
+    res.json({
+      fissures: Array.isArray(ws.fissures) ? ws.fissures : [],
+      invasions: Array.isArray(ws.invasions) ? ws.invasions : [],
+      nightwave: ws.nightwave || null,
+      sortie: ws.sortie || null,
+      archonHunt: ws.archonHunt || null,
+      arbitration: ws.arbitration || null,
+      fetchedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("/api/activities error:", error);
+    res.status(500).json({ error: "Could not fetch activities." });
+  }
+});
+
 const WF_STAT_BASE = "https://api.warframestat.us/pc";
-let timerCache = { data: null, ts: 0 };
+// Single shared worldstate cache — the upstream API dropped per-field
+// endpoints, so we fetch the whole /pc/ payload once and slice it.
+let worldstateCache = { data: null, ts: 0 };
+
+const STALE_MAX_AGE = 60 * 60 * 1000;   // serve stale cache up to 1 hour on error
+
+async function fetchWorldstateOnce() {
+  const response = await fetch(`${WF_STAT_BASE}/?cb=${Date.now()}`, {
+    signal: AbortSignal.timeout(10000),
+    headers: {
+      "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
+      "Accept": "application/json",
+      "Cache-Control": "no-cache",
+    },
+  });
+  if (!response.ok) throw new Error(`worldstate ${response.status}`);
+  const text = await response.text();
+  if (!text) throw new Error("empty body");
+  return JSON.parse(text);
+}
+
+async function getWorldstate() {
+  const now = Date.now();
+  const cacheFresh = worldstateCache.data && now - worldstateCache.ts < 30000;
+  if (cacheFresh) return worldstateCache.data;
+
+  // Try to refresh, up to 3 attempts
+  let lastError = null;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const data = await fetchWorldstateOnce();
+      worldstateCache = { data, ts: Date.now() };
+      return data;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  // Refresh failed — fall back to stale cache if it's within 1 hour
+  if (worldstateCache.data && now - worldstateCache.ts < STALE_MAX_AGE) {
+    console.warn(
+      `[worldstate] upstream failed (${lastError?.message}), serving stale cache (age ${Math.round((now - worldstateCache.ts) / 1000)}s)`,
+    );
+    return worldstateCache.data;
+  }
+  throw lastError || new Error("worldstate unavailable");
+}
 
 app.get("/api/timers", async (_req, res) => {
   try {
-    const now = Date.now();
-    const cacheValid = timerCache.data && (now - timerCache.ts < 30000);
-    const anyExpired = timerCache.data && [timerCache.data.cetus, timerCache.data.vallis, timerCache.data.cambion]
-      .some((c) => c?.expiry && new Date(c.expiry).getTime() <= now);
-    if (cacheValid && !anyExpired) {
-      return res.json(timerCache.data);
-    }
-    const endpoints = ["cetusCycle", "vallisCycle", "cambionCycle", "voidTrader"];
-    const results = await Promise.all(
-      endpoints.map((e) =>
-        fetch(`${WF_STAT_BASE}/${e}/`, { signal: AbortSignal.timeout(8000) })
-          .then((r) => r.json())
-          .catch(() => null)
-      )
-    );
-    const data = { cetus: results[0], vallis: results[1], cambion: results[2], voidTrader: results[3] };
-    timerCache = { data, ts: Date.now() };
-    res.json(data);
+    const ws = await getWorldstate();
+    res.json({
+      cetus: ws.cetusCycle || null,
+      vallis: ws.vallisCycle || null,
+      cambion: ws.cambionCycle || null,
+      voidTrader: ws.voidTrader || null,
+    });
   } catch (error) {
     console.error("/api/timers error:", error);
     res.status(500).json({ error: "Could not fetch timers." });

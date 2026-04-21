@@ -9,6 +9,10 @@ const I18N_URLS = [
   "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/i18n.json",
   "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/i18n.json",
 ];
+// Item icons come from WFCD's curated CDN — filenames there actually match
+// the 6k+ items in the dataset. Wiki.warframe.com uses different naming
+// conventions (e.g. "CitrineIcon.png" vs "Citrine.png"), so deriving wiki URLs
+// from item names would 404 for most items.
 const ITEM_IMAGE_BASE_URL = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/img";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const FETCH_TIMEOUT_MS = 15000;
@@ -446,6 +450,35 @@ function simplifyAmpPart(item, number, slot) {
   };
 }
 
+// Raw-material search for Farm Planner. Returns { uniqueName, name, imageUrl }.
+// Matches any resource/gem/plant whose name contains the query.
+async function searchResources(query = "", limit = 20) {
+  const { items } = await ensureDataLoaded();
+  const q = query.trim().toLowerCase();
+  const pool = items.filter(
+    (item) => item.type === "Resource" || item.type === "Gem" || item.type === "Plant",
+  );
+  const hits = q
+    ? pool.filter((item) => item.name.toLowerCase().includes(q))
+    : pool;
+  return hits
+    .sort((a, b) => {
+      // Exact name-start matches first
+      const aStart = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+      const bStart = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+      if (aStart !== bStart) return aStart - bStart;
+      return a.name.localeCompare(b.name);
+    })
+    .slice(0, limit)
+    .map((item) => ({
+      uniqueName: item.uniqueName,
+      name: item.name,
+      imageName: item.imageName,
+      imageUrl: item.imageUrl,
+      type: item.type,
+    }));
+}
+
 async function getAmps() {
   const { items } = await ensureDataLoaded();
   const amps = items.filter((i) => i.type === "Amp");
@@ -498,6 +531,7 @@ module.exports = {
   searchPrimeComponents,
   getMasteryItems,
   getAmps,
+  searchResources,
 };
 
 

@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   MenuOutlined,
   HomeOutlined,
-  ClockCircleOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import { Segmented } from "antd";
@@ -21,8 +20,11 @@ const ALL_ITEMS = [
   { key: "relic", path: "/relic", img: `${WF_ICONS}/IconProjectionT1%28xWhite%29.png`, labelKey: "relicTracker" },
   { key: "inventory", path: "/inventory", img: `${WF_ICONS}/IconBundle%28xWhite%29.png`, labelKey: "inventoryTracker" },
   { key: "mastery", path: "/mastery", img: `${WF_ICONS}/IconMasteryRank.png`, labelKey: "masteryTracker" },
-  { key: "timers", path: "/timers", icon: <ClockCircleOutlined />, labelKey: "timersTracker" },
+  { key: "timers", path: "/timers", img: `${WF_ICONS}/IconTimer%28xWhite%29.png`, labelKey: "timersTracker" },
   { key: "amps", path: "/amps", img: `${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`, labelKey: "ampsTracker" },
+  { key: "activities", path: "/activities", img: `${WF_ICONS}/IconAllyDown%28xRed%29.png`, labelKey: "activitiesPage" },
+  { key: "checklist", path: "/checklist", img: `${WF_ICONS}/IconQuest%28xWhite%29.png`, labelKey: "checklistPage" },
+  { key: "farm", path: "/farm", img: `${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`, labelKey: "farmPlanner" },
 ];
 
 const LEFT_ITEMS = [ALL_ITEMS[0], ALL_ITEMS[1]];

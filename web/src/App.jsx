@@ -22,6 +22,7 @@ import {
 import { requestJson } from "./utils/helpers";
 import { captureAndDownload } from "./utils/screenshot";
 import { applyCursorVars } from "./utils/cursors";
+import { initWebhookWatcher, notifyCraftProgress } from "./utils/webhookWatcher";
 
 import { useAppStore } from "./stores/appStore";
 import { useCraftStore } from "./stores/craftStore";
@@ -29,6 +30,8 @@ import { useRelicStore } from "./stores/relicStore";
 import { useInventoryStore } from "./stores/inventoryStore";
 import { useMasteryStore } from "./stores/masteryStore";
 import { useAmpStore } from "./stores/ampStore";
+import { useChecklistStore } from "./stores/checklistStore";
+import { useFarmStore } from "./stores/farmStore";
 
 import { useTranslate } from "./hooks/useTranslate";
 import {
@@ -41,6 +44,7 @@ import { usePersist } from "./hooks/usePersist";
 
 import Sidebar from "./components/shared/Sidebar";
 import AppHeader from "./components/shared/AppHeader";
+import AppFooter from "./components/shared/AppFooter";
 import MobileNav from "./components/shared/MobileNav";
 import SummaryBar from "./components/craft/SummaryBar";
 import ItemCardGrid from "./components/craft/ItemCardGrid";
@@ -50,6 +54,8 @@ import ThemeDrawer from "./components/shared/ThemeDrawer";
 import WizardModal from "./components/shared/WizardModal";
 import ShortcutsModal from "./components/shared/ShortcutsModal";
 import UpdateNotesModal from "./components/shared/UpdateNotesModal";
+import ShareModal from "./components/shared/ShareModal";
+import DiscordWebhookModal from "./components/shared/DiscordWebhookModal";
 import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
 import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
 import RelicTrackerContent from "./components/relic/RelicPage";
@@ -58,6 +64,9 @@ import MasteryPage from "./components/mastery/MasteryPage";
 import DashboardPage from "./components/dashboard/DashboardPage";
 import TimersPage from "./components/timers/TimersPage";
 import AmpsPage from "./components/amps/AmpsPage";
+import ActivitiesPage from "./components/activities/ActivitiesPage";
+import ChecklistPage from "./components/checklist/ChecklistPage";
+import FarmPlannerPage from "./components/farm/FarmPlannerPage";
 
 function CraftAppContent() {
   const { modal } = AntApp.useApp();
@@ -145,8 +154,24 @@ function CraftAppContent() {
     root.style.setProperty("--wf-border", customThemeTokens.colorBorder || "#2f4774");
     root.style.setProperty("--wf-scrollbar", customThemeTokens.colorScrollbar || customThemeTokens.colorBorder || "#2f4774");
     root.style.setProperty("--wf-primary", customThemeTokens.colorPrimary || "#CA8A04");
-    applyCursorVars(customThemeTokens.colorPrimary || "#CA8A04");
+    applyCursorVars(customThemeTokens.colorCursor || customThemeTokens.colorPrimary || "#CA8A04");
   }, [customThemeTokens, themeName]);
+
+  // --- Craft webhook: fire when a tracked item is fully crafted ---
+  const perItem = useCraftStore((s) => s.calculation.perItem);
+  useEffect(() => {
+    if (!Array.isArray(perItem) || perItem.length === 0) return;
+    const snapshot = perItem.map((item) => {
+      const reqs = Array.isArray(item.requirements) ? item.requirements : [];
+      const hasReqs = reqs.length > 0;
+      const allDone = hasReqs && reqs.every((r) => {
+        const collected = Number(completedMap?.[item.uniqueName]?.[r.uniqueName]) || 0;
+        return collected >= (r.quantity || 0);
+      });
+      return { uniqueName: item.uniqueName, name: item.name, isFullyCompleted: allDone };
+    });
+    notifyCraftProgress(snapshot);
+  }, [perItem, completedMap]);
 
   // --- Calculate ---
   useEffect(() => {
@@ -363,6 +388,9 @@ function CraftAppContent() {
             <Route path="/mastery" element={<MasteryPage />} />
             <Route path="/timers" element={<TimersPage />} />
             <Route path="/amps" element={<AmpsPage />} />
+            <Route path="/activities" element={<ActivitiesPage />} />
+            <Route path="/checklist" element={<ChecklistPage />} />
+            <Route path="/farm" element={<FarmPlannerPage />} />
             <Route path="/craft" element={
               <>
                 <SummaryBar adjustedTotals={adjustedTotals} />
@@ -471,13 +499,8 @@ function CraftAppContent() {
               </>
             } />
           </Routes>
-          <footer className="app-footer">
-            <span className="footer-text">&copy; {new Date().getFullYear()} Suatcan Yasan — WIT (Warframe Item Tracker)</span>
-            <span className="footer-divider">|</span>
-            <a href="https://github.com/SuatcanYasan" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
-            <span className="footer-divider">|</span>
-            <span className="footer-text">Fan-made, not affiliated with Digital Extremes</span>
-          </footer>
+          <div className="app-content-spacer" />
+          <AppFooter />
         </main>
       </div>
 
@@ -498,6 +521,8 @@ function CraftAppContent() {
       <WizardModal />
       <ShortcutsModal />
       <UpdateNotesModal />
+      <ShareModal />
+      <DiscordWebhookModal />
       <MobileNav />
     </>
   );
@@ -514,6 +539,17 @@ function CraftApp() {
     useInventoryStore.getState().hydrate(initialPersisted);
     useMasteryStore.getState().hydrate(initialPersisted);
     useAmpStore.getState().hydrate(initialPersisted);
+    useChecklistStore.getState().hydrate(initialPersisted);
+    useFarmStore.getState().hydrate(initialPersisted);
+    // If the app was opened with a #share=... URL, queue the import.
+    if (typeof window !== "undefined") {
+      const match = window.location.hash.match(/#share=([^&]+)/);
+      if (match && match[1]) {
+        useAppStore.getState().setPendingImport(match[1]);
+      }
+    }
+    // Start listening for store milestones to fire Discord webhooks.
+    initWebhookWatcher();
     return true;
   });
 

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Empty, Typography, Spin } from "antd";
-import { FALLBACK_ICON } from "../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useCraftStore } from "../../stores/craftStore";
 
@@ -42,7 +42,7 @@ export default function TotalsCardGrid({ adjustedTotals, onOpenDetail }) {
                 src={item.imageUrl || FALLBACK_ICON}
                 alt={item.name}
                 className="total-card-img"
-                onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                onError={handleImgError}
               />
               <div className="total-card-name">{tin(item.uniqueName, item.name)}</div>
               <div className="total-card-bar">

@@ -1,6 +1,6 @@
 import { Empty, Typography } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, marketUrl, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 
 const { Text } = Typography;
@@ -28,7 +28,7 @@ function SetCard({ set }) {
         <img
           src={set.imageUrl || FALLBACK_ICON}
           alt={set.parentName}
-          onError={(e) => { e.target.src = FALLBACK_ICON; }}
+          onError={handleImgError}
         />
         {completeSets > 0 && (
           <span className="item-card-qty">{t("setCompletable", { count: completeSets })}</span>
@@ -47,6 +47,16 @@ function SetCard({ set }) {
           <span className={`item-card-progress-text ${allOwned ? "done" : ""}`}>
             {ownedParts} / {totalParts}
           </span>
+          <a
+            className="item-card-action-btn market-btn"
+            href={marketUrl(`${set.parentName} Set`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            title={t("viewOnMarket")}
+          >
+            <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+          </a>
         </div>
         <div className="inventory-set-parts">
           {set.components.map((comp) => (

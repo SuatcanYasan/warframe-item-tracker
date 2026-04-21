@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { themeOptions } from "../constants/themes";
 import { detectBrowserLanguage } from "../constants/languages";
 
-export const APP_VERSION = "2.4.0";
+export const APP_VERSION = "2.5.1";
 
 export const useAppStore = create((set) => ({
   language: detectBrowserLanguage(),
@@ -18,6 +18,19 @@ export const useAppStore = create((set) => ({
   mobileSidebarOpen: false,
   updateNotesOpen: false,
   storedVersion: null,
+
+  shareModalOpen: false,
+  pendingImportEncoded: null,  // set when app launches with #share=... hash
+
+  discordModalOpen: false,
+  discordWebhookUrl: "",
+  discordWebhookUsername: "",
+  discordWebhookEvents: {
+    ampSetComplete: true,
+    craftComplete: true,
+    relicComplete: true,
+    masteryComplete: false,
+  },
 
   setLanguage: (language) => set({ language }),
   setThemeName: (themeName) => set({ themeName }),
@@ -51,6 +64,17 @@ export const useAppStore = create((set) => ({
   openUpdateNotes: () => set({ updateNotesOpen: true }),
   closeUpdateNotes: () => set({ updateNotesOpen: false, storedVersion: APP_VERSION }),
   setStoredVersion: (v) => set({ storedVersion: v }),
+  openShareModal: () => set({ shareModalOpen: true }),
+  closeShareModal: () => set({ shareModalOpen: false }),
+  setPendingImport: (encoded) => set({ pendingImportEncoded: encoded, shareModalOpen: true }),
+  clearPendingImport: () => set({ pendingImportEncoded: null }),
+
+  setDiscordWebhookUrl: (url) => set({ discordWebhookUrl: url }),
+  setDiscordWebhookUsername: (name) => set({ discordWebhookUsername: name }),
+  setDiscordWebhookEvents: (events) =>
+    set((state) => ({ discordWebhookEvents: { ...state.discordWebhookEvents, ...events } })),
+  openDiscordModal: () => set({ discordModalOpen: true }),
+  closeDiscordModal: () => set({ discordModalOpen: false }),
 
   hydrate: (persisted) => {
     const versionMismatch = persisted.storedVersion !== APP_VERSION;
@@ -62,6 +86,14 @@ export const useAppStore = create((set) => ({
       wizardOpen: !persisted.onboardingDone,
       storedVersion: persisted.storedVersion || null,
       updateNotesOpen: versionMismatch && persisted.onboardingDone,
+      discordWebhookUrl: persisted.discordWebhookUrl || "",
+      discordWebhookUsername: persisted.discordWebhookUsername || "",
+      discordWebhookEvents: persisted.discordWebhookEvents || {
+        ampSetComplete: true,
+        craftComplete: true,
+        relicComplete: true,
+        masteryComplete: false,
+      },
     });
   },
 }));

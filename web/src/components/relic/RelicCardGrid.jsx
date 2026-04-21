@@ -5,7 +5,7 @@ import {
 import {
   CheckOutlined, DeleteOutlined, GoldOutlined,
 } from "@ant-design/icons";
-import { FALLBACK_ICON } from "../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import { useItemDrops } from "../../hooks/useApiQueries";
 import { useTranslate } from "../../hooks/useTranslate";
 
@@ -67,7 +67,7 @@ function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal 
         <img
           src={prime.imageUrl || FALLBACK_ICON}
           alt={prime.name}
-          onError={(e) => { e.target.src = FALLBACK_ICON; }}
+          onError={handleImgError}
         />
         {allFound && <span className="item-card-done-badge">{t("allPartsFound")}</span>}
       </div>

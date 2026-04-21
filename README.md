@@ -65,6 +65,8 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 | **Mastery Tracker** | Browse all 820+ weapons, warframes, and companions — mark as owned or mastered with a 3-state toggle, track per-category progress |
 | **World Timers** | Live countdown for Cetus day/night, Fortuna warm/cold, Deimos Fass/Vome cycles with open-world background images, plus Baro Ki'Teer arrival tracker |
 | **Amp System** | Operator Amp builder with combination codes (e.g. 2-7-7), part tracker with per-set progress, Eidolon shield-break time calculator, community meta presets, and MR tracker with gild rewards |
+| **Activities** | Live feed of Fissures (Lith/Meso/Neo/Axi/Requiem/Omnia), Invasions with faction rewards, Nightwave daily/weekly acts, Sortie + Archon Hunt variants, and current Arbitration — auto-refreshed every 60s |
+| **Checklist** | Daily and weekly Warframe task tracker with UTC 00:00 auto-reset and preset pack (Sortie, Archon Hunt, Nightwave Dailies, bounties, Kahl, Duviri) |
 
 ### User Experience
 
@@ -81,6 +83,8 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 - **Toast Notifications** — Modern, theme-aware toasts (react-hot-toast)
 - **Bidirectional Sync** — Complete a part in Craft Tracker, it's auto-marked found in Relic Tracker
 - **Import/Export** — Backup your data as JSON, restore across devices
+- **URL Share** — Share your tracker state as a compact DEFLATE-compressed link; open on another device or send to a friend, zero backend
+- **Discord Webhook** — Post rich milestone embeds ("Esteemed Tenno ... completed X set, progress Y/Z") to your own Discord channel when Amp sets, crafts, Primes or Mastery complete — with anti-spam cooldown
 - **Update Notes** — Automatic changelog modal when a new version is deployed
 - **Breadcrumb Navigation** — Clear page hierarchy with clickable WIT root link
 - **Live World Timers** — Real-time open world cycle countdowns powered by WarframeStatus API
@@ -319,11 +323,16 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 - [x] Update notes system
 - [x] Amp System (Builder, Part Tracker, Eidolon Planner, Meta Sets, MR Tracker)
 - [x] 10 UI languages with browser auto-detection
+- [x] Activities page (Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration)
+- [x] Daily / Weekly Checklist with UTC reset
+- [x] URL Share (compressed link-based state transfer)
+- [x] Discord Webhook integration with rich embeds
+- [ ] Incarnon Adapter rotation tracker
+- [ ] Mastery Rank XP Calculator
+- [ ] Lich / Sister Tracker (Requiem sequence helper)
 - [ ] Farm Planner page (mission planning for resources)
-- [ ] Mastery Rank XP calculator
-- [ ] Trade value integration (warframe.market API)
-- [ ] Share tracker state via URL
-- [ ] Discord rich presence integration
+- [ ] Arcane Tracker (Eidolon / Zariman / Entrati)
+- [ ] Codex / Synthesis Tracker
 
 ---
 

@@ -64,13 +64,15 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 | **Mastery Takibi** | 820+ silah, warframe ve companion'ı listeden işaretle — sahip ve ustalaşıldı olarak 3 durumlu toggle, kategori başına ilerleme takibi |
 | **Dünya Zamanlayıcıları** | Cetus, Fortuna, Deimos açık dünya döngüleri ve Baro Ki'Teer gelişi için canlı geri sayım |
 | **Amp Sistemi** | Operator Amp builder kombinasyon kodlarıyla (örn. 2-7-7), set bazlı parça takibi, Eidolon kalkan kırma süresi hesaplayıcısı, topluluk meta presetleri ve MR takibi |
+| **Aktiviteler** | Fissures (Lith/Meso/Neo/Axi/Requiem/Omnia), Invasions faction ödülleriyle, Nightwave daily/weekly act'leri, Sortie + Archon Hunt görevleri ve aktif Arbitration — her 60 saniyede otomatik yenilenir |
+| **Kontrol Listesi** | Günlük ve haftalık Warframe görev takibi, UTC 00:00'da otomatik reset, hazır preset paketi (Sortie, Archon Hunt, Nightwave Daily'ler, bounty'ler, Kahl, Duviri) |
 
 ### Kullanıcı Deneyimi
 
 - **Kurulum Sihirbazı** — Çok adımlı ilk açılış onboarding'i (hoşgeldin → dil → tema → hazır), animasyonlu geçişler ve canlı tema önizleme
 - **Üç Tema** — Orokin (altın), Drifter (yeşil), Lotus (açık mavi) — ikonlar dahil her UI öğesi dinamik uyum sağlar
 - **Tema Editörü** — Kendi renk şemanı oluştur, birden fazla profil kaydet, JSON olarak dışa/içe aktar
-- **İki Dilli** — i18next ile tam Türkçe ve İngilizce, anında geçiş
+- **10 Dil** — Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, İtalyanca, Portekizce, Rusça, Japonca ve Arapça, bayraklı dropdown ile tarayıcı diline göre otomatik seçim
 - **Sürükle & Bırak** — Takip edilen item'ları öncelik sırasına göre yeniden sırala (@dnd-kit)
 - **Fuzzy Arama** — Yazım hataları sorun değil (Fuse.js)
 - **Klavye Kısayolları** — Fareye dokunmadan gezin, ara, sayfa değiştir
@@ -80,6 +82,8 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 - **Toast Bildirimleri** — Modern, tema duyarlı toast'lar (react-hot-toast)
 - **İki Yönlü Senkron** — Craft Takip'te bir parçayı tamamla, Relic Takip'te otomatik bulunmuş işaretlenir
 - **İçe/Dışa Aktarma** — Verini JSON olarak yedekle, cihazlar arası taşı
+- **URL ile Paylaşım** — Tüm tracker verini DEFLATE ile sıkıştırılmış tek link olarak paylaş; arkadaşla gönder veya başka cihazda aç, backend yok
+- **Discord Webhook** — Amp seti, craft, Prime veya Mastery tamamlandığında seçtiğin Discord kanalına otomatik zengin embed mesajı ("Değerli Tenno ... setini tamamladı, ilerleme X/Y"), spam koruması dahil
 
 ### Teknik
 

@@ -4,7 +4,7 @@ import {
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { FALLBACK_ICON } from "../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import { useSearchComponents } from "../../hooks/useApiQueries";
 import { useTranslate } from "../../hooks/useTranslate";
 
@@ -100,7 +100,7 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
                       src={comp.parentImageUrl || FALLBACK_ICON}
                       alt=""
                       style={{ width: 32, height: 32, objectFit: "contain" }}
-                      onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                      onError={handleImgError}
                     />
                   }
                   title={<Text style={{ fontSize: 13 }}>{tin(comp.uniqueName, comp.name)}</Text>}

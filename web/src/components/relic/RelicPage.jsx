@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import RelicCardGrid from "./RelicCardGrid";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useRelicStore } from "../../stores/relicStore";
+import { notifyRelicProgress } from "../../utils/webhookWatcher";
 
 const { Text } = Typography;
 
@@ -13,6 +14,11 @@ export default function RelicTrackerContent({ watchedPrimes, onToggleFound }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [filter, setFilter] = useState("all");
+
+  // Fire Discord webhook when a watched prime's components are all marked found
+  useEffect(() => {
+    notifyRelicProgress(watchedPrimes, foundComponents);
+  }, [watchedPrimes, foundComponents]);
 
   const categoryOptions = useMemo(() => {
     const cats = new Set();

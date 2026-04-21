@@ -3,7 +3,7 @@ import { Button, Select, Tooltip } from "antd";
 import { AimOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { FALLBACK_ICON, requestJson } from "../../../utils/helpers";
+import { FALLBACK_ICON, requestJson, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useAmpStore } from "../../../stores/ampStore";
 
@@ -112,7 +112,7 @@ export default function AmpBuilderTab({ ampsData }) {
           src={part.imageUrl || FALLBACK_ICON}
           alt=""
           style={{ width: 24, height: 24, objectFit: "contain" }}
-          onError={(e) => { e.target.src = FALLBACK_ICON; }}
+          onError={handleImgError}
         />
         <span style={{ fontWeight: 600 }}>{part.number === 0 ? "M" : part.number}</span>
         <span>{part.name}</span>
@@ -158,7 +158,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {prism && (
             <div className="amp-part-preview">
-              <img src={prism.imageUrl || FALLBACK_ICON} alt="" onError={(e) => { e.target.src = FALLBACK_ICON; }} />
+              <img src={prism.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
               <div className="amp-part-preview-stats">
                 <div><span>{t("ampStatDamage")}:</span> <b>{prism.damagePerShot || 0}</b></div>
                 <div><span>{t("ampStatCrit")}:</span> <b>%{Math.round((prism.criticalChance || 0) * 100)}</b></div>
@@ -180,7 +180,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {scaffold && (
             <div className="amp-part-preview">
-              <img src={scaffold.imageUrl || FALLBACK_ICON} alt="" onError={(e) => { e.target.src = FALLBACK_ICON; }} />
+              <img src={scaffold.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
               <div className="amp-part-preview-stats">
                 <div><span>{t("ampStatDamage")}:</span> <b>{scaffold.damagePerShot || 0}</b></div>
                 <div><span>{t("ampStatCrit")}:</span> <b>%{Math.round((scaffold.criticalChance || 0) * 100)}</b></div>
@@ -202,7 +202,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {brace && (
             <div className="amp-part-preview">
-              <img src={brace.imageUrl || FALLBACK_ICON} alt="" onError={(e) => { e.target.src = FALLBACK_ICON; }} />
+              <img src={brace.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
               <div className="amp-part-preview-stats amp-brace-bonuses">
                 <div className="amp-brace-bonuses-label">{t("ampBraceBonus")}</div>
                 {(BRACE_BONUSES[brace.name] || [t("ampBraceNoData")]).map((bonus) => (
@@ -268,7 +268,7 @@ export default function AmpBuilderTab({ ampsData }) {
                     src={img}
                     alt=""
                     className="amp-material-img"
-                    onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                    onError={handleImgError}
                   />
                   <span className="amp-material-name">{m.name}</span>
                   <span className="amp-material-qty">×{m.itemCount}</span>

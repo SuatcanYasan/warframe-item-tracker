@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { Segmented } from "antd";
-import { SearchOutlined, MenuOutlined, RightOutlined } from "@ant-design/icons";
+import { SearchOutlined, MenuOutlined, RightOutlined, ShareAltOutlined, LinkOutlined } from "@ant-design/icons";
 const WF_ICONS = "https://wiki.warframe.com/images";
 import { themeOptions } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -20,10 +20,13 @@ export default function AppHeader() {
   const openThemeDrawer = useAppStore((s) => s.openThemeDrawer);
   const openShortcuts = useAppStore((s) => s.openShortcuts);
   const openMobileSidebar = useAppStore((s) => s.openMobileSidebar);
+  const openShareModal = useAppStore((s) => s.openShareModal);
+  const openDiscordModal = useAppStore((s) => s.openDiscordModal);
+  const discordWebhookUrl = useAppStore((s) => s.discordWebhookUrl);
 
   const location = useLocation();
   const p = location.pathname;
-  const pageTitle = p === "/craft" ? t("craftTracker") : p === "/relic" ? t("relicTracker") : p === "/inventory" ? t("inventoryTracker") : p === "/mastery" ? t("masteryTracker") : p === "/timers" ? t("timersTracker") : p === "/amps" ? t("ampsTracker") : t("dashboard");
+  const pageTitle = p === "/craft" ? t("craftTracker") : p === "/relic" ? t("relicTracker") : p === "/inventory" ? t("inventoryTracker") : p === "/mastery" ? t("masteryTracker") : p === "/timers" ? t("timersTracker") : p === "/amps" ? t("ampsTracker") : p === "/activities" ? t("activitiesPage") : p === "/checklist" ? t("checklistPage") : p === "/farm" ? t("farmPlanner") : t("dashboard");
   const isDashboard = p === "/";
 
   return (
@@ -66,6 +69,16 @@ export default function AppHeader() {
             label: opt.label,
           }))}
         />
+        <button className="header-icon-btn" onClick={openShareModal} title={t("shareModalTitle")}>
+          <ShareAltOutlined style={{ fontSize: 16, opacity: 0.85 }} />
+        </button>
+        <button
+          className={`header-icon-btn ${discordWebhookUrl ? "discord-active" : ""}`}
+          onClick={openDiscordModal}
+          title={t("discordModalTitle")}
+        >
+          <LinkOutlined style={{ fontSize: 16, opacity: 0.85 }} />
+        </button>
         <button className="header-icon-btn" onClick={openThemeDrawer}>
           <img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" style={{ width: 18, height: 18, objectFit: "contain", opacity: 0.8 }} />
         </button>

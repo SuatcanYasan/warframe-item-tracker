@@ -35,16 +35,8 @@
 }
 
 @media (max-width: 767px) {
-  .lang-select-compact {
-    min-width: 90px;
-  }
-
-  .app-header-right .lang-select .ant-select-selector {
-    padding: 0 6px !important;
-  }
-
-  /* On very small screens show only the flag in the trigger */
-  .app-header-right .lang-select .lang-select-label {
-    display: none;
+  /* Hide header language selector on mobile — it's already in the MobileNav sheet */
+  .app-header-right .lang-select {
+    display: none !important;
   }
 }

@@ -14,7 +14,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { FALLBACK_ICON } from "../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import DropInfoPopover from "../relic/DropInfoPopover";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useRelativeTime } from "../../hooks/useRelativeTime";
@@ -89,7 +89,7 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
                 <img
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
-                  onError={(e) => { e.target.src = FALLBACK_ICON; }}
+                  onError={handleImgError}
                 />
                 <span className="item-card-qty">x{item.quantity}</span>
                 {allDone && <span className="item-card-done-badge">{t("completeTag")}</span>}

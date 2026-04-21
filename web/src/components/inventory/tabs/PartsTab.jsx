@@ -16,7 +16,7 @@ import {
   getSortedRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, marketUrl, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 
 const { Text } = Typography;
@@ -42,7 +42,7 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
         <img
           src={part.parentImageUrl || FALLBACK_ICON}
           alt={part.name}
-          onError={(e) => { e.target.src = FALLBACK_ICON; }}
+          onError={handleImgError}
         />
         <span className="item-card-qty">x{part.quantity}</span>
       </div>
@@ -59,6 +59,16 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
             onChange={(v) => onUpdateQty(part.uniqueName, v ?? 0)}
           />
           <div className="item-card-actions">
+            <a
+              className="item-card-action-btn market-btn"
+              href={marketUrl(`${part.parentName} ${part.name}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title={t("viewOnMarket")}
+            >
+              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+            </a>
             <button className="item-card-action-btn" onClick={() => onRemove(part.uniqueName)} title={t("removePart")}>
               <DeleteOutlined />
             </button>
@@ -84,7 +94,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
             width={36}
             height={36}
             style={{ objectFit: "contain" }}
-            onError={(e) => { e.target.src = FALLBACK_ICON; }}
+            onError={handleImgError}
           />
         ),
         enableSorting: false,
@@ -117,13 +127,24 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <button
-            className="item-card-action-btn danger"
-            onClick={() => onRemove(row.original.uniqueName)}
-            title={t("removePart")}
-          >
-            <DeleteOutlined />
-          </button>
+          <div style={{ display: "flex", gap: 4 }}>
+            <a
+              className="item-card-action-btn market-btn"
+              href={marketUrl(`${row.original.parentName} ${row.original.name}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("viewOnMarket")}
+            >
+              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+            </a>
+            <button
+              className="item-card-action-btn danger"
+              onClick={() => onRemove(row.original.uniqueName)}
+              title={t("removePart")}
+            >
+              <DeleteOutlined />
+            </button>
+          </div>
         ),
         enableSorting: false,
       },

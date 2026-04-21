@@ -41,6 +41,10 @@
 - **Amp システム** — Amp ビルダー、パーツ追跡、Eidolon プランナー、Meta セット
 - **10言語対応** — 日本語、英語、トルコ語、ドイツ語、フランス語、スペイン語、イタリア語、ポルトガル語、ロシア語、アラビア語
 - **3テーマ + エディタ** — Orokin（金）、Drifter（緑）、Lotus（明）に動的カーソル
+- **アクティビティ** — Fissures、Invasions、Nightwave、Sortie、Archon Hunt、Arbitration を1つのフィードでライブ追跡、60秒ごとに更新
+- **チェックリスト** — デイリー/ウィークリー Warframe タスクを UTC 00:00 自動リセット、プリセットパック付き
+- **URL 共有** — トラッカーデータを DEFLATE 圧縮リンクで共有、バックエンド不要
+- **Discord Webhook** — Amp セット / Craft / Prime / Mastery 完成時に Discord チャンネルへリッチ embed ("尊敬する Tenno ..."), スパム対策付き
 - **PWA** — デスクトップ/モバイルアプリとしてインストール可能、オフライン動作
 
 ---

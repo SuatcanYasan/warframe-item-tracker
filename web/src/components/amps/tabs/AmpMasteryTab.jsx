@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { CheckOutlined, StarFilled } from "@ant-design/icons";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useAmpStore } from "../../../stores/ampStore";
 
@@ -35,7 +35,7 @@ function AmpCard({ part, status, onCycle, t }) {
         src={part.imageUrl || FALLBACK_ICON}
         alt=""
         className="amp-card-img"
-        onError={(e) => { e.target.src = FALLBACK_ICON; }}
+        onError={handleImgError}
       />
       <div className="amp-card-name">{part.name}</div>
       <div className="amp-card-slot">{part.slot}</div>

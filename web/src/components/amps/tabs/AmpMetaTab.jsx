@@ -1,7 +1,7 @@
 import { Button, Tag } from "antd";
 import { AimOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
-import { FALLBACK_ICON } from "../../../utils/helpers";
+import { FALLBACK_ICON, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useAmpStore } from "../../../stores/ampStore";
 
@@ -94,7 +94,7 @@ function PresetCard({ preset, ampsData, t, onTrack, alreadyTracked }) {
             <img
               src={p.imageUrl || FALLBACK_ICON}
               alt=""
-              onError={(e) => { e.target.src = FALLBACK_ICON; }}
+              onError={handleImgError}
             />
             <div>
               <div className="amp-preset-part-name">{p.name}</div>

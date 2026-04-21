@@ -84,4 +84,18 @@ export function applyCursorVars(primaryColor) {
   for (const [k, v] of Object.entries(vars)) {
     root.style.setProperty(k, v);
   }
+  // Browsers cache rendered cursor bitmaps aggressively — when only the CSS
+  // variable changes, the visible cursor sometimes keeps the old image until
+  // the pointer moves. Force the browser to repick by toggling body cursor
+  // briefly; next pointer event picks up the new SVG.
+  if (document.body) {
+    const prev = document.body.style.cursor;
+    document.body.style.cursor = "auto";
+    // Double rAF so the toggle is real
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.body.style.cursor = prev;
+      });
+    });
+  }
 }

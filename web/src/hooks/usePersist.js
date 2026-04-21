@@ -5,6 +5,8 @@ import { useRelicStore } from "../stores/relicStore";
 import { useInventoryStore } from "../stores/inventoryStore";
 import { useMasteryStore } from "../stores/masteryStore";
 import { useAmpStore } from "../stores/ampStore";
+import { useChecklistStore } from "../stores/checklistStore";
+import { useFarmStore } from "../stores/farmStore";
 import { savePersistedState } from "../utils/storage";
 
 export function usePersist() {
@@ -28,6 +30,11 @@ export function usePersist() {
   const trackedSets = useAmpStore((s) => s.trackedSets);
   const ampMasteryParts = useAmpStore((s) => s.masteryParts);
   const completedMaterials = useAmpStore((s) => s.completedMaterials);
+  const checklistItems = useChecklistStore((s) => s.items);
+  const discordWebhookUrl = useAppStore((s) => s.discordWebhookUrl);
+  const discordWebhookUsername = useAppStore((s) => s.discordWebhookUsername);
+  const discordWebhookEvents = useAppStore((s) => s.discordWebhookEvents);
+  const farmResources = useFarmStore((s) => s.trackedResources);
 
   useEffect(() => {
     savePersistedState({
@@ -45,6 +52,11 @@ export function usePersist() {
       trackedSets,
       masteryParts: ampMasteryParts,
       completedMaterials,
+      checklistItems,
+      discordWebhookUrl,
+      discordWebhookUsername,
+      discordWebhookEvents,
+      farmResources,
       storedVersion,
     });
   }, [
@@ -62,6 +74,11 @@ export function usePersist() {
     trackedSets,
     ampMasteryParts,
     completedMaterials,
+    checklistItems,
+    discordWebhookUrl,
+    discordWebhookUsername,
+    discordWebhookEvents,
+    farmResources,
     storedVersion,
   ]);
 }

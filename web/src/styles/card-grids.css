@@ -246,6 +246,27 @@
   background: color-mix(in srgb, var(--status-missing, #EF4444) 10%, transparent);
 }
 
+/* warframe.market link button (plat color, cyan) */
+.market-btn {
+  color: #00E8DC;
+  text-decoration: none;
+  border: 1px solid color-mix(in srgb, #00E8DC 25%, transparent);
+}
+
+.market-btn:hover {
+  color: #00E8DC;
+  background: color-mix(in srgb, #00E8DC 12%, transparent);
+  border-color: #00E8DC;
+  box-shadow: 0 0 8px color-mix(in srgb, #00E8DC 30%, transparent);
+}
+
+.market-plat-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, #00E8DC 45%, transparent));
+}
+
 /* ===== TOTALS CARD GRID ===== */
 
 .totals-card-grid {

@@ -672,6 +672,12 @@
   gap: 16px;
 }
 
+/* Spacer pushes the footer to the bottom when page content is short */
+.app-content-spacer {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
 /* ===== CONTENT HEADER (tabs + actions) ===== */
 
 .content-header {
