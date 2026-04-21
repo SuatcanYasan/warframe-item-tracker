@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="web/public/trackerlogo.png" alt="WIT Logo" width="120" />
+<img src="../web/public/trackerlogo.png" alt="WIT Logo" width="120" />
 
 # Warframe Item Tracker
 
 **Craft, void relic, prime envanter, ustalasma takibi ve acik dunya zamanlayicilari icin modern, tema duyarli, PWA destekli takip uygulamasi.**
 
-[English](./README.md) · [Türkçe](./README.tr.md)
+[🇬🇧 English](../README.md) · [🇹🇷 Türkçe](./README.tr.md) · [🇩🇪 Deutsch](./README.de.md) · [🇫🇷 Français](./README.fr.md) · [🇪🇸 Español](./README.es.md) · [🇮🇹 Italiano](./README.it.md) · [🇵🇹 Português](./README.pt.md) · [🇷🇺 Русский](./README.ru.md) · [🇯🇵 日本語](./README.ja.md) · [🇸🇦 العربية](./README.ar.md)
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
@@ -19,7 +19,7 @@
 [![Lisans](https://img.shields.io/badge/Lisans-Fan_Made-CA8A04)](#lisans)
 
 <p align="center">
-  <img src="web/public/screenshot.png" alt="WIT Ekran Goruntusi" width="820" />
+  <img src="../web/public/screenshot.png" alt="WIT Ekran Goruntusi" width="820" />
 </p>
 
 </div>
@@ -61,6 +61,9 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 | **Craft Takip Sistemi** | Üretmek istediğin item'ları ekle, her kaynak gereksinimini gör, öncelik sırasına göre sürükle-bırak sırala, malzemeleri topladıkça işaretle, görsel donut grafiği ile genel ilerlemeyi takip et |
 | **Relic Takip Sistemi** | Her prime parçayı hangi void relic'lerin düşürdüğünü gör, bulunan bileşenleri işaretle, Craft Takip ile iki yönlü otomatik senkronize olur |
 | **Vault** | Sahip olduğun tek tek prime parçaları ekle, hangi setleri tamamlayabileceğini gör, card ve sıralanabilir tablo görünümü arasında geçiş yap |
+| **Mastery Takibi** | 820+ silah, warframe ve companion'ı listeden işaretle — sahip ve ustalaşıldı olarak 3 durumlu toggle, kategori başına ilerleme takibi |
+| **Dünya Zamanlayıcıları** | Cetus, Fortuna, Deimos açık dünya döngüleri ve Baro Ki'Teer gelişi için canlı geri sayım |
+| **Amp Sistemi** | Operator Amp builder kombinasyon kodlarıyla (örn. 2-7-7), set bazlı parça takibi, Eidolon kalkan kırma süresi hesaplayıcısı, topluluk meta presetleri ve MR takibi |
 
 ### Kullanıcı Deneyimi
 

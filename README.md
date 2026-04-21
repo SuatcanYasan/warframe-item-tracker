@@ -6,7 +6,7 @@
 
 **A modern, theme-aware, PWA-enabled tracker for Warframe crafting, void relics, prime inventory, mastery progress, and open-world timers.**
 
-[English](./README.md) · [Türkçe](./README.tr.md)
+[🇬🇧 English](./README.md) · [🇹🇷 Türkçe](./docs/README.tr.md) · [🇩🇪 Deutsch](./docs/README.de.md) · [🇫🇷 Français](./docs/README.fr.md) · [🇪🇸 Español](./docs/README.es.md) · [🇮🇹 Italiano](./docs/README.it.md) · [🇵🇹 Português](./docs/README.pt.md) · [🇷🇺 Русский](./docs/README.ru.md) · [🇯🇵 日本語](./docs/README.ja.md) · [🇸🇦 العربية](./docs/README.ar.md)
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
@@ -64,13 +64,14 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 | **Vault** | Add individual prime parts you own, see which sets you can complete, switch between card and sortable table views |
 | **Mastery Tracker** | Browse all 820+ weapons, warframes, and companions — mark as owned or mastered with a 3-state toggle, track per-category progress |
 | **World Timers** | Live countdown for Cetus day/night, Fortuna warm/cold, Deimos Fass/Vome cycles with open-world background images, plus Baro Ki'Teer arrival tracker |
+| **Amp System** | Operator Amp builder with combination codes (e.g. 2-7-7), part tracker with per-set progress, Eidolon shield-break time calculator, community meta presets, and MR tracker with gild rewards |
 
 ### User Experience
 
 - **Setup Wizard** — Multi-step first-run onboarding (welcome → language → theme → ready) with animated transitions and live theme preview
 - **Three Themes** — Orokin (gold), Drifter (green), Lotus (light blue) — every UI element adapts dynamically including icons
 - **Theme Editor** — Build your own color scheme, save multiple profiles, export/import as JSON
-- **Bilingual** — Full Turkish and English via i18next with instant switching
+- **10 Languages** — English, Turkish, German, French, Spanish, Italian, Portuguese, Russian, Japanese, Arabic with flagged dropdown switcher and browser-language auto-detection
 - **Drag & Drop** — Reorder tracked items by priority (powered by @dnd-kit)
 - **Fuzzy Search** — Typos welcome (powered by Fuse.js)
 - **Keyboard Shortcuts** — Navigate, search, and switch pages without touching the mouse
@@ -316,6 +317,8 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 - [x] Mastery Tracker (820+ items)
 - [x] World Timers (Cetus, Fortuna, Deimos, Baro Ki'Teer)
 - [x] Update notes system
+- [x] Amp System (Builder, Part Tracker, Eidolon Planner, Meta Sets, MR Tracker)
+- [x] 10 UI languages with browser auto-detection
 - [ ] Farm Planner page (mission planning for resources)
 - [ ] Mastery Rank XP calculator
 - [ ] Trade value integration (warframe.market API)
