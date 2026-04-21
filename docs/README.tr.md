@@ -66,12 +66,13 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 | **Amp Sistemi** | Operator Amp builder kombinasyon kodlarıyla (örn. 2-7-7), set bazlı parça takibi, Eidolon kalkan kırma süresi hesaplayıcısı, topluluk meta presetleri ve MR takibi |
 | **Aktiviteler** | Fissures (Lith/Meso/Neo/Axi/Requiem/Omnia), Invasions faction ödülleriyle, Nightwave daily/weekly act'leri, Sortie + Archon Hunt görevleri ve aktif Arbitration — her 60 saniyede otomatik yenilenir |
 | **Kontrol Listesi** | Günlük ve haftalık Warframe görev takibi, UTC 00:00'da otomatik reset, hazır preset paketi (Sortie, Archon Hunt, Nightwave Daily'ler, bounty'ler, Kahl, Duviri) |
+| **Farm Planlayıcı** | Bir kaynağı ara, hedef miktarlı kart olarak takibe al, tüm drop lokasyonlarını modalda gör — birden fazla kaynak eklediğinde aynı anda 2+ kaynak düşen ortak lokasyonları öne çıkarır |
 
 ### Kullanıcı Deneyimi
 
 - **Kurulum Sihirbazı** — Çok adımlı ilk açılış onboarding'i (hoşgeldin → dil → tema → hazır), animasyonlu geçişler ve canlı tema önizleme
 - **Üç Tema** — Orokin (altın), Drifter (yeşil), Lotus (açık mavi) — ikonlar dahil her UI öğesi dinamik uyum sağlar
-- **Tema Editörü** — Kendi renk şemanı oluştur, birden fazla profil kaydet, JSON olarak dışa/içe aktar
+- **Tema Editörü** — Kendi renk şemanı oluştur (özel imleç rengi dahil), birden fazla profil kaydet, JSON olarak dışa/içe aktar
 - **10 Dil** — Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, İtalyanca, Portekizce, Rusça, Japonca ve Arapça, bayraklı dropdown ile tarayıcı diline göre otomatik seçim
 - **Sürükle & Bırak** — Takip edilen item'ları öncelik sırasına göre yeniden sırala (@dnd-kit)
 - **Fuzzy Arama** — Yazım hataları sorun değil (Fuse.js)
@@ -305,12 +306,20 @@ Bu Warframe wiki ikonlarının bilinen bir özelliğidir (beyaz PNG'lerdir). Uyg
 
 ## Yol Haritası
 
-- [ ] Farm Planner sayfası (kaynak farmı için misyon planlaması)
-- [ ] URL ile tracker durumu paylaşma
-- [ ] İlerlemeyi görsel/PDF olarak dışa aktarma
-- [ ] Discord rich presence entegrasyonu
-- [ ] Mobil optimize layout'lar
-- [ ] Ticaret değeri entegrasyonu (warframe.market API)
+- [x] Aktiviteler sayfası (Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration)
+- [x] Günlük/Haftalık Kontrol Listesi (UTC reset, preset pack)
+- [x] URL ile tracker durumu paylaşma (DEFLATE sıkıştırmalı link)
+- [x] Discord Webhook entegrasyonu (Amp/Craft/Prime/Mastery milestone embed'leri)
+- [x] Farm Planlayıcı sayfası (kaynak arama, hedef takibi, ortak drop lokasyonları)
+- [x] Mobil optimize layout'lar (alt nav, swipe-close sheet, notch menü)
+- [x] İlerlemeyi PNG olarak dışa aktarma (html-to-image)
+- [x] warframe.market entegrasyonu (Vault'ta plat ikonu linki)
+- [ ] Discord Rich Presence entegrasyonu (Tauri desktop gerekir)
+- [ ] Incarnon Adapter rotation tracker
+- [ ] Mastery Rank XP Calculator
+- [ ] Lich / Sister Tracker (Requiem sequence helper)
+- [ ] Arcane Tracker (Eidolon / Zariman / Entrati)
+- [ ] Codex / Synthesis Tracker
 
 ---
 

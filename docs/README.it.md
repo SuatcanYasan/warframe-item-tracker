@@ -45,6 +45,8 @@
 - **Checklist** — Attività giornaliere/settimanali Warframe con reset automatico a UTC 00:00 e pacchetto di preset
 - **Condivisione URL** — Condividi i dati del tracker come link compresso DEFLATE, senza backend
 - **Discord Webhook** — Embed ricchi ("Stimato Tenno ...") nel tuo canale Discord al completamento di set Amp, craft, Prime o Mastery, con protezione anti-spam
+- **Farm Planner** — cerca risorse, imposta una quantità obiettivo, consulta i luoghi di drop e trova gli spot condivisi per più risorse
+- **Esportazione Screenshot** — esporta in PNG la vista corrente con un click (html-to-image)
 - **PWA** — Installabile come app desktop/mobile, funziona offline
 
 ---

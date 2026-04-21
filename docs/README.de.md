@@ -45,6 +45,8 @@
 - **Checkliste** — Tägliche/wöchentliche Warframe-Aufgaben mit automatischem UTC 00:00 Reset und Preset-Paket
 - **URL-Freigabe** — Tracker-Daten als DEFLATE-komprimierten Link teilen, ohne Backend
 - **Discord Webhook** — Milestone-Embeds ("Geehrter Tenno ...") in deinem Discord-Kanal bei Amp/Craft/Prime/Mastery-Abschluss, mit Anti-Spam-Cooldown
+- **Farm-Planner** — Ressourcen suchen, Zielmenge setzen, Drop-Orte ansehen und gemeinsame Farm-Spots für mehrere Ressourcen finden
+- **Screenshot-Export** — One-Click PNG-Export deiner aktuellen Ansicht (html-to-image)
 - **PWA** — Installierbar als Desktop-/Mobile-App, funktioniert offline
 
 ---

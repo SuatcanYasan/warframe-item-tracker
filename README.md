@@ -67,12 +67,13 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 | **Amp System** | Operator Amp builder with combination codes (e.g. 2-7-7), part tracker with per-set progress, Eidolon shield-break time calculator, community meta presets, and MR tracker with gild rewards |
 | **Activities** | Live feed of Fissures (Lith/Meso/Neo/Axi/Requiem/Omnia), Invasions with faction rewards, Nightwave daily/weekly acts, Sortie + Archon Hunt variants, and current Arbitration — auto-refreshed every 60s |
 | **Checklist** | Daily and weekly Warframe task tracker with UTC 00:00 auto-reset and preset pack (Sortie, Archon Hunt, Nightwave Dailies, bounties, Kahl, Duviri) |
+| **Farm Planner** | Search a resource, add it as a tracked card with target quantity, see all drop locations in a modal, and — when tracking multiple resources — surface the shared locations that drop 2+ at once |
 
 ### User Experience
 
 - **Setup Wizard** — Multi-step first-run onboarding (welcome → language → theme → ready) with animated transitions and live theme preview
 - **Three Themes** — Orokin (gold), Drifter (green), Lotus (light blue) — every UI element adapts dynamically including icons
-- **Theme Editor** — Build your own color scheme, save multiple profiles, export/import as JSON
+- **Theme Editor** — Build your own color scheme (including custom cursor color), save multiple profiles, export/import as JSON
 - **10 Languages** — English, Turkish, German, French, Spanish, Italian, Portuguese, Russian, Japanese, Arabic with flagged dropdown switcher and browser-language auto-detection
 - **Drag & Drop** — Reorder tracked items by priority (powered by @dnd-kit)
 - **Fuzzy Search** — Typos welcome (powered by Fuse.js)
@@ -330,7 +331,7 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 - [ ] Incarnon Adapter rotation tracker
 - [ ] Mastery Rank XP Calculator
 - [ ] Lich / Sister Tracker (Requiem sequence helper)
-- [ ] Farm Planner page (mission planning for resources)
+- [x] Farm Planner page (search resources, track targets, find shared drop locations)
 - [ ] Arcane Tracker (Eidolon / Zariman / Entrati)
 - [ ] Codex / Synthesis Tracker
 

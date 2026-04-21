@@ -1,46 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { requestJson } from "../utils/helpers";
 
+// Module-level cache so every hook instance across all components sees the
+// same data. useQuery on top of this deduplicates in-flight requests and
+// holds the result in its own cache, so /api/i18n fires once per language
+// per session instead of once per mounted component.
+const namesCache = {};
+
 export default function useItemI18n(language) {
-  const cacheRef = useRef({});
-  const [ready, setReady] = useState(language === "en");
+  const enabled = language !== "en" && !namesCache[language];
 
-  useEffect(() => {
-    if (language === "en") {
-      setReady(true);
-      return;
-    }
+  useQuery({
+    queryKey: ["item-i18n", language],
+    queryFn: async () => {
+      const data = await requestJson(`/api/i18n?lang=${encodeURIComponent(language)}`);
+      namesCache[language] = data.names || {};
+      return namesCache[language];
+    },
+    enabled,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: 1,
+  });
 
-    if (cacheRef.current[language]) {
-      setReady(true);
-      return;
-    }
-
-    let cancelled = false;
-    setReady(false);
-
-    requestJson(`/api/i18n?lang=${encodeURIComponent(language)}`)
-      .then((data) => {
-        if (cancelled) return;
-        cacheRef.current[language] = data.names || {};
-        setReady(true);
-      })
-      .catch(() => {
-        if (!cancelled) setReady(true);
-      });
-
-    return () => { cancelled = true; };
-  }, [language]);
-
-  const translateItemName = useCallback(
+  return useCallback(
     (uniqueName, fallbackName) => {
       if (language === "en") return fallbackName;
-      const names = cacheRef.current[language];
+      const names = namesCache[language];
       if (!names) return fallbackName;
       return names[uniqueName] || fallbackName;
     },
-    [language, ready],
+    [language],
   );
-
-  return translateItemName;
 }
