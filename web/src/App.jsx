@@ -28,6 +28,7 @@ import { useCraftStore } from "./stores/craftStore";
 import { useRelicStore } from "./stores/relicStore";
 import { useInventoryStore } from "./stores/inventoryStore";
 import { useMasteryStore } from "./stores/masteryStore";
+import { useAmpStore } from "./stores/ampStore";
 
 import { useTranslate } from "./hooks/useTranslate";
 import {
@@ -56,6 +57,7 @@ import InventoryTrackerContent from "./components/inventory/InventoryPage";
 import MasteryPage from "./components/mastery/MasteryPage";
 import DashboardPage from "./components/dashboard/DashboardPage";
 import TimersPage from "./components/timers/TimersPage";
+import AmpsPage from "./components/amps/AmpsPage";
 
 function CraftAppContent() {
   const { modal } = AntApp.useApp();
@@ -360,6 +362,7 @@ function CraftAppContent() {
             <Route path="/inventory" element={<InventoryTrackerContent />} />
             <Route path="/mastery" element={<MasteryPage />} />
             <Route path="/timers" element={<TimersPage />} />
+            <Route path="/amps" element={<AmpsPage />} />
             <Route path="/craft" element={
               <>
                 <SummaryBar adjustedTotals={adjustedTotals} />
@@ -510,6 +513,7 @@ function CraftApp() {
     useRelicStore.getState().hydrate(initialPersisted);
     useInventoryStore.getState().hydrate(initialPersisted);
     useMasteryStore.getState().hydrate(initialPersisted);
+    useAmpStore.getState().hydrate(initialPersisted);
     return true;
   });
 

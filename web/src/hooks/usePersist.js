@@ -4,6 +4,7 @@ import { useCraftStore } from "../stores/craftStore";
 import { useRelicStore } from "../stores/relicStore";
 import { useInventoryStore } from "../stores/inventoryStore";
 import { useMasteryStore } from "../stores/masteryStore";
+import { useAmpStore } from "../stores/ampStore";
 import { savePersistedState } from "../utils/storage";
 
 export function usePersist() {
@@ -24,6 +25,10 @@ export function usePersist() {
 
   const masteredItems = useMasteryStore((s) => s.masteredItems);
 
+  const trackedSets = useAmpStore((s) => s.trackedSets);
+  const ampMasteryParts = useAmpStore((s) => s.masteryParts);
+  const completedMaterials = useAmpStore((s) => s.completedMaterials);
+
   useEffect(() => {
     savePersistedState({
       language,
@@ -37,6 +42,9 @@ export function usePersist() {
       relicFoundComponents: foundComponents,
       inventoryParts,
       masteredItems,
+      trackedSets,
+      masteryParts: ampMasteryParts,
+      completedMaterials,
       storedVersion,
     });
   }, [
@@ -51,6 +59,9 @@ export function usePersist() {
     foundComponents,
     inventoryParts,
     masteredItems,
+    trackedSets,
+    ampMasteryParts,
+    completedMaterials,
     storedVersion,
   ]);
 }

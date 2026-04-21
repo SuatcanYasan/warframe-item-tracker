@@ -14,10 +14,12 @@
 @import './dashboard.css';
 @import './mastery.css';
 @import './timers.css';
+@import './amps.css';
 @import './wizard.css';
 @import './shortcuts.css';
 @import './update-notes.css';
 @import './scrollbar.css';
+@import './language-select.css';
 @import './mobile-nav.css';
 @import './responsive.css';
 @import './cursors.css';

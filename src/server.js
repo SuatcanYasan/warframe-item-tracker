@@ -8,6 +8,7 @@ const {
   searchCraftableItems,
   searchPrimeComponents,
   getMasteryItems,
+  getAmps,
 } = require("./services/itemsService");
 const { calculateCraftRequirements } = require("./services/craftCalculator");
 
@@ -176,6 +177,16 @@ app.get("/api/mastery/items", async (_req, res) => {
   } catch (error) {
     console.error("/api/mastery/items error:", error);
     res.status(500).json({ error: "Could not fetch mastery items." });
+  }
+});
+
+app.get("/api/amps", async (_req, res) => {
+  try {
+    const amps = await getAmps();
+    res.json(amps);
+  } catch (error) {
+    console.error("/api/amps error:", error);
+    res.status(500).json({ error: "Could not fetch amps." });
   }
 });
 

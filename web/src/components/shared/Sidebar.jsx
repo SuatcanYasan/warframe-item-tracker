@@ -15,7 +15,7 @@ export default function Sidebar({ onOpenSettings }) {
   const closeMobileSidebar = useAppStore((s) => s.closeMobileSidebar);
   const navigate = useNavigate();
   const location = useLocation();
-  const activePage = location.pathname === "/craft" ? "craft" : location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : location.pathname === "/mastery" ? "mastery" : location.pathname === "/timers" ? "timers" : "dashboard";
+  const activePage = location.pathname === "/craft" ? "craft" : location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : location.pathname === "/mastery" ? "mastery" : location.pathname === "/timers" ? "timers" : location.pathname === "/amps" ? "amps" : "dashboard";
 
   function handleNavClick(path) {
     navigate(path);
@@ -28,6 +28,7 @@ export default function Sidebar({ onOpenSettings }) {
     { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("relicTracker") },
     { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("inventoryTracker") },
     { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" />, label: t("masteryTracker") },
+    { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("ampsTracker") },
   ];
 
   return (

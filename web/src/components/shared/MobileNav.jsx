@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
 import { themeOptions } from "../../constants/themes";
+import LanguageSelect from "./LanguageSelect";
 
 const WF_ICONS = "https://wiki.warframe.com/images";
 
@@ -21,6 +22,7 @@ const ALL_ITEMS = [
   { key: "inventory", path: "/inventory", img: `${WF_ICONS}/IconBundle%28xWhite%29.png`, labelKey: "inventoryTracker" },
   { key: "mastery", path: "/mastery", img: `${WF_ICONS}/IconMasteryRank.png`, labelKey: "masteryTracker" },
   { key: "timers", path: "/timers", icon: <ClockCircleOutlined />, labelKey: "timersTracker" },
+  { key: "amps", path: "/amps", img: `${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`, labelKey: "ampsTracker" },
 ];
 
 const LEFT_ITEMS = [ALL_ITEMS[0], ALL_ITEMS[1]];
@@ -156,12 +158,7 @@ export default function MobileNav() {
               <div className="mobile-nav-sheet-quick">
                 <div className="mobile-nav-sheet-quick-row">
                   <span className="mobile-nav-sheet-quick-label">{t("language")}</span>
-                  <Segmented
-                    size="small"
-                    value={language}
-                    onChange={setLanguage}
-                    options={[{ value: "tr", label: "TR" }, { value: "en", label: "EN" }]}
-                  />
+                  <LanguageSelect value={language} onChange={setLanguage} compact />
                 </div>
                 <div className="mobile-nav-sheet-quick-row">
                   <span className="mobile-nav-sheet-quick-label">{t("theme")}</span>

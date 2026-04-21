@@ -1,4 +1,5 @@
 import { themeOptions } from "../constants/themes";
+import { detectBrowserLanguage } from "../constants/languages";
 
 const STORAGE_KEY = "wf-react-ui-v2";
 
@@ -13,7 +14,7 @@ export function readStorage() {
 
 export function createDefaultPersistedState() {
   return {
-    language: typeof navigator !== "undefined" && (navigator.language || "").startsWith("tr") ? "tr" : "en",
+    language: detectBrowserLanguage(),
     theme: "orokin",
     customThemeTokens: themeOptions.orokin.token,
     themeProfiles: {},
@@ -25,6 +26,9 @@ export function createDefaultPersistedState() {
     relicFoundComponents: {},
     inventoryParts: {},
     masteredItems: {},
+    trackedSets: [],
+    masteryParts: {},
+    completedMaterials: {},
     storedVersion: null,
   };
 }
@@ -40,7 +44,7 @@ export function normalizePersistedState(raw) {
   return {
     ...fallback,
     ...next,
-    language: next.language === "en" ? "en" : "tr",
+    language: next.language || fallback.language,
     theme: normalizedThemeName,
     customThemeTokens: {
       ...baseThemeToken,
@@ -76,6 +80,13 @@ export function normalizePersistedState(raw) {
     masteredItems:
       next.masteredItems && typeof next.masteredItems === "object"
         ? next.masteredItems
+        : {},
+    trackedSets: Array.isArray(next.trackedSets) ? next.trackedSets : [],
+    masteryParts:
+      next.masteryParts && typeof next.masteryParts === "object" ? next.masteryParts : {},
+    completedMaterials:
+      next.completedMaterials && typeof next.completedMaterials === "object"
+        ? next.completedMaterials
         : {},
     storedVersion: next.storedVersion || null,
   };

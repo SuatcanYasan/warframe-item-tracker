@@ -1,0 +1,50 @@
+/* ===== LANGUAGE SELECT ===== */
+.lang-select {
+  min-width: 140px;
+}
+
+.lang-select-compact {
+  min-width: 110px;
+}
+
+.lang-select-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-select-flag {
+  width: 20px;
+  height: 14px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.lang-select-label {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile nav sheet — full width for easier touch */
+.mobile-nav-sheet-quick .lang-select {
+  min-width: 140px;
+}
+
+@media (max-width: 767px) {
+  .lang-select-compact {
+    min-width: 90px;
+  }
+
+  .app-header-right .lang-select .ant-select-selector {
+    padding: 0 6px !important;
+  }
+
+  /* On very small screens show only the flag in the trigger */
+  .app-header-right .lang-select .lang-select-label {
+    display: none;
+  }
+}

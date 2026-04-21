@@ -5,6 +5,7 @@ const WF_ICONS = "https://wiki.warframe.com/images";
 import { themeOptions } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
+import LanguageSelect from "./LanguageSelect";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent || navigator.platform);
 const MOD_KEY = isMac ? "⌘" : "Ctrl";
@@ -22,7 +23,7 @@ export default function AppHeader() {
 
   const location = useLocation();
   const p = location.pathname;
-  const pageTitle = p === "/craft" ? t("craftTracker") : p === "/relic" ? t("relicTracker") : p === "/inventory" ? t("inventoryTracker") : p === "/mastery" ? t("masteryTracker") : p === "/timers" ? t("timersTracker") : t("dashboard");
+  const pageTitle = p === "/craft" ? t("craftTracker") : p === "/relic" ? t("relicTracker") : p === "/inventory" ? t("inventoryTracker") : p === "/mastery" ? t("masteryTracker") : p === "/timers" ? t("timersTracker") : p === "/amps" ? t("ampsTracker") : t("dashboard");
   const isDashboard = p === "/";
 
   return (
@@ -48,11 +49,10 @@ export default function AppHeader() {
           <span className="header-shortcut-label">{t("search")}</span>
           <span className="header-shortcut-kbd">{MOD_KEY}K</span>
         </button>
-        <Segmented
-          size="small"
+        <LanguageSelect
           value={language}
           onChange={setLanguage}
-          options={[{ value: "tr", label: "TR" }, { value: "en", label: "EN" }]}
+          compact
         />
         <Segmented
           size="small"

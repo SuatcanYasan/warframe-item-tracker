@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import useItemI18n from "./useItemI18n";
 import { useAppStore } from "../stores/appStore";
+import { RTL_LANGUAGES } from "../constants/languages";
 
 export function useTranslate() {
   const { t: i18nT, i18n: i18nInstance } = useTranslation();
@@ -10,6 +11,10 @@ export function useTranslate() {
   useEffect(() => {
     if (i18nInstance.language !== language) {
       i18nInstance.changeLanguage(language);
+    }
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("lang", language);
+      document.documentElement.setAttribute("dir", RTL_LANGUAGES.has(language) ? "rtl" : "ltr");
     }
   }, [language, i18nInstance]);
 

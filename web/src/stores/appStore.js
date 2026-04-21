@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { themeOptions } from "../constants/themes";
+import { detectBrowserLanguage } from "../constants/languages";
 
-export const APP_VERSION = "2.3.0";
+export const APP_VERSION = "2.4.0";
 
 export const useAppStore = create((set) => ({
-  language: "en",
+  language: detectBrowserLanguage(),
   themeName: "orokin",
   customThemeTokens: themeOptions.orokin.token,
   themeProfiles: {},

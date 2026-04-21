@@ -56,6 +56,9 @@ function normalizeItem(item) {
     buildTime: item.buildTime,
     buildPrice: item.buildPrice,
     buildQuantity: item.buildQuantity ?? 1,
+    // Kept for weapon/amp stat calculations — WFCD nests stats under attacks[0]
+    attacks: Array.isArray(item.attacks) ? item.attacks : null,
+    masteryReq: item.masteryReq ?? null,
     drops: normalizeDrops(item.drops),
     components: Array.isArray(item.components)
       ? item.components.map((component) => ({
@@ -378,6 +381,114 @@ async function getMasteryItems() {
   return result;
 }
 
+// ---------------------------------------------------------------
+// AMPS (Operator Amps)
+// ---------------------------------------------------------------
+// Community numbering from Quills / Vox Solaris unlock order:
+// https://wiki.warframe.com/w/Amp
+// Mote set = numberless starter kit.
+const AMP_PRISM_ORDER = [
+  "Raplak Prism",
+  "Shwaak Prism",
+  "Granmu Prism",
+  "Rahn Prism",
+  "Cantic Prism",
+  "Lega Prism",
+  "Klamora Prism",
+];
+const AMP_SCAFFOLD_ORDER = [
+  "Pencha Scaffold",
+  "Shraksun Scaffold",
+  "Klebrik Scaffold",
+  "Phahd Scaffold",
+  "Exard Scaffold",
+  "Dissic Scaffold",
+  "Propa Scaffold",
+];
+const AMP_BRACE_ORDER = [
+  "Clapkra Brace",
+  "Juttni Brace",
+  "Lohrin Brace",
+  "Anspatha Brace",
+  "Suo Brace",
+  "Plaga Brace",
+  "Certus Brace",
+];
+
+function simplifyAmpPart(item, number, slot) {
+  // WFCD stores amp stats inside attacks[0] rather than top-level fields
+  const attack = (Array.isArray(item.attacks) && item.attacks[0]) || {};
+  const damageObj = attack.damage || {};
+  const totalDmg = Object.values(damageObj).reduce(
+    (a, b) => a + (Number(b) || 0),
+    0,
+  );
+
+  return {
+    uniqueName: item.uniqueName,
+    name: item.name,
+    slot,                       // "prism" | "scaffold" | "brace"
+    number,                     // 1..7 or 0 for Mote
+    imageName: item.imageName,
+    imageUrl: item.imageUrl,
+    damagePerShot: totalDmg,
+    damageTypes: damageObj,     // e.g. { void: 3500 }
+    totalDamage: totalDmg,
+    criticalChance: (Number(attack.crit_chance) || 0) / 100,
+    criticalMultiplier: Number(attack.crit_mult) || 0,
+    procChance: (Number(attack.status_chance) || 0) / 100,
+    fireRate: Number(attack.speed) || 0,
+    masteryReq: Number(item.masteryReq) || 0,
+    buildTime: item.buildTime,
+    buildPrice: item.buildPrice,
+    components: Array.isArray(item.components) ? item.components : [],
+    description: item.description || null,
+  };
+}
+
+async function getAmps() {
+  const { items } = await ensureDataLoaded();
+  const amps = items.filter((i) => i.type === "Amp");
+
+  const findByName = (name) => amps.find((a) => a.name === name);
+
+  const prisms = AMP_PRISM_ORDER
+    .map((name, idx) => {
+      const item = findByName(name);
+      return item ? simplifyAmpPart(item, idx + 1, "prism") : null;
+    })
+    .filter(Boolean);
+
+  const scaffolds = AMP_SCAFFOLD_ORDER
+    .map((name, idx) => {
+      const item = findByName(name);
+      return item ? simplifyAmpPart(item, idx + 1, "scaffold") : null;
+    })
+    .filter(Boolean);
+
+  const braces = AMP_BRACE_ORDER
+    .map((name, idx) => {
+      const item = findByName(name);
+      return item ? simplifyAmpPart(item, idx + 1, "brace") : null;
+    })
+    .filter(Boolean);
+
+  const motePrism = findByName("Mote Prism");
+  const moteScaffold = findByName("Mote Scaffold");
+  const moteBrace = findByName("Mote Brace");
+
+  return {
+    prisms,
+    scaffolds,
+    braces,
+    mote: {
+      prism: motePrism ? simplifyAmpPart(motePrism, 0, "prism") : null,
+      scaffold: moteScaffold ? simplifyAmpPart(moteScaffold, 0, "scaffold") : null,
+      brace: moteBrace ? simplifyAmpPart(moteBrace, 0, "brace") : null,
+    },
+  };
+}
+
 module.exports = {
   ensureDataLoaded,
   getItemByUniqueName,
@@ -386,6 +497,7 @@ module.exports = {
   searchCraftableItems,
   searchPrimeComponents,
   getMasteryItems,
+  getAmps,
 };
 
 
