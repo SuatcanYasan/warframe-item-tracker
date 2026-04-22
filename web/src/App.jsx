@@ -19,7 +19,7 @@ import {
   readStorage,
   normalizePersistedState,
 } from "./utils/storage";
-import { ensureSession } from "./lib/supabaseAuth";
+import { ensureSession, signInWithGoogle } from "./lib/supabaseAuth";
 import { pullAllState, pushAllState, markBootstrapReady } from "./lib/supabaseSync";
 import { requestJson } from "./utils/helpers";
 import { captureAndDownload } from "./utils/screenshot";
@@ -570,6 +570,20 @@ function CraftApp() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Recover from OAuth error redirects. The most common is
+      // `identity_already_exists` — user tried to link Google to the
+      // current anonymous session but that Google identity already owns
+      // another Supabase account. Fall back to a plain sign-in so they
+      // land on the pre-existing account instead of staying anonymous.
+      const qp = new URLSearchParams(window.location.search);
+      const hp = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const errorCode = qp.get("error_code") || hp.get("error_code");
+      if (errorCode === "identity_already_exists") {
+        window.history.replaceState({}, "", window.location.pathname);
+        await signInWithGoogle();
+        return;
+      }
+
       const session = await ensureSession();
       if (!session || cancelled) return;
 

@@ -76,11 +76,19 @@ export async function signInWithGoogle() {
 
 export async function linkGoogleIdentity() {
   if (!SUPABASE_ENABLED) return { ok: false, reason: "disabled" };
-  // linkIdentity requires an active session (anonymous or otherwise)
   const session = await ensureSession();
   if (!session) return { ok: false, reason: "no-session" };
   const { error } = await supabase.auth.linkIdentity(oauthOptions());
   if (error) {
+    // If the Google identity is already tied to another Supabase user
+    // (common when testing — old anonymous sessions linger), fall back
+    // to a plain sign-in that returns the existing account's session.
+    // Current anonymous data becomes orphaned; user lands on their real
+    // account where they've logged in before.
+    if (error.code === "identity_already_exists"
+        || /already linked/i.test(error.message || "")) {
+      return signInWithGoogle();
+    }
     console.warn("[auth] linkGoogleIdentity:", error.message);
     return { ok: false, reason: error.message };
   }
