@@ -44,11 +44,11 @@
 
 ## Genel Bakış
 
-**WIT (Warframe Item Tracker)**, Warframe için production seviye bir yardımcı uygulamadır. Neyi craftlamak istediğini, hangi void relic'lerin ihtiyacın olan prime parçaları düşürdüğünü ve envanterinde neyin hazır beklediğini tek bir yerde takip etmene yardım eder — hesap gerektirmez.
+**WIT (Warframe Item Tracker)**, Warframe için production seviye bir yardımcı uygulamadır. Neyi craftlamak istediğini, hangi void relic'lerin ihtiyacın olan prime parçaları düşürdüğünü ve envanterinde neyin hazır beklediğini tek bir yerde takip etmene yardım eder.
 
 **Progressive Web App (PWA)** olarak tasarlandı: tarayıcıdan doğrudan kurabilir, ilk yüklemeden sonra offline çalışır, ve craft ilerlemen ile relic takibini iki yönlü senkronize eden bir sistem içerir.
 
-Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tarafında hesap yok, kayıt yok.
+WIT **offline-first**: veri localStorage'da önbelleklenir, UI network olmadan çalışır. İlk açılışta sessizce bir anonim Supabase hesabı oluşturulur ve ilerlemen cihazlar arası senkronize olur; isteğe bağlı Google ile kayıt/giriş yaparak hesabını kalıcı hale getirebilirsin. Telemetri ve 3. parti tracker yoktur.
 
 ---
 
@@ -83,6 +83,7 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 - **Toast Bildirimleri** — Modern, tema duyarlı toast'lar (react-hot-toast)
 - **İki Yönlü Senkron** — Craft Takip'te bir parçayı tamamla, Relic Takip'te otomatik bulunmuş işaretlenir
 - **Bulut Senkronizasyonu** — Verin tüm cihazların arasında otomatik olarak senkronize olur (Supabase). İlk açılışta anonim hesap oluşturulur, giriş gerekmez. Cihazlar arası canlı güncelleme (Supabase Realtime)
+- **İsteğe Bağlı Google Giriş** — Hesabını kalıcı hale getirmek için Google ile Kayıt Ol veya Giriş Yap. `linkIdentity` mevcut UID'yi korur, upgrade sırasında veri kaybı olmaz. Row-Level Security (`auth.uid() = user_id`) her tabloda aktif
 - **Sekmeler arası Sync** — Bir sekmedeki değişiklik anında diğer açık sekmelere yansır (BroadcastChannel)
 - **İçe/Dışa Aktarma** — Verini JSON olarak yedekle, cihazlar arası taşı
 - **URL ile Paylaşım** — Tüm tracker verini DEFLATE ile sıkıştırılmış tek link olarak paylaş; arkadaşla gönder veya başka cihazda aç, backend yok
@@ -276,7 +277,7 @@ PORT=8080 npm start
 <details>
 <summary><b>Takip ettiğim item'lar kayboldu</b></summary>
 
-Tüm veriler tarayıcının localStorage'ında tutulur. Tarayıcı geçmişini/cache'ini temizlersen, farklı tarayıcıya geçersen veya incognito/gizli mod kullanırsan kaybolur. **Dışa Aktar** butonunu kullanarak JSON olarak yedek al.
+Veriler hem localStorage'da hem Supabase bulutunda saklanır. Tarayıcı cache temizlenirse anonim session kaybolabilir — bu durumda Supabase'deki data'ya erişim için Google ile giriş yapman gerekir (Kayıt Ol sırasında link'lediysen). **Dışa Aktar** butonuyla JSON yedeği alarak ek güvenlik sağlayabilirsin.
 </details>
 
 <details>
@@ -312,13 +313,14 @@ Bu Warframe wiki ikonlarının bilinen bir özelliğidir (beyaz PNG'lerdir). Uyg
 - [x] URL ile tracker durumu paylaşma (DEFLATE sıkıştırmalı link)
 - [x] Farm Planlayıcı sayfası (kaynak arama, hedef takibi, ortak drop lokasyonları)
 - [x] Bulut Senkronizasyonu (Supabase — 11 tablo normalize, anonim auth, Realtime cross-device)
+- [x] Google OAuth (Kayıt Ol / Giriş Yap, linkIdentity UID korur)
 - [x] Sekmeler arası sync (BroadcastChannel)
 - [x] Route-level code splitting + image lazy loading
 - [x] HTTP güvenlik hardening (helmet + CSP)
+- [x] Gizlilik Politikası + Kullanım Şartları sayfaları
 - [x] Mobil optimize layout'lar (alt nav, swipe-close sheet, notch menü)
 - [x] İlerlemeyi PNG olarak dışa aktarma (html-to-image)
 - [x] warframe.market entegrasyonu (Vault'ta plat ikonu linki)
-- [ ] Google OAuth upgrade (anonim → kalıcı hesap)
 - [ ] Supabase otomatik yedekleme (haftalık pg_dump)
 - [ ] Admin analytics dashboard (DAU/MAU, popüler item'lar)
 - [ ] Mastery Rank XP Calculator

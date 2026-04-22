@@ -44,11 +44,11 @@
 
 ## Overview
 
-**WIT (Warframe Item Tracker)** is a production-grade companion app for Warframe. It helps you track what you want to craft, which void relics drop the prime parts you need, what's in your vault, your mastery progress across 820+ items, and live open-world cycle timers — all in one place, with zero account required.
+**WIT (Warframe Item Tracker)** is a production-grade companion app for Warframe. It helps you track what you want to craft, which void relics drop the prime parts you need, what's in your vault, your mastery progress across 820+ items, and live open-world cycle timers — all in one place.
 
 Built as a **Progressive Web App (PWA)**, WIT can be installed directly from your browser, works offline after first load, and includes a bidirectional sync system between crafting progress and relic tracking.
 
-All data stays in your browser's localStorage. No telemetry, no server-side accounts, no sign-ups.
+WIT is **offline-first**: your data is cached in localStorage and the UI works without a network. An anonymous Supabase account is created silently on first load so your progress syncs across devices; you can optionally link a Google account to keep it permanent. No telemetry, no third-party trackers.
 
 ---
 
@@ -84,6 +84,7 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 - **Toast Notifications** — Modern, theme-aware toasts (react-hot-toast)
 - **Bidirectional Sync** — Complete a part in Craft Tracker, it's auto-marked found in Relic Tracker
 - **Cloud Sync** — Your data syncs across all your devices automatically via Supabase. Anonymous account created on first load — no login required. Live cross-device updates through Supabase Realtime
+- **Optional Google Sign-In** — Register or sign in with Google to make your account permanent across devices. `linkIdentity` preserves your current UID so no data is lost during upgrade. Auth is gated at the row level (RLS: `auth.uid() = user_id`)
 - **Multi-tab Sync** — Changes in one browser tab reflect instantly in others via BroadcastChannel
 - **Import/Export** — Backup your data as JSON, restore across devices
 - **URL Share** — Share your tracker state as a compact DEFLATE-compressed link; open on another device or send to a friend, zero backend
@@ -334,10 +335,11 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 - [x] URL Share (compressed link-based state transfer)
 - [x] Farm Planner page (search resources, track targets, find shared drop locations)
 - [x] Cloud Sync (Supabase — cross-device, anonymous auth, Realtime, 11-table normalized schema)
+- [x] Google OAuth (Register / Sign In, linkIdentity preserves UID)
 - [x] Multi-tab sync (BroadcastChannel)
 - [x] Route-level code splitting + image lazy loading
 - [x] HTTP security hardening (helmet + CSP)
-- [ ] Google OAuth upgrade (anonymous → permanent account)
+- [x] Privacy Policy + Terms of Service pages
 - [ ] Automated Supabase backup (weekly pg_dump)
 - [ ] Admin analytics dashboard (DAU/MAU, popular items)
 - [ ] Mastery Rank XP Calculator

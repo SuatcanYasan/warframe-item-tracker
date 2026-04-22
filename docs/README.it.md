@@ -35,6 +35,7 @@
 - **Dashboard** — Panoramica di tutti i tracker con grafici e timer in tempo reale
 - **Craft Tracker** — Aggiungi item, vedi i materiali richiesti, riordina trascinando
 - **Relic Tracker** — Quali reliquie droppano quali parti Prime, sincronizzazione bidirezionale
+- **Accesso Google opzionale** — Registra/accedi con Google per rendere l’account permanente tra dispositivi (linkIdentity preserva l’UID)
 - **Caveau** — Gestisci le tue parti Prime, vedi quali set puoi completare
 - **Mastery Tracker** — 820+ item con switch a 3 stati (posseduto / maestrato / nessuno)
 - **World Timers** — Conto alla rovescia per Cetus, Fortuna, Deimos + Baro Ki'Teer

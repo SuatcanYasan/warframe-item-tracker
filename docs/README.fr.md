@@ -46,6 +46,7 @@
 - **Partage par URL** — Partage tes données de tracker par lien compressé DEFLATE, sans backend
 - **Farm Planner** — rechercher des ressources, définir une quantité cible, voir les lieux de drop et repérer les spots partagés pour plusieurs ressources
 - **Synchronisation Cloud** — tes données se synchronisent automatiquement sur tous tes appareils via Supabase (compte anonyme, Realtime cross-device)
+- **Connexion Google optionnelle** — S’inscrire/se connecter avec Google rend le compte permanent entre appareils (linkIdentity préserve l’UID)
 - **Export Screenshot** — export PNG en un clic de la vue actuelle (html-to-image)
 - **PWA** — Installable comme app desktop/mobile, fonctionne hors ligne
 
