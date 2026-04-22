@@ -68,8 +68,7 @@ export default function SearchDrawer({ open, onClose, onAddItem }) {
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
                   className="search-drawer-img"
-                  onError={handleImgError}
-                />
+                  onError={handleImgError} loading="lazy" decoding="async" />
                 <div className="search-drawer-info">
                   <div className="search-drawer-name">{item.name}</div>
                   <div className="search-drawer-type">{item.type || item.category || t("unknown")}</div>

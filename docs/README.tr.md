@@ -82,9 +82,10 @@ Tüm veriler tarayıcının localStorage'ında kalır. Telemetri yok, sunucu tar
 - **Ekran Görüntüsü Dışa Aktarma** — Tek tıkla PNG olarak mevcut görünümü dışa aktar (html-to-image)
 - **Toast Bildirimleri** — Modern, tema duyarlı toast'lar (react-hot-toast)
 - **İki Yönlü Senkron** — Craft Takip'te bir parçayı tamamla, Relic Takip'te otomatik bulunmuş işaretlenir
+- **Bulut Senkronizasyonu** — Verin tüm cihazların arasında otomatik olarak senkronize olur (Supabase). İlk açılışta anonim hesap oluşturulur, giriş gerekmez. Cihazlar arası canlı güncelleme (Supabase Realtime)
+- **Sekmeler arası Sync** — Bir sekmedeki değişiklik anında diğer açık sekmelere yansır (BroadcastChannel)
 - **İçe/Dışa Aktarma** — Verini JSON olarak yedekle, cihazlar arası taşı
 - **URL ile Paylaşım** — Tüm tracker verini DEFLATE ile sıkıştırılmış tek link olarak paylaş; arkadaşla gönder veya başka cihazda aç, backend yok
-- **Discord Webhook** — Amp seti, craft, Prime veya Mastery tamamlandığında seçtiğin Discord kanalına otomatik zengin embed mesajı ("Değerli Tenno ... setini tamamladı, ilerleme X/Y"), spam koruması dahil
 
 ### Teknik
 
@@ -309,14 +310,20 @@ Bu Warframe wiki ikonlarının bilinen bir özelliğidir (beyaz PNG'lerdir). Uyg
 - [x] Aktiviteler sayfası (Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration)
 - [x] Günlük/Haftalık Kontrol Listesi (UTC reset, preset pack)
 - [x] URL ile tracker durumu paylaşma (DEFLATE sıkıştırmalı link)
-- [x] Discord Webhook entegrasyonu (Amp/Craft/Prime/Mastery milestone embed'leri)
 - [x] Farm Planlayıcı sayfası (kaynak arama, hedef takibi, ortak drop lokasyonları)
+- [x] Bulut Senkronizasyonu (Supabase — 11 tablo normalize, anonim auth, Realtime cross-device)
+- [x] Sekmeler arası sync (BroadcastChannel)
+- [x] Route-level code splitting + image lazy loading
+- [x] HTTP güvenlik hardening (helmet + CSP)
 - [x] Mobil optimize layout'lar (alt nav, swipe-close sheet, notch menü)
 - [x] İlerlemeyi PNG olarak dışa aktarma (html-to-image)
 - [x] warframe.market entegrasyonu (Vault'ta plat ikonu linki)
-- [ ] Discord Rich Presence entegrasyonu (Tauri desktop gerekir)
-- [ ] Incarnon Adapter rotation tracker
+- [ ] Google OAuth upgrade (anonim → kalıcı hesap)
+- [ ] Supabase otomatik yedekleme (haftalık pg_dump)
+- [ ] Admin analytics dashboard (DAU/MAU, popüler item'lar)
 - [ ] Mastery Rank XP Calculator
+- [ ] Incarnon Adapter rotation tracker
+- [ ] Discord Rich Presence entegrasyonu (Tauri desktop gerekir)
 - [ ] Lich / Sister Tracker (Requiem sequence helper)
 - [ ] Arcane Tracker (Eidolon / Zariman / Entrati)
 - [ ] Codex / Synthesis Tracker

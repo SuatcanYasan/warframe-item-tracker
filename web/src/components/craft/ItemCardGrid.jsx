@@ -89,8 +89,7 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
                 <img
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
-                  onError={handleImgError}
-                />
+                  onError={handleImgError} loading="lazy" decoding="async" />
                 <span className="item-card-qty">x{item.quantity}</span>
                 {allDone && <span className="item-card-done-badge">{t("completeTag")}</span>}
               </div>

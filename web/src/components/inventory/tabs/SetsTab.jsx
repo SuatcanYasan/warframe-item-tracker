@@ -28,8 +28,7 @@ function SetCard({ set }) {
         <img
           src={set.imageUrl || FALLBACK_ICON}
           alt={set.parentName}
-          onError={handleImgError}
-        />
+          onError={handleImgError} loading="lazy" decoding="async" />
         {completeSets > 0 && (
           <span className="item-card-qty">{t("setCompletable", { count: completeSets })}</span>
         )}
@@ -55,7 +54,7 @@ function SetCard({ set }) {
             onClick={(e) => e.stopPropagation()}
             title={t("viewOnMarket")}
           >
-            <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+            <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" loading="lazy" decoding="async" />
           </a>
         </div>
         <div className="inventory-set-parts">

@@ -128,8 +128,7 @@ function LocationRow({ loc, t }) {
               alt=""
               className="farm-common-resource-img"
               data-img-fallback={r.resource.imageUrlFallback || undefined}
-              onError={handleImgError}
-            />
+              onError={handleImgError} loading="lazy" decoding="async" />
             <span className="farm-common-resource-name">{r.resource.name}</span>
             {r.rarity && <Tag color={RARITY_COLOR[r.rarity] || "default"}>{r.rarity}</Tag>}
             <span className="farm-drop-chance">%{Number(r.chance || 0).toFixed(2)}</span>
@@ -224,8 +223,7 @@ export default function FarmPlannerPage() {
           alt=""
           style={{ width: 24, height: 24, objectFit: "contain" }}
           data-img-fallback={r.imageUrlFallback || undefined}
-          onError={handleImgError}
-        />
+          onError={handleImgError} loading="lazy" decoding="async" />
         <span>{r.name}</span>
       </div>
     ),
@@ -294,8 +292,7 @@ export default function FarmPlannerPage() {
                     alt=""
                     className="farm-resource-img"
                     data-img-fallback={r.imageUrlFallback || undefined}
-                    onError={handleImgError}
-                  />
+                    onError={handleImgError} loading="lazy" decoding="async" />
                   <div className="farm-resource-body">
                     <div className="farm-resource-name">{r.name}</div>
                     <div className="farm-resource-target-row">

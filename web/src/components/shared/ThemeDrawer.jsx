@@ -121,16 +121,40 @@ export default function ThemeDrawer() {
       extra={<Button onClick={resetThemeToPreset}>{t("resetTheme")}</Button>}
     >
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-        <Text strong>{t("loadThemeProfile")}</Text>
+        <Text strong>{t("themeSelectLabel")}</Text>
         <Flex gap={8} align="center">
           <Select
             style={{ flex: 1 }}
-            value={selectedProfileName || undefined}
-            placeholder={t("themeProfileEmpty")}
-            options={Object.keys(themeProfiles).map((name) => ({ label: name, value: name }))}
+            // Value: either a built-in theme name ("orokin"/"drifter"/"lotus")
+            // or a user-saved profile key (stored in themeProfiles). The saved
+            // profile takes priority when selected via loadThemeProfile.
+            value={selectedProfileName || themeName}
+            options={[
+              {
+                label: t("themeBuiltIn"),
+                options: Object.entries(themeOptions).map(([value, opt]) => ({
+                  value,
+                  label: opt.label,
+                })),
+              },
+              ...(Object.keys(themeProfiles).length > 0 ? [{
+                label: t("themeSavedProfiles"),
+                options: Object.keys(themeProfiles).map((name) => ({
+                  label: name,
+                  value: `profile:${name}`,
+                })),
+              }] : []),
+            ]}
             onChange={(value) => {
-              setSelectedProfileName(value);
-              loadThemeProfile(value);
+              if (value.startsWith("profile:")) {
+                const name = value.slice("profile:".length);
+                setSelectedProfileName(name);
+                loadThemeProfile(name);
+              } else {
+                setSelectedProfileName("");
+                setThemeName(value);
+                setCustomThemeTokens(themeOptions[value].token);
+              }
             }}
           />
           <Button

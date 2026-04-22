@@ -94,8 +94,7 @@ function PresetCard({ preset, ampsData, t, onTrack, alreadyTracked }) {
             <img
               src={p.imageUrl || FALLBACK_ICON}
               alt=""
-              onError={handleImgError}
-            />
+              onError={handleImgError} loading="lazy" decoding="async" />
             <div>
               <div className="amp-preset-part-name">{p.name}</div>
               <div className="amp-preset-part-slot">{p.slot}</div>

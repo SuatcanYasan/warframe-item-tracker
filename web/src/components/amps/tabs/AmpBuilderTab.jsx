@@ -112,8 +112,7 @@ export default function AmpBuilderTab({ ampsData }) {
           src={part.imageUrl || FALLBACK_ICON}
           alt=""
           style={{ width: 24, height: 24, objectFit: "contain" }}
-          onError={handleImgError}
-        />
+          onError={handleImgError} loading="lazy" decoding="async" />
         <span style={{ fontWeight: 600 }}>{part.number === 0 ? "M" : part.number}</span>
         <span>{part.name}</span>
       </div>
@@ -158,7 +157,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {prism && (
             <div className="amp-part-preview">
-              <img src={prism.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
+              <img src={prism.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} loading="lazy" decoding="async" />
               <div className="amp-part-preview-stats">
                 <div><span>{t("ampStatDamage")}:</span> <b>{prism.damagePerShot || 0}</b></div>
                 <div><span>{t("ampStatCrit")}:</span> <b>%{Math.round((prism.criticalChance || 0) * 100)}</b></div>
@@ -180,7 +179,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {scaffold && (
             <div className="amp-part-preview">
-              <img src={scaffold.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
+              <img src={scaffold.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} loading="lazy" decoding="async" />
               <div className="amp-part-preview-stats">
                 <div><span>{t("ampStatDamage")}:</span> <b>{scaffold.damagePerShot || 0}</b></div>
                 <div><span>{t("ampStatCrit")}:</span> <b>%{Math.round((scaffold.criticalChance || 0) * 100)}</b></div>
@@ -202,7 +201,7 @@ export default function AmpBuilderTab({ ampsData }) {
           />
           {brace && (
             <div className="amp-part-preview">
-              <img src={brace.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} />
+              <img src={brace.imageUrl || FALLBACK_ICON} alt="" onError={handleImgError} loading="lazy" decoding="async" />
               <div className="amp-part-preview-stats amp-brace-bonuses">
                 <div className="amp-brace-bonuses-label">{t("ampBraceBonus")}</div>
                 {(BRACE_BONUSES[brace.name] || [t("ampBraceNoData")]).map((bonus) => (
@@ -268,8 +267,7 @@ export default function AmpBuilderTab({ ampsData }) {
                     src={img}
                     alt=""
                     className="amp-material-img"
-                    onError={handleImgError}
-                  />
+                    onError={handleImgError} loading="lazy" decoding="async" />
                   <span className="amp-material-name">{m.name}</span>
                   <span className="amp-material-qty">×{m.itemCount}</span>
                 </div>

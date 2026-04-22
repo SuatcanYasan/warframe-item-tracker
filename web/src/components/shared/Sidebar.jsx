@@ -24,12 +24,12 @@ export default function Sidebar({ onOpenSettings }) {
   }
 
   const navItems = [
-    { key: "dashboard", path: "/", icon: <img src="/trackerlogo.png" alt="" className="nav-item-img" />, label: t("dashboard") },
-    { key: "craft", path: "/craft", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("craftTracker") },
-    { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("relicTracker") },
-    { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("inventoryTracker") },
-    { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" />, label: t("masteryTracker") },
-    { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" />, label: t("ampsTracker") },
+    { key: "dashboard", path: "/", icon: <img src="/trackerlogo.png" alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("dashboard") },
+    { key: "craft", path: "/craft", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("craftTracker") },
+    { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("relicTracker") },
+    { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("inventoryTracker") },
+    { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("masteryTracker") },
+    { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("ampsTracker") },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function Sidebar({ onOpenSettings }) {
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
       >
       <div className="sidebar-brand">
-        <img src="/trackerlogo.png" alt="WIT" className="sidebar-logo-img" />
+        <img src="/trackerlogo.png" alt="WIT" className="sidebar-logo-img" loading="lazy" decoding="async" />
         {!collapsed && <span className="sidebar-logo-text">WIT</span>}
       </div>
 
@@ -61,26 +61,26 @@ export default function Sidebar({ onOpenSettings }) {
         <div className="nav-divider" />
         <div className="nav-section">{!collapsed && t("tools")}</div>
         <div className={`nav-item ${activePage === "timers" ? "active" : ""}`} onClick={() => handleNavClick("/timers")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconTimer%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconTimer%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
           {!collapsed && <span className="nav-label">{t("timersTracker")}</span>}
         </div>
         <div className={`nav-item ${activePage === "activities" ? "active" : ""}`} onClick={() => handleNavClick("/activities")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconAllyDown%28xRed%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconAllyDown%28xRed%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
           {!collapsed && <span className="nav-label">{t("activitiesPage")}</span>}
         </div>
         <div className={`nav-item ${activePage === "checklist" ? "active" : ""}`} onClick={() => handleNavClick("/checklist")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconQuest%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconQuest%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
           {!collapsed && <span className="nav-label">{t("checklistPage")}</span>}
         </div>
         <div className={`nav-item ${activePage === "farm" ? "active" : ""}`} onClick={() => handleNavClick("/farm")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
           {!collapsed && <span className="nav-label">{t("farmPlanner")}</span>}
         </div>
       </nav>
 
       <div className="sidebar-footer">
         <div className="nav-item" onClick={onOpenSettings}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" className="nav-item-img" /></span>
+          <span className="nav-icon"><img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" /></span>
           {!collapsed && <span className="nav-label">{t("settings")}</span>}
         </div>
         <div className="nav-item collapse-btn" onClick={toggleSidebar}>

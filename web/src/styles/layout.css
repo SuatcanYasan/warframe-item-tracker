@@ -661,6 +661,41 @@
   border-color: var(--wf-border, #2f4774);
 }
 
+/* Account pill: avatar + name in header when Google-linked */
+.account-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px 0 4px;
+  border-radius: 18px;
+  border: 1px solid var(--wf-border, rgba(255,255,255,0.06));
+  background: var(--wf-bg-container, #0f1a30);
+  color: var(--wf-text, #eaf0ff);
+  cursor: pointer;
+  transition: all 200ms ease;
+  max-width: 220px;
+}
+
+.account-pill:hover {
+  background: var(--wf-bg-elevated, #152344);
+  border-color: var(--wf-primary, #CA8A04);
+}
+
+.account-pill-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+@media (max-width: 720px) {
+  .account-pill-name { display: none; }
+  .account-pill { padding: 0 4px; border-radius: 50%; width: 36px; }
+}
+
 /* Content area */
 .app-content {
   grid-area: content;

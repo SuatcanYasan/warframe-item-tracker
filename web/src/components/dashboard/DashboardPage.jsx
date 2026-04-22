@@ -36,7 +36,7 @@ function PreviewRow({ items, totalCount, moreLabel }) {
     <div className="dashboard-card-previews">
       {items.map((p, j) => (
         <div key={j} className="dashboard-preview-item">
-          {p.img && <img src={p.img} alt="" className="dashboard-preview-img" />}
+          {p.img && <img src={p.img} alt="" className="dashboard-preview-img" loading="lazy" decoding="async" />}
           <span className="dashboard-preview-name">{p.name}</span>
         </div>
       ))}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
   return (
     <div className="dashboard-page">
       <div className="dashboard-welcome">
-        <img src="/trackerlogo.png" alt="WIT" className="dashboard-logo" />
+        <img src="/trackerlogo.png" alt="WIT" className="dashboard-logo" loading="lazy" decoding="async" />
         <div className="dashboard-welcome-text">
           <h1 className="dashboard-title">{t("dashboardTitle")}</h1>
           <p className="dashboard-subtitle">{t("dashboardSubtitle")}</p>
@@ -365,7 +365,7 @@ export default function DashboardPage() {
           <div className="almost-title"><FireOutlined style={{ color: "#ef4444", marginRight: 6 }} />{t("dashboardAlmostDone")}</div>
           {almostDone.map((item, i) => (
             <div key={i} className="almost-item">
-              {item.img && <img src={item.img} alt="" className="almost-img" />}
+              {item.img && <img src={item.img} alt="" className="almost-img" loading="lazy" decoding="async" />}
               <span className="almost-name">{item.name}</span>
               <span className="almost-pct">{item.done}/{item.total}</span>
               <div className="almost-bar"><div className="almost-bar-fill" style={{ width: `${item.pct}%` }} /></div>
@@ -377,7 +377,7 @@ export default function DashboardPage() {
       {/* Hero — Craft */}
       <motion.div className="dashboard-card dashboard-hero" style={{ "--accent": "var(--wf-primary)" }} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} onClick={() => navigate("/craft")}>
         <div className="dashboard-card-header">
-          <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="dashboard-card-icon" />
+          <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="dashboard-card-icon" loading="lazy" decoding="async" />
           <span className="dashboard-card-title">{t("craftTracker")}</span>
           <button className="dashboard-quick-action" onClick={(e) => { e.stopPropagation(); openSearchDrawer(); navigate("/craft"); }}><PlusOutlined /> {t("addItem")}</button>
           <RightOutlined className="dashboard-card-arrow" />
@@ -395,7 +395,7 @@ export default function DashboardPage() {
       {/* Secondary 3-col */}
       <div className="dashboard-grid-secondary">
         <motion.div className="dashboard-card" style={{ "--accent": "#a855f7" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} onClick={() => navigate("/relic")}>
-          <div className="dashboard-card-header"><img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="dashboard-card-icon" /><span className="dashboard-card-title">{t("relicTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
+          <div className="dashboard-card-header"><img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="dashboard-card-icon" loading="lazy" decoding="async" /><span className="dashboard-card-title">{t("relicTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
           <div className="dashboard-card-stats">
             <div className="dashboard-stat"><span className="dashboard-stat-value">{relicStats.primes}</span><span className="dashboard-stat-label">{t("watchedPrimes")}</span></div>
             <div className="dashboard-stat"><span className="dashboard-stat-value">{relicStats.found}/{relicStats.total}</span><span className="dashboard-stat-label">{t("componentFound")}</span></div>
@@ -406,7 +406,7 @@ export default function DashboardPage() {
         </motion.div>
 
         <motion.div className="dashboard-card" style={{ "--accent": "#3b82f6" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} onClick={() => navigate("/inventory")}>
-          <div className="dashboard-card-header"><img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="dashboard-card-icon" /><span className="dashboard-card-title">{t("inventoryTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
+          <div className="dashboard-card-header"><img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="dashboard-card-icon" loading="lazy" decoding="async" /><span className="dashboard-card-title">{t("inventoryTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
           <div className="dashboard-card-stats">
             <div className="dashboard-stat"><span className="dashboard-stat-value">{invStats.parts}</span><span className="dashboard-stat-label">{t("partsTab")}</span></div>
             <div className="dashboard-stat"><span className="dashboard-stat-value">{invStats.sets}</span><span className="dashboard-stat-label">{t("setsTab")}</span></div>
@@ -417,10 +417,10 @@ export default function DashboardPage() {
         </motion.div>
 
         <motion.div className="dashboard-card" style={{ "--accent": "#f59e0b" }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} onClick={() => navigate("/mastery")}>
-          <div className="dashboard-card-header"><img src={MR_ICON} alt="" className="dashboard-card-icon" /><span className="dashboard-card-title">{t("masteryTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
+          <div className="dashboard-card-header"><img src={MR_ICON} alt="" className="dashboard-card-icon" loading="lazy" decoding="async" /><span className="dashboard-card-title">{t("masteryTracker")}</span><RightOutlined className="dashboard-card-arrow" /></div>
           <div className="dashboard-card-stats">
             <div className="dashboard-stat"><span className="dashboard-stat-value"><InboxOutlined style={{ color: "#3b82f6", marginRight: 4, fontSize: 16 }} />{masteryStats.owned}</span><span className="dashboard-stat-label">{t("masteryOwned")}</span></div>
-            <div className="dashboard-stat"><span className="dashboard-stat-value"><img src={MR_ICON} alt="" style={{ width: 16, height: 16, marginRight: 4 }} />{masteryStats.mastered}</span><span className="dashboard-stat-label">{t("masteryMastered")}</span></div>
+            <div className="dashboard-stat"><span className="dashboard-stat-value"><img src={MR_ICON} alt="" style={{ width: 16, height: 16, marginRight: 4 }} loading="lazy" decoding="async" />{masteryStats.mastered}</span><span className="dashboard-stat-label">{t("masteryMastered")}</span></div>
             <div className="dashboard-stat"><span className="dashboard-stat-value">{masteryStats.total}</span><span className="dashboard-stat-label">{t("masteryTotalItems")}</span></div>
           </div>
           {masteryStats.total === 0 && <EmptyCTA label={t("dashboardStartMastery")} onClick={() => navigate("/mastery")} />}

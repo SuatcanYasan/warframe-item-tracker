@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { App as AntApp, Button, ConfigProvider } from "antd";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { App as AntApp, Button, ConfigProvider, Spin } from "antd";
 import toast from "react-hot-toast";
 import {
   PlusOutlined,
@@ -19,10 +19,11 @@ import {
   readStorage,
   normalizePersistedState,
 } from "./utils/storage";
+import { ensureSession } from "./lib/supabaseAuth";
+import { pullAllState, pushAllState, markBootstrapReady } from "./lib/supabaseSync";
 import { requestJson } from "./utils/helpers";
 import { captureAndDownload } from "./utils/screenshot";
 import { applyCursorVars } from "./utils/cursors";
-import { initWebhookWatcher, notifyCraftProgress } from "./utils/webhookWatcher";
 
 import { useAppStore } from "./stores/appStore";
 import { useCraftStore } from "./stores/craftStore";
@@ -55,18 +56,27 @@ import WizardModal from "./components/shared/WizardModal";
 import ShortcutsModal from "./components/shared/ShortcutsModal";
 import UpdateNotesModal from "./components/shared/UpdateNotesModal";
 import ShareModal from "./components/shared/ShareModal";
-import DiscordWebhookModal from "./components/shared/DiscordWebhookModal";
 import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
 import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
-import RelicTrackerContent from "./components/relic/RelicPage";
-import InventoryTrackerContent from "./components/inventory/InventoryPage";
-import MasteryPage from "./components/mastery/MasteryPage";
+// Route-level code splitting — each page ships as its own chunk.
+// Dashboard stays eager since it's the default landing screen.
 import DashboardPage from "./components/dashboard/DashboardPage";
-import TimersPage from "./components/timers/TimersPage";
-import AmpsPage from "./components/amps/AmpsPage";
-import ActivitiesPage from "./components/activities/ActivitiesPage";
-import ChecklistPage from "./components/checklist/ChecklistPage";
-import FarmPlannerPage from "./components/farm/FarmPlannerPage";
+const RelicTrackerContent = lazy(() => import("./components/relic/RelicPage"));
+const InventoryTrackerContent = lazy(() => import("./components/inventory/InventoryPage"));
+const MasteryPage = lazy(() => import("./components/mastery/MasteryPage"));
+const TimersPage = lazy(() => import("./components/timers/TimersPage"));
+const AmpsPage = lazy(() => import("./components/amps/AmpsPage"));
+const ActivitiesPage = lazy(() => import("./components/activities/ActivitiesPage"));
+const ChecklistPage = lazy(() => import("./components/checklist/ChecklistPage"));
+const FarmPlannerPage = lazy(() => import("./components/farm/FarmPlannerPage"));
+const PrivacyPolicy = lazy(() => import("./components/legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./components/legal/TermsOfService"));
+
+const RouteFallback = () => (
+  <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}>
+    <Spin size="large" />
+  </div>
+);
 
 function CraftAppContent() {
   const { modal } = AntApp.useApp();
@@ -156,22 +166,6 @@ function CraftAppContent() {
     root.style.setProperty("--wf-primary", customThemeTokens.colorPrimary || "#CA8A04");
     applyCursorVars(customThemeTokens.colorCursor || customThemeTokens.colorPrimary || "#CA8A04");
   }, [customThemeTokens, themeName]);
-
-  // --- Craft webhook: fire when a tracked item is fully crafted ---
-  const perItem = useCraftStore((s) => s.calculation.perItem);
-  useEffect(() => {
-    if (!Array.isArray(perItem) || perItem.length === 0) return;
-    const snapshot = perItem.map((item) => {
-      const reqs = Array.isArray(item.requirements) ? item.requirements : [];
-      const hasReqs = reqs.length > 0;
-      const allDone = hasReqs && reqs.every((r) => {
-        const collected = Number(completedMap?.[item.uniqueName]?.[r.uniqueName]) || 0;
-        return collected >= (r.quantity || 0);
-      });
-      return { uniqueName: item.uniqueName, name: item.name, isFullyCompleted: allDone };
-    });
-    notifyCraftProgress(snapshot);
-  }, [perItem, completedMap]);
 
   // --- Calculate ---
   useEffect(() => {
@@ -379,6 +373,7 @@ function CraftAppContent() {
         <AppHeader />
 
         <main className="app-content">
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/relic" element={
@@ -391,6 +386,8 @@ function CraftAppContent() {
             <Route path="/activities" element={<ActivitiesPage />} />
             <Route path="/checklist" element={<ChecklistPage />} />
             <Route path="/farm" element={<FarmPlannerPage />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/craft" element={
               <>
                 <SummaryBar adjustedTotals={adjustedTotals} />
@@ -499,6 +496,7 @@ function CraftAppContent() {
               </>
             } />
           </Routes>
+          </Suspense>
           <div className="app-content-spacer" />
           <AppFooter />
         </main>
@@ -522,7 +520,6 @@ function CraftAppContent() {
       <ShortcutsModal />
       <UpdateNotesModal />
       <ShareModal />
-      <DiscordWebhookModal />
       <MobileNav />
     </>
   );
@@ -548,8 +545,6 @@ function CraftApp() {
         useAppStore.getState().setPendingImport(match[1]);
       }
     }
-    // Start listening for store milestones to fire Discord webhooks.
-    initWebhookWatcher();
     return true;
   });
 
@@ -564,6 +559,81 @@ function CraftApp() {
     }
     window.addEventListener("wf-theme-change", onThemeChange);
     return () => window.removeEventListener("wf-theme-change", onThemeChange);
+  }, []);
+
+  // Cloud sync bootstrap: sign the user in (anonymous by default) and
+  // reconcile local state with whatever's on Supabase.
+  //   - cloud has data → pull + hydrate stores
+  //   - cloud empty, local has data → push local up as first-time migration
+  //   - both empty → nothing to do
+  // No-op if Supabase env vars are missing — app stays local-only PWA.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const session = await ensureSession();
+      if (!session || cancelled) return;
+
+      const cloud = await pullAllState();
+      if (cancelled) return;
+
+      if (cloud && !cloud.empty) {
+        const normalized = normalizePersistedState(cloud.state);
+        useAppStore.getState().hydrate(normalized);
+        useCraftStore.getState().hydrate(normalized);
+        useRelicStore.getState().hydrate(normalized);
+        useInventoryStore.getState().hydrate(normalized);
+        useMasteryStore.getState().hydrate(normalized);
+        useAmpStore.getState().hydrate(normalized);
+        useChecklistStore.getState().hydrate(normalized);
+        useFarmStore.getState().hydrate(normalized);
+        // Pre-warm push hashes from the ACTUAL store state (not normalized
+        // input) — some hydrate methods clean/transform data, so hash of
+        // store.masteredItems may differ from normalized.masteredItems.
+        // Reading post-hydrate guarantees the next persist cycle sees a
+        // matching hash and skips the echo write.
+        const app = useAppStore.getState();
+        const craft = useCraftStore.getState();
+        const amp = useAmpStore.getState();
+        await pushAllState({
+          language: app.language,
+          theme: app.themeName,
+          customThemeTokens: app.customThemeTokens,
+          themeProfiles: app.themeProfiles,
+          completionView: craft.completionView,
+          selectedItems: craft.selectedItems,
+          completedMap: craft.completedMap,
+          onboardingDone: !app.wizardOpen,
+          relicFoundComponents: useRelicStore.getState().foundComponents,
+          inventoryParts: useInventoryStore.getState().inventoryParts,
+          masteredItems: useMasteryStore.getState().masteredItems,
+          trackedSets: amp.trackedSets,
+          masteryParts: amp.masteryParts,
+          completedMaterials: amp.completedMaterials,
+          checklistItems: useChecklistStore.getState().items,
+          farmResources: useFarmStore.getState().trackedResources,
+          storedVersion: app.storedVersion,
+        }, { markOnly: true });
+        markBootstrapReady();
+        return;
+      }
+
+      // Cloud empty — first login on a device with local data. Migrate up.
+      const localHasData =
+        (initialPersisted.selectedItems?.length || 0) > 0 ||
+        Object.keys(initialPersisted.masteredItems || {}).length > 0 ||
+        (initialPersisted.trackedSets?.length || 0) > 0 ||
+        Object.keys(initialPersisted.inventoryParts || {}).length > 0;
+      if (localHasData) await pushAllState(initialPersisted);
+      markBootstrapReady();
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // If Supabase is disabled or ensureSession fails, gate still needs to
+  // open so usePersist doesn't block local-only users forever.
+  useEffect(() => {
+    const t = setTimeout(markBootstrapReady, 5000);
+    return () => clearTimeout(t);
   }, []);
 
   return (

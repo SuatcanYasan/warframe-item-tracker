@@ -163,51 +163,6 @@
   background: color-mix(in srgb, #EF4444 10%, transparent);
 }
 
-/* Discord webhook modal */
-.discord-field {
-  margin-bottom: 14px;
-}
-
-.discord-field label {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--wf-primary);
-  margin-bottom: 6px;
-}
-
-.discord-field-error {
-  font-size: 11px;
-  color: #EF4444;
-  margin-top: 4px;
-}
-
-.discord-events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--wf-bg-base) 50%, transparent);
-  border: 1px solid var(--wf-border);
-  border-radius: 10px;
-}
-
-.discord-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-.header-icon-btn.discord-active {
-  color: #5865F2;
-  border-color: color-mix(in srgb, #5865F2 45%, transparent);
-  box-shadow: 0 0 8px color-mix(in srgb, #5865F2 30%, transparent);
-}
-
 /* Share modal preview */
 .share-panel {
   display: flex;

@@ -64,7 +64,7 @@ function SetCard({ set, allParts, onRemove, onTogglePart, t }) {
             onClick={() => onTogglePart(set.id, p.key)}
           >
             <div className="amp-set-part-check">{p.data.done && <CheckOutlined />}</div>
-            <img src={resolveImage(p.data, allParts)} alt="" className="amp-set-part-img" onError={handleImgError} />
+            <img src={resolveImage(p.data, allParts)} alt="" className="amp-set-part-img" onError={handleImgError} loading="lazy" decoding="async" />
             <div className="amp-set-part-info">
               <div className="amp-set-part-slot">{t(p.labelKey)}</div>
               <div className="amp-set-part-name">
@@ -227,8 +227,7 @@ export default function AmpTrackerTab({ allParts }) {
                     src={img}
                     alt=""
                     className="amp-material-img"
-                    onError={handleImgError}
-                  />
+                    onError={handleImgError} loading="lazy" decoding="async" />
                   <span className="amp-material-name">{m.name}</span>
                   <span className="amp-material-qty">×{m.itemCount}</span>
                   {m.uniqueName && (

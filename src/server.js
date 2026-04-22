@@ -1,4 +1,6 @@
 const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
 const path = require("path");
 
 const {
@@ -18,7 +20,57 @@ const STARTED_AT = new Date().toISOString();
 const webDistPath = path.join(__dirname, "..", "web", "dist");
 
 const app = express();
-app.use(express.json());
+
+// ---- Security headers (helmet + CSP) ----
+// CSP connect-src covers: self, Supabase Realtime (wss+https), warframestat.us,
+// WFCD CDN (cdn.jsdelivr.net), wiki.warframe.com.
+// Ant Design + Vite require 'unsafe-inline' for styles; recharts uses SVG only.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": ["'self'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "https:"],
+        "font-src": ["'self'", "data:"],
+        "connect-src": [
+          "'self'",
+          "https://api.warframestat.us",
+          "https://content.warframe.com",
+          "https://cdn.jsdelivr.net",
+          "https://wiki.warframe.com",
+          "https://*.supabase.co",
+          "wss://*.supabase.co",
+        ],
+        "worker-src": ["'self'", "blob:"],
+        "object-src": ["'none'"],
+        "frame-ancestors": ["'none'"],
+        "base-uri": ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,  // Allows wiki/CDN images without CORP headers
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+// ---- CORS ----
+// Prod: same-origin (browser serves API from same host). Explicit whitelist for any
+// standalone dev deployments. Override via ALLOWED_ORIGINS="https://a.com,https://b.com".
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    credentials: false,
+  })
+);
+
+app.use(express.json({ limit: "1mb" }));
+
 app.use(express.static(webDistPath, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith(".html")) {

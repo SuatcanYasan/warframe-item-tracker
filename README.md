@@ -83,9 +83,10 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 - **Screenshot Export** — One-click PNG export of your current view (html-to-image)
 - **Toast Notifications** — Modern, theme-aware toasts (react-hot-toast)
 - **Bidirectional Sync** — Complete a part in Craft Tracker, it's auto-marked found in Relic Tracker
+- **Cloud Sync** — Your data syncs across all your devices automatically via Supabase. Anonymous account created on first load — no login required. Live cross-device updates through Supabase Realtime
+- **Multi-tab Sync** — Changes in one browser tab reflect instantly in others via BroadcastChannel
 - **Import/Export** — Backup your data as JSON, restore across devices
 - **URL Share** — Share your tracker state as a compact DEFLATE-compressed link; open on another device or send to a friend, zero backend
-- **Discord Webhook** — Post rich milestone embeds ("Esteemed Tenno ... completed X set, progress Y/Z") to your own Discord channel when Amp sets, crafts, Primes or Mastery complete — with anti-spam cooldown
 - **Update Notes** — Automatic changelog modal when a new version is deployed
 - **Breadcrumb Navigation** — Clear page hierarchy with clickable WIT root link
 - **Live World Timers** — Real-time open world cycle countdowns powered by WarframeStatus API
@@ -93,10 +94,14 @@ All data stays in your browser's localStorage. No telemetry, no server-side acco
 ### Technical
 
 - **PWA** — Install as desktop/mobile app, works offline with service worker caching
-- **Zustand Stores** — 4 domain stores (app, craft, relic, inventory) — no Redux boilerplate
+- **Offline-first + Cloud Sync** — localStorage for instant reads, Supabase (PostgreSQL) for cross-device sync, BroadcastChannel for multi-tab. Hash-based diff + bootstrap gate prevents redundant writes
+- **11-table Normalized Schema** — Row-Level Security on every table (`auth.uid() = user_id`), Realtime publication per table, anonymous auth for zero-friction accounts
+- **Route-level Code Splitting** — Each page ships as its own lazy chunk (React.lazy + Suspense)
+- **Security Headers** — helmet + CSP (Supabase whitelisted), CORS, 1 MB body limit
+- **Zustand Stores** — 8 domain stores (app, craft, relic, inventory, mastery, amp, checklist, farm) — no Redux boilerplate
 - **React Query** — API caching with 5-minute stale time, background refetching
 - **Virtualization Ready** — @tanstack/react-virtual available for large lists
-- **Type-safe Storage** — localStorage normalization with backward compatibility
+- **Image Lazy Loading** — All 57 img tags use native `loading="lazy" decoding="async"`
 - **Theme-aware Everything** — All colors use CSS custom properties with `color-mix()`
 
 ---
@@ -327,11 +332,17 @@ This is a known quirk with Warframe wiki icons (they're white PNGs). The app aut
 - [x] Activities page (Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration)
 - [x] Daily / Weekly Checklist with UTC reset
 - [x] URL Share (compressed link-based state transfer)
-- [x] Discord Webhook integration with rich embeds
-- [ ] Incarnon Adapter rotation tracker
-- [ ] Mastery Rank XP Calculator
-- [ ] Lich / Sister Tracker (Requiem sequence helper)
 - [x] Farm Planner page (search resources, track targets, find shared drop locations)
+- [x] Cloud Sync (Supabase — cross-device, anonymous auth, Realtime, 11-table normalized schema)
+- [x] Multi-tab sync (BroadcastChannel)
+- [x] Route-level code splitting + image lazy loading
+- [x] HTTP security hardening (helmet + CSP)
+- [ ] Google OAuth upgrade (anonymous → permanent account)
+- [ ] Automated Supabase backup (weekly pg_dump)
+- [ ] Admin analytics dashboard (DAU/MAU, popular items)
+- [ ] Mastery Rank XP Calculator
+- [ ] Incarnon Adapter rotation tracker
+- [ ] Lich / Sister Tracker (Requiem sequence helper)
 - [ ] Arcane Tracker (Eidolon / Zariman / Entrati)
 - [ ] Codex / Synthesis Tracker
 

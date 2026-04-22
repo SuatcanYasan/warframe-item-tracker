@@ -74,6 +74,8 @@ export default function AmpEidolonTab({ ampsData }) {
                 alt=""
                 className="amp-eidolon-img"
                 onError={(ev) => { ev.target.src = FALLBACK_ICON; }}
+                loading="lazy"
+                decoding="async"
               />
               <div className="amp-eidolon-name">{t(e.labelKey)}</div>
               <div className="amp-eidolon-shield">

@@ -30,14 +30,6 @@ export function createDefaultPersistedState() {
     masteryParts: {},
     completedMaterials: {},
     checklistItems: [],
-    discordWebhookUrl: "",
-    discordWebhookUsername: "",
-    discordWebhookEvents: {
-      ampSetComplete: true,
-      craftComplete: true,
-      relicComplete: true,
-      masteryComplete: false,
-    },
     farmResources: [],
     storedVersion: null,
   };
@@ -99,12 +91,6 @@ export function normalizePersistedState(raw) {
         ? next.completedMaterials
         : {},
     checklistItems: Array.isArray(next.checklistItems) ? next.checklistItems : [],
-    discordWebhookUrl: typeof next.discordWebhookUrl === "string" ? next.discordWebhookUrl : "",
-    discordWebhookUsername: typeof next.discordWebhookUsername === "string" ? next.discordWebhookUsername : "",
-    discordWebhookEvents:
-      next.discordWebhookEvents && typeof next.discordWebhookEvents === "object"
-        ? next.discordWebhookEvents
-        : fallback.discordWebhookEvents,
     farmResources: Array.isArray(next.farmResources) ? next.farmResources : [],
     storedVersion: next.storedVersion || null,
   };

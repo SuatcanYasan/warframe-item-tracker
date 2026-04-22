@@ -42,8 +42,7 @@ export default function TotalsCardGrid({ adjustedTotals, onOpenDetail }) {
                 src={item.imageUrl || FALLBACK_ICON}
                 alt={item.name}
                 className="total-card-img"
-                onError={handleImgError}
-              />
+                onError={handleImgError} loading="lazy" decoding="async" />
               <div className="total-card-name">{item.name}</div>
               <div className="total-card-bar">
                 <div

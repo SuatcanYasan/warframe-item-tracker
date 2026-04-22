@@ -100,8 +100,7 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
                       src={comp.parentImageUrl || FALLBACK_ICON}
                       alt=""
                       style={{ width: 32, height: 32, objectFit: "contain" }}
-                      onError={handleImgError}
-                    />
+                      onError={handleImgError} loading="lazy" decoding="async" />
                   }
                   title={<Text style={{ fontSize: 13 }}>{comp.name}</Text>}
                   description={

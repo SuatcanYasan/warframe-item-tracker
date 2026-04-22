@@ -33,8 +33,7 @@ export default function ItemDetailModal({
               background: "var(--wf-bg-elevated, #152344)", padding: 4,
               clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)",
             }}
-            onError={handleImgError}
-          />
+            onError={handleImgError} loading="lazy" decoding="async" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <Text strong style={{ fontSize: 16 }}>{item.name}</Text>
             <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
@@ -82,8 +81,7 @@ export default function ItemDetailModal({
                 src={req.imageUrl || FALLBACK_ICON}
                 alt={req.name}
                 className="detail-req-img"
-                onError={handleImgError}
-              />
+                onError={handleImgError} loading="lazy" decoding="async" />
               <div className={`detail-req-name ${req.isDone ? "done" : ""}`}>
                 {req.name}
               </div>

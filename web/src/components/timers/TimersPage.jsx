@@ -137,7 +137,7 @@ export default function TimersPage() {
       {/* Baro Ki'Teer */}
       <div className="timers-section-title">{t("timersBaro")}</div>
       <motion.div className="timer-baro-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <img src="/BaroBanner.png" alt="" className="baro-bg-img" />
+        <img src="/BaroBanner.png" alt="" className="baro-bg-img" loading="lazy" decoding="async" />
         <div className="baro-header">
           <ShopOutlined className="baro-icon" />
           <div className="baro-info">

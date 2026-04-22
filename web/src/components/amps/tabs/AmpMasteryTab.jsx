@@ -35,8 +35,7 @@ function AmpCard({ part, status, onCycle, t }) {
         src={part.imageUrl || FALLBACK_ICON}
         alt=""
         className="amp-card-img"
-        onError={handleImgError}
-      />
+        onError={handleImgError} loading="lazy" decoding="async" />
       <div className="amp-card-name">{part.name}</div>
       <div className="amp-card-slot">{part.slot}</div>
       <div className="amp-card-status">{label}</div>

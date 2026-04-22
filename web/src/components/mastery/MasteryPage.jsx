@@ -158,7 +158,7 @@ export default function MasteryPage() {
         </motion.div>
 
         <motion.div className="stat-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="stat-label"><img src="https://wiki.warframe.com/images/IconMasteryRank.png" alt="" className="mastery-mr-icon" style={{ marginRight: 6, width: 14, height: 14 }} />{t("masteryMastered")}</div>
+          <div className="stat-label"><img src="https://wiki.warframe.com/images/IconMasteryRank.png" alt="" className="mastery-mr-icon" style={{ marginRight: 6, width: 14, height: 14 }} loading="lazy" decoding="async" />{t("masteryMastered")}</div>
           <div className="stat-value" style={{ color: "var(--wf-primary)" }}>{stats.mastered}</div>
           <div className="summary-progress-bar"><div className="summary-progress-fill cyan" style={{ width: `${pct}%` }} /></div>
         </motion.div>
@@ -268,7 +268,7 @@ export default function MasteryPage() {
                         )}
                         {status === "mastered" && (
                           <div className="mastery-card-badge mastered-badge">
-                            <img src="https://wiki.warframe.com/images/IconMasteryRank.png" alt="" className="mastery-mr-icon" />
+                            <img src="https://wiki.warframe.com/images/IconMasteryRank.png" alt="" className="mastery-mr-icon" loading="lazy" decoding="async" />
                           </div>
                         )}
                       </div>

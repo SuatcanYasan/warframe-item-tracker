@@ -1,11 +1,10 @@
 import { useLocation, Link } from "react-router-dom";
-import { Segmented } from "antd";
-import { SearchOutlined, MenuOutlined, RightOutlined, ShareAltOutlined, LinkOutlined } from "@ant-design/icons";
+import { SearchOutlined, MenuOutlined, RightOutlined, ShareAltOutlined } from "@ant-design/icons";
 const WF_ICONS = "https://wiki.warframe.com/images";
-import { themeOptions } from "../../constants/themes";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
 import LanguageSelect from "./LanguageSelect";
+import AccountMenu from "./AccountMenu";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent || navigator.platform);
 const MOD_KEY = isMac ? "⌘" : "Ctrl";
@@ -14,15 +13,10 @@ export default function AppHeader() {
   const { t } = useTranslate();
   const language = useAppStore((s) => s.language);
   const setLanguage = useAppStore((s) => s.setLanguage);
-  const themeName = useAppStore((s) => s.themeName);
-  const setThemeName = useAppStore((s) => s.setThemeName);
-  const setCustomThemeTokens = useAppStore((s) => s.setCustomThemeTokens);
   const openThemeDrawer = useAppStore((s) => s.openThemeDrawer);
   const openShortcuts = useAppStore((s) => s.openShortcuts);
   const openMobileSidebar = useAppStore((s) => s.openMobileSidebar);
   const openShareModal = useAppStore((s) => s.openShareModal);
-  const openDiscordModal = useAppStore((s) => s.openDiscordModal);
-  const discordWebhookUrl = useAppStore((s) => s.discordWebhookUrl);
 
   const location = useLocation();
   const p = location.pathname;
@@ -57,30 +51,12 @@ export default function AppHeader() {
           onChange={setLanguage}
           compact
         />
-        <Segmented
-          size="small"
-          value={themeName}
-          onChange={(value) => {
-            setThemeName(value);
-            setCustomThemeTokens(themeOptions[value].token);
-          }}
-          options={Object.entries(themeOptions).map(([value, opt]) => ({
-            value,
-            label: opt.label,
-          }))}
-        />
         <button className="header-icon-btn" onClick={openShareModal} title={t("shareModalTitle")}>
           <ShareAltOutlined style={{ fontSize: 16, opacity: 0.85 }} />
         </button>
-        <button
-          className={`header-icon-btn ${discordWebhookUrl ? "discord-active" : ""}`}
-          onClick={openDiscordModal}
-          title={t("discordModalTitle")}
-        >
-          <LinkOutlined style={{ fontSize: 16, opacity: 0.85 }} />
-        </button>
+        <AccountMenu />
         <button className="header-icon-btn" onClick={openThemeDrawer}>
-          <img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" style={{ width: 18, height: 18, objectFit: "contain", opacity: 0.8 }} />
+          <img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" style={{ width: 18, height: 18, objectFit: "contain", opacity: 0.8 }} loading="lazy" decoding="async" />
         </button>
       </div>
     </header>

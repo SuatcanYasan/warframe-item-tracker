@@ -37,7 +37,7 @@ function NavItem({ item, active, onClick, t }) {
       onClick={onClick}
     >
       <span className="mobile-nav-icon">
-        {item.img ? <img src={item.img} alt="" /> : item.icon}
+        {item.img ? <img src={item.img} alt="" loading="lazy" decoding="async" /> : item.icon}
       </span>
       <span className="mobile-nav-label">{t(item.labelKey)}</span>
     </button>
@@ -144,7 +144,7 @@ export default function MobileNav() {
                     onClick={() => go(item.path)}
                   >
                     <span className="mobile-nav-sheet-icon">
-                      {item.img ? <img src={item.img} alt="" /> : item.icon}
+                      {item.img ? <img src={item.img} alt="" loading="lazy" decoding="async" /> : item.icon}
                     </span>
                     <span className="mobile-nav-sheet-label">{t(item.labelKey)}</span>
                   </button>

@@ -67,8 +67,7 @@ function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal 
         <img
           src={prime.imageUrl || FALLBACK_ICON}
           alt={prime.name}
-          onError={handleImgError}
-        />
+          onError={handleImgError} loading="lazy" decoding="async" />
         {allFound && <span className="item-card-done-badge">{t("allPartsFound")}</span>}
       </div>
       <div className="item-card-body">
@@ -115,7 +114,7 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound }) {
       width={600}
       title={
         <Flex align="center" gap={12}>
-          <img src={prime.imageUrl || FALLBACK_ICON} alt={prime.name} className="item-thumb" />
+          <img src={prime.imageUrl || FALLBACK_ICON} alt={prime.name} className="item-thumb" loading="lazy" decoding="async" />
           <div>
             <Text strong style={{ fontSize: 16 }}>{prime.name}</Text>
             {totalComponents > 0 && (

@@ -42,8 +42,7 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
         <img
           src={part.parentImageUrl || FALLBACK_ICON}
           alt={part.name}
-          onError={handleImgError}
-        />
+          onError={handleImgError} loading="lazy" decoding="async" />
         <span className="item-card-qty">x{part.quantity}</span>
       </div>
       <div className="item-card-body">
@@ -67,7 +66,7 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
               onClick={(e) => e.stopPropagation()}
               title={t("viewOnMarket")}
             >
-              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" loading="lazy" decoding="async" />
             </a>
             <button className="item-card-action-btn" onClick={() => onRemove(part.uniqueName)} title={t("removePart")}>
               <DeleteOutlined />
@@ -94,8 +93,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t }) {
             width={36}
             height={36}
             style={{ objectFit: "contain" }}
-            onError={handleImgError}
-          />
+            onError={handleImgError} loading="lazy" decoding="async" />
         ),
         enableSorting: false,
       },
@@ -135,7 +133,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t }) {
               rel="noopener noreferrer"
               title={t("viewOnMarket")}
             >
-              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" />
+              <img src="https://wiki.warframe.com/images/Platinum.png" alt="" className="market-plat-icon" loading="lazy" decoding="async" />
             </a>
             <button
               className="item-card-action-btn danger"

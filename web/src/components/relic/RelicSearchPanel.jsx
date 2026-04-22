@@ -78,7 +78,7 @@ export default function RelicSearchPanel({ t, watchedPrimes, onWatchPrime }) {
                   >
                     <List.Item.Meta
                       avatar={
-                        <img src={item.imageUrl || FALLBACK_ICON} alt={item.name} className="item-thumb" />
+                        <img src={item.imageUrl || FALLBACK_ICON} alt={item.name} className="item-thumb" loading="lazy" decoding="async" />
                       }
                       title={item.name}
                       description={item.type || item.category || t("unknown")}

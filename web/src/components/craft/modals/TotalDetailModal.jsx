@@ -50,8 +50,7 @@ export default function TotalDetailModal({
             src={material.imageUrl || FALLBACK_ICON}
             alt={material.name}
             style={{ width: 48, height: 48, objectFit: "contain", borderRadius: 8, background: "var(--wf-bg-elevated, #152344)", padding: 4 }}
-            onError={handleImgError}
-          />
+            onError={handleImgError} loading="lazy" decoding="async" />
           <div style={{ flex: 1 }}>
             <Text strong style={{ fontSize: 16 }}>{material.name}</Text>
             <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
@@ -90,8 +89,7 @@ export default function TotalDetailModal({
                   src={item.imageUrl || FALLBACK_ICON}
                   alt={item.name}
                   className="detail-req-img"
-                  onError={handleImgError}
-                />
+                  onError={handleImgError} loading="lazy" decoding="async" />
                 <div className={`detail-req-name ${isDone ? "done" : ""}`}>
                   {item.name}
                 </div>

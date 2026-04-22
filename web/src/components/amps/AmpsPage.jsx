@@ -53,7 +53,7 @@ export default function AmpsPage() {
     <div className="amps-page">
       <div className="amps-header">
         <div className="amps-header-icon-wrap">
-          <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="amps-header-icon" />
+          <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="amps-header-icon" loading="lazy" decoding="async" />
         </div>
         <div>
           <h1 className="amps-title">{t("ampsTrackerTitle")}</h1>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useTranslate } from "../../hooks/useTranslate";
 
 export default function AppFooter() {
@@ -20,6 +21,10 @@ export default function AppFooter() {
         rel="noopener noreferrer"
         className="footer-link"
       >GitHub</a>
+      <span className="footer-divider">|</span>
+      <Link to="/privacy" className="footer-link">{t("privacyPolicy")}</Link>
+      <span className="footer-divider">|</span>
+      <Link to="/terms" className="footer-link">{t("termsOfService")}</Link>
       <span className="footer-divider">|</span>
       <span className="footer-text">{t("footerDisclaimer")}</span>
     </footer>

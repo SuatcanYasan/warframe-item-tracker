@@ -44,8 +44,8 @@
 - **Actividades** — Fissures, Invasions, Nightwave, Sortie, Archon Hunt, Arbitration en vivo en un solo feed, actualizado cada 60s
 - **Checklist** — Tareas diarias/semanales de Warframe con reset automático a UTC 00:00 y pack de presets
 - **Compartir por URL** — Comparte tus datos del tracker como enlace comprimido DEFLATE, sin backend
-- **Discord Webhook** — Embeds enriquecidos ("Estimado Tenno ...") en tu canal Discord al completar un set Amp, craft, Prime o Mastery, con protección anti-spam
 - **Farm Planner** — busca recursos, fija cantidad objetivo, revisa ubicaciones de drop y encuentra zonas compartidas para varios recursos
+- **Sincronización en la Nube** — tus datos se sincronizan automáticamente entre todos tus dispositivos vía Supabase (cuenta anónima, Realtime cross-device)
 - **Exportar Screenshot** — exportación PNG de la vista actual con un clic (html-to-image)
 - **PWA** — Instalable como app de escritorio/móvil, funciona sin conexión
 
