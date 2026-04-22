@@ -430,5 +430,8 @@
   "themeBuiltIn": "Temas integrados",
   "themeSavedProfiles": "Os meus temas",
   "privacyPolicy": "Privacidade",
-  "termsOfService": "Termos"
+  "termsOfService": "Termos",
+  "accountRegister": "Registar",
+  "accountSignIn": "Iniciar Sessão",
+  "accountRegisterErrorAlreadyExists": "Esta conta Google já está registada. Usa \"Iniciar Sessão\"."
 }

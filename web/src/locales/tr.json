@@ -430,5 +430,8 @@
   "themeBuiltIn": "Yerlesik Temalar",
   "themeSavedProfiles": "Kendi Temalarim",
   "privacyPolicy": "Gizlilik",
-  "termsOfService": "Sartlar"
+  "termsOfService": "Sartlar",
+  "accountRegister": "Kayit Ol",
+  "accountSignIn": "Giris Yap",
+  "accountRegisterErrorAlreadyExists": "Bu Google hesabi zaten kayitli. \"Giris Yap\" butonunu kullan."
 }

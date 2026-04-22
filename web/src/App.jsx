@@ -19,7 +19,7 @@ import {
   readStorage,
   normalizePersistedState,
 } from "./utils/storage";
-import { ensureSession, signInWithGoogle } from "./lib/supabaseAuth";
+import { ensureSession } from "./lib/supabaseAuth";
 import { pullAllState, pushAllState, markBootstrapReady } from "./lib/supabaseSync";
 import { requestJson } from "./utils/helpers";
 import { captureAndDownload } from "./utils/screenshot";
@@ -570,18 +570,21 @@ function CraftApp() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Recover from OAuth error redirects. The most common is
-      // `identity_already_exists` — user tried to link Google to the
-      // current anonymous session but that Google identity already owns
-      // another Supabase account. Fall back to a plain sign-in so they
-      // land on the pre-existing account instead of staying anonymous.
+      // Surface OAuth error redirects as a toast so the user understands
+      // what happened. Most common: `identity_already_exists` — user hit
+      // "Register" but the Google account is already linked. They should
+      // use "Sign In" instead.
       const qp = new URLSearchParams(window.location.search);
       const hp = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const errorCode = qp.get("error_code") || hp.get("error_code");
-      if (errorCode === "identity_already_exists") {
+      if (errorCode) {
         window.history.replaceState({}, "", window.location.pathname);
-        await signInWithGoogle();
-        return;
+        if (errorCode === "identity_already_exists") {
+          toast.error(t("accountRegisterErrorAlreadyExists"), { duration: 6000 });
+        } else {
+          const desc = qp.get("error_description") || hp.get("error_description");
+          toast.error(desc ? decodeURIComponent(desc.replace(/\+/g, " ")) : errorCode, { duration: 6000 });
+        }
       }
 
       const session = await ensureSession();

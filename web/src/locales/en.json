@@ -430,5 +430,8 @@
   "themeBuiltIn": "Built-in Themes",
   "themeSavedProfiles": "My Themes",
   "privacyPolicy": "Privacy",
-  "termsOfService": "Terms"
+  "termsOfService": "Terms",
+  "accountRegister": "Register",
+  "accountSignIn": "Sign In",
+  "accountRegisterErrorAlreadyExists": "This Google account is already registered. Use \"Sign In\" instead."
 }

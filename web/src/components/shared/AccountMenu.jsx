@@ -25,17 +25,27 @@ export default function AccountMenu() {
   // Not ready yet (auth still bootstrapping) → render nothing.
   if (!isAuthenticated) return null;
 
-  // ---- Anonymous: single CTA ------------------------------------------------
+  // ---- Anonymous: Register (link) + Sign In (OAuth) -------------------------
+  // Explicit intent for the user:
+  //   - Register: link current anonymous UID to a new Google identity.
+  //     Fails with a toast if that Google account is already registered.
+  //   - Sign In: plain OAuth into the existing Google-linked account
+  //     (creates a fresh one if never seen before).
   if (isAnonymous) {
     return (
-      <Button
-        type="primary"
-        icon={<GoogleOutlined />}
-        onClick={linkGoogleIdentity}
-        size="small"
-      >
-        {t("accountSignInWithGoogle")}
-      </Button>
+      <div style={{ display: "flex", gap: 6 }}>
+        <Button size="small" onClick={linkGoogleIdentity}>
+          {t("accountRegister")}
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          icon={<GoogleOutlined />}
+          onClick={signInWithGoogle}
+        >
+          {t("accountSignIn")}
+        </Button>
+      </div>
     );
   }
 

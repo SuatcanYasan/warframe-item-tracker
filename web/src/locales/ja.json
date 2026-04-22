@@ -430,5 +430,8 @@
   "themeBuiltIn": "組み込みテーマ",
   "themeSavedProfiles": "マイテーマ",
   "privacyPolicy": "プライバシー",
-  "termsOfService": "利用規約"
+  "termsOfService": "利用規約",
+  "accountRegister": "登録",
+  "accountSignIn": "サインイン",
+  "accountRegisterErrorAlreadyExists": "この Google アカウントは既に登録されています。「サインイン」を使用してください。"
 }

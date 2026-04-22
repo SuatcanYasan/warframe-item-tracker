@@ -430,5 +430,8 @@
   "themeBuiltIn": "السمات المدمجة",
   "themeSavedProfiles": "سماتي",
   "privacyPolicy": "الخصوصية",
-  "termsOfService": "الشروط"
+  "termsOfService": "الشروط",
+  "accountRegister": "تسجيل",
+  "accountSignIn": "تسجيل الدخول",
+  "accountRegisterErrorAlreadyExists": "حساب Google هذا مسجل بالفعل. استخدم \"تسجيل الدخول\"."
 }
