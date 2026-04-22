@@ -9,7 +9,7 @@ import EmptyState from "../shared/EmptyState";
 import { useTranslate } from "../../hooks/useTranslate";
 
 export default function SearchDrawer({ open, onClose, onAddItem }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
@@ -71,7 +71,7 @@ export default function SearchDrawer({ open, onClose, onAddItem }) {
                   onError={handleImgError}
                 />
                 <div className="search-drawer-info">
-                  <div className="search-drawer-name">{tin(item.uniqueName, item.name)}</div>
+                  <div className="search-drawer-name">{item.name}</div>
                   <div className="search-drawer-type">{item.type || item.category || t("unknown")}</div>
                 </div>
                 <Button

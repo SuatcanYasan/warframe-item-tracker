@@ -7,7 +7,7 @@ import { useCraftStore } from "../../stores/craftStore";
 const { Text } = Typography;
 
 export default function TotalsCardGrid({ adjustedTotals, onOpenDetail }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const loadingCalc = useCraftStore((s) => s.loadingCalc);
   if (loadingCalc) {
     return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Spin /></div>;
@@ -44,7 +44,7 @@ export default function TotalsCardGrid({ adjustedTotals, onOpenDetail }) {
                 className="total-card-img"
                 onError={handleImgError}
               />
-              <div className="total-card-name">{tin(item.uniqueName, item.name)}</div>
+              <div className="total-card-name">{item.name}</div>
               <div className="total-card-bar">
                 <div
                   className={`total-card-fill ${isDone ? "green" : "cyan"}`}

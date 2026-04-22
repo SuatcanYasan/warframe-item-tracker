@@ -22,7 +22,7 @@ import { useTranslate } from "../../../hooks/useTranslate";
 const { Text } = Typography;
 
 function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggleMulti }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   return (
     <motion.div
       className={`item-card ${isSelected ? "multi-selected" : ""}`}
@@ -47,8 +47,8 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
         <span className="item-card-qty">x{part.quantity}</span>
       </div>
       <div className="item-card-body">
-        <div className="item-card-name">{tin(part.uniqueName, part.name)}</div>
-        <div className="item-card-type">{tin(part.parentUniqueName, part.parentName)}</div>
+        <div className="item-card-name">{part.name}</div>
+        <div className="item-card-type">{part.parentName}</div>
         <div className="item-card-footer">
           <InputNumber
             min={0}
@@ -79,7 +79,7 @@ function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggle
   );
 }
 
-function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
+function PartsTable({ partsList, onUpdateQty, onRemove, t }) {
   const [sorting, setSorting] = useState([]);
 
   const columns = useMemo(
@@ -102,12 +102,12 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
       {
         accessorKey: "name",
         header: t("addPart"),
-        cell: ({ row }) => tin(row.original.uniqueName, row.original.name),
+        cell: ({ row }) => row.original.name,
       },
       {
         accessorKey: "parentName",
         header: "Prime",
-        cell: ({ row }) => tin(row.original.parentUniqueName, row.original.parentName),
+        cell: ({ row }) => row.original.parentName,
       },
       {
         accessorKey: "quantity",
@@ -149,7 +149,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
         enableSorting: false,
       },
     ],
-    [t, tin, onUpdateQty, onRemove],
+    [t, onUpdateQty, onRemove],
   );
 
   const table = useReactTable({
@@ -208,7 +208,7 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t, tin }) {
 }
 
 export default function PartsTab({ partsList, onUpdateQty, onRemove, multiMode, multiIds, onToggleMulti }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const [viewMode, setViewMode] = useState("card");
 
   if (partsList.length === 0) {
@@ -255,7 +255,6 @@ export default function PartsTab({ partsList, onUpdateQty, onRemove, multiMode, 
           onUpdateQty={onUpdateQty}
           onRemove={onRemove}
           t={t}
-          tin={tin}
         />
       )}
     </>

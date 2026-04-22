@@ -4,7 +4,7 @@ import { SearchOutlined, CheckOutlined } from "@ant-design/icons";
 import { FALLBACK_ICON, requestJson } from "../../utils/helpers";
 import EmptyState from "../shared/EmptyState";
 
-export default function RelicSearchPanel({ t, tin, watchedPrimes, onWatchPrime }) {
+export default function RelicSearchPanel({ t, watchedPrimes, onWatchPrime }) {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -80,7 +80,7 @@ export default function RelicSearchPanel({ t, tin, watchedPrimes, onWatchPrime }
                       avatar={
                         <img src={item.imageUrl || FALLBACK_ICON} alt={item.name} className="item-thumb" />
                       }
-                      title={tin(item.uniqueName, item.name)}
+                      title={item.name}
                       description={item.type || item.category || t("unknown")}
                     />
                   </List.Item>

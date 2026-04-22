@@ -12,7 +12,7 @@ import { useTranslate } from "../../hooks/useTranslate";
 import { useInventoryStore } from "../../stores/inventoryStore";
 
 export default function InventoryTrackerContent() {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const { modal } = AntApp.useApp();
   const inventoryParts = useInventoryStore((s) => s.inventoryParts);
   const setInventoryParts = useInventoryStore((s) => s.setInventoryParts);
@@ -98,12 +98,16 @@ export default function InventoryTrackerContent() {
     return Array.from(names);
   }, [inventoryParts]);
 
-  // Fetch parent item component lists for sets tab using React Query
+  // Fetch parent item component lists only when the Sets tab is visible,
+  // and cache forever per-parent — this data is derived from static item
+  // definitions and never changes within a session.
   const parentDropQueries = useQueries({
     queries: parentUniqueNames.map((un) => ({
       queryKey: ['itemDrops', un],
       queryFn: () => requestJson(`/api/items/drops/${encodeURIComponent(un)}`),
-      staleTime: 5 * 60 * 1000,
+      enabled: activeTab === "sets",
+      staleTime: Infinity,
+      gcTime: Infinity,
       retry: 1,
     })),
   });

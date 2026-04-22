@@ -4,7 +4,6 @@ const path = require("path");
 const {
   getItemByUniqueName,
   getItemMap,
-  getI18nForLanguage,
   searchCraftableItems,
   searchPrimeComponents,
   getMasteryItems,
@@ -130,20 +129,6 @@ app.get("/api/items/components", async (req, res) => {
   } catch (error) {
     console.error("/api/items/components error:", error);
     res.status(500).json({ error: "Components could not be loaded." });
-  }
-});
-
-app.get("/api/i18n", async (req, res) => {
-  try {
-    const lang = typeof req.query.lang === "string" && req.query.lang.trim().length > 0
-      ? req.query.lang.trim()
-      : "tr";
-
-    const names = await getI18nForLanguage(lang);
-    res.json({ lang, names });
-  } catch (error) {
-    console.error("/api/i18n error:", error);
-    res.status(500).json({ error: "i18n data could not be loaded." });
   }
 });
 

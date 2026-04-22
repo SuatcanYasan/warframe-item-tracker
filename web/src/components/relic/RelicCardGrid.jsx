@@ -52,7 +52,7 @@ function groupDropsByRelic(drops) {
 }
 
 function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const { data: dropData } = useItemDrops(prime.uniqueName);
   const componentDrops = dropData?.componentDrops || [];
   const droppableComponents = componentDrops.filter((c) => c.drops && c.drops.length > 0);
@@ -72,7 +72,7 @@ function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal 
         {allFound && <span className="item-card-done-badge">{t("allPartsFound")}</span>}
       </div>
       <div className="item-card-body">
-        <div className="item-card-name">{tin(prime.uniqueName, prime.name)}</div>
+        <div className="item-card-name">{prime.name}</div>
         <div className="item-card-type">{prime.type || prime.category || ""}</div>
         <div className="item-card-progress-bar">
           <div
@@ -92,7 +92,7 @@ function RelicPrimeCard({ prime, foundMap, onToggleFound, onRemove, onOpenModal 
 }
 
 function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const [componentActiveKeys, setComponentActiveKeys] = useState([]);
   const [refinementLevel, setRefinementLevel] = useState("Intact");
 
@@ -117,7 +117,7 @@ function RelicDetailModal({ prime, open, onClose, foundMap, onToggleFound }) {
         <Flex align="center" gap={12}>
           <img src={prime.imageUrl || FALLBACK_ICON} alt={prime.name} className="item-thumb" />
           <div>
-            <Text strong style={{ fontSize: 16 }}>{tin(prime.uniqueName, prime.name)}</Text>
+            <Text strong style={{ fontSize: 16 }}>{prime.name}</Text>
             {totalComponents > 0 && (
               <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
                 {t("componentsProgress", { found: foundCount, total: totalComponents })}

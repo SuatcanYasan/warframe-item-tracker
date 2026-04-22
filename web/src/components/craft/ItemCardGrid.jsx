@@ -35,7 +35,7 @@ function AddedAtLabel({ timestamp }) {
   );
 }
 
-function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveItem, t, tin, sortingDisabled, multiSelectMode, isMultiSelected, onToggleMulti }) {
+function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveItem, t, sortingDisabled, multiSelectMode, isMultiSelected, onToggleMulti }) {
   const {
     attributes,
     listeners,
@@ -95,7 +95,7 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
                 {allDone && <span className="item-card-done-badge">{t("completeTag")}</span>}
               </div>
               <div className="item-card-body">
-                <div className="item-card-name">{tin(item.uniqueName, item.name)}</div>
+                <div className="item-card-name">{item.name}</div>
                 <div className="item-card-type">
                   {item.type || item.category || t("unknown")}
                 </div>
@@ -127,7 +127,7 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
 }
 
 export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRemoveItem }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const selectedSearch = useCraftStore((s) => s.selectedSearch);
   const selectedFilter = useCraftStore((s) => s.selectedFilter);
   const selectedCategory = useCraftStore((s) => s.selectedCategory);
@@ -184,7 +184,6 @@ export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRe
                 onOpenDetail={onOpenDetail}
                 onRemoveItem={onRemoveItem}
                 t={t}
-                tin={tin}
                 sortingDisabled={sortingDisabled || multiSelectMode}
                 multiSelectMode={multiSelectMode}
                 isMultiSelected={multiSelectedIds.has(item.uniqueName)}

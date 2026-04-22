@@ -24,7 +24,7 @@ const CATEGORY_ORDER = [
 ];
 
 export default function MasteryPage() {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const masteredItems = useMasteryStore((s) => s.masteredItems);
   const cycleStatus = useMasteryStore((s) => s.cycleStatus);
 
@@ -72,7 +72,7 @@ export default function MasteryPage() {
           items = items.filter(
             (i) =>
               i.name.toLowerCase().includes(query) ||
-              (tin(i.uniqueName, "") || "").toLowerCase().includes(query)
+              (i.name || "").toLowerCase().includes(query)
           );
         }
 
@@ -88,7 +88,7 @@ export default function MasteryPage() {
         return { key: cat, items: sorted };
       })
       .filter((c) => c.items.length > 0);
-  }, [categorizedItems, search, masteredItems, tin]);
+  }, [categorizedItems, search, masteredItems]);
 
   const stats = useMemo(() => {
     if (!categorizedItems) return { total: 0, owned: 0, mastered: 0 };
@@ -272,8 +272,8 @@ export default function MasteryPage() {
                           </div>
                         )}
                       </div>
-                      <div className="mastery-card-name" title={tin(item.uniqueName, item.name)}>
-                        {tin(item.uniqueName, item.name)}
+                      <div className="mastery-card-name" title={item.name}>
+                        {item.name}
                       </div>
                       <div className="mastery-card-type">{item.type}</div>
                     </motion.div>

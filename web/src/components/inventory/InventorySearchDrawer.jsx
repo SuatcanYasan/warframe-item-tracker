@@ -11,7 +11,7 @@ import { useTranslate } from "../../hooks/useTranslate";
 const { Text } = Typography;
 
 export default function InventorySearchDrawer({ open, onClose, onAddPart, existingParts }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [quantities, setQuantities] = useState({});
@@ -103,10 +103,10 @@ export default function InventorySearchDrawer({ open, onClose, onAddPart, existi
                       onError={handleImgError}
                     />
                   }
-                  title={<Text style={{ fontSize: 13 }}>{tin(comp.uniqueName, comp.name)}</Text>}
+                  title={<Text style={{ fontSize: 13 }}>{comp.name}</Text>}
                   description={
                     <Text type="secondary" style={{ fontSize: 11 }}>
-                      {tin(comp.parentUniqueName, comp.parentName)} • {comp.parentCategory || ""}
+                      {comp.parentName} • {comp.parentCategory || ""}
                     </Text>
                   }
                 />

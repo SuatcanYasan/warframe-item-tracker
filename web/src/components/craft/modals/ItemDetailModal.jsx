@@ -9,7 +9,7 @@ export default function ItemDetailModal({
   item, open, onClose,
   enrichedRequirements, onSetCompleted, onUpdateQuantity,
 }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   if (!item) return null;
 
   const reqs = enrichedRequirements || [];
@@ -36,7 +36,7 @@ export default function ItemDetailModal({
             onError={handleImgError}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Text strong style={{ fontSize: 16 }}>{tin(item.uniqueName, item.name)}</Text>
+            <Text strong style={{ fontSize: 16 }}>{item.name}</Text>
             <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
               {item.type || item.category || ""} — {t("componentsProgress", { found: done, total })}
             </Text>
@@ -85,7 +85,7 @@ export default function ItemDetailModal({
                 onError={handleImgError}
               />
               <div className={`detail-req-name ${req.isDone ? "done" : ""}`}>
-                {tin(req.uniqueName, req.name)}
+                {req.name}
               </div>
               <div className="detail-req-bar">
                 <div

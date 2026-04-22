@@ -5,10 +5,6 @@ const ITEMS_URLS = [
   "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/All.json",
   "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/All.json",
 ];
-const I18N_URLS = [
-  "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/i18n.json",
-  "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/i18n.json",
-];
 // Item icons come from WFCD's curated CDN — filenames there actually match
 // the 6k+ items in the dataset. Wiki.warframe.com uses different naming
 // conventions (e.g. "CitrineIcon.png" vs "Citrine.png"), so deriving wiki URLs
@@ -17,7 +13,6 @@ const ITEM_IMAGE_BASE_URL = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@mas
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const FETCH_TIMEOUT_MS = 15000;
 const SNAPSHOT_PATH = path.join(__dirname, "..", "..", "data", "items.snapshot.json");
-const I18N_SNAPSHOT_PATH = path.join(__dirname, "..", "..", "data", "i18n.snapshot.json");
 
 let cache = {
   loadedAt: 0,
@@ -26,13 +21,6 @@ let cache = {
 };
 
 let loadingPromise = null;
-
-let i18nCache = {
-  loadedAt: 0,
-  data: null,
-};
-
-let i18nLoadingPromise = null;
 
 function normalizeDrops(drops) {
   if (!Array.isArray(drops) || drops.length === 0) return [];
@@ -236,81 +224,6 @@ async function getItemByUniqueName(uniqueName) {
 async function getItemMap() {
   const { itemMap } = await ensureDataLoaded();
   return itemMap;
-}
-
-function hasValidI18nCache() {
-  return i18nCache.data && Date.now() - i18nCache.loadedAt < CACHE_TTL_MS;
-}
-
-async function fetchI18nFromRemote() {
-  let lastError = null;
-
-  for (const url of I18N_URLS) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const data = await fetchJsonWithTimeout(url);
-      i18nCache = { loadedAt: Date.now(), data };
-      return i18nCache;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new Error("i18n sources are unavailable");
-}
-
-async function loadI18nFromSnapshot() {
-  const raw = await fs.readFile(I18N_SNAPSHOT_PATH, "utf8");
-  const parsed = JSON.parse(raw);
-  if (!parsed || typeof parsed !== "object") {
-    throw new Error("Local i18n snapshot is invalid");
-  }
-
-  i18nCache = { loadedAt: Date.now(), data: parsed };
-  return i18nCache;
-}
-
-async function fetchI18nData() {
-  try {
-    return await fetchI18nFromRemote();
-  } catch (remoteError) {
-    try {
-      const snapshotResult = await loadI18nFromSnapshot();
-      console.warn("Using local i18n snapshot because remote fetch failed:", remoteError?.message || remoteError);
-      return snapshotResult;
-    } catch (snapshotError) {
-      throw new Error(
-        `i18n data could not be loaded. Remote error: ${remoteError?.message || remoteError}. Snapshot error: ${snapshotError?.message || snapshotError}`,
-      );
-    }
-  }
-}
-
-async function ensureI18nLoaded() {
-  if (hasValidI18nCache()) {
-    return i18nCache;
-  }
-
-  if (!i18nLoadingPromise) {
-    i18nLoadingPromise = fetchI18nData().finally(() => {
-      i18nLoadingPromise = null;
-    });
-  }
-
-  return i18nLoadingPromise;
-}
-
-async function getI18nForLanguage(lang) {
-  const { data } = await ensureI18nLoaded();
-  const names = {};
-
-  for (const [uniqueName, translations] of Object.entries(data)) {
-    if (translations[lang] && translations[lang].name) {
-      names[uniqueName] = translations[lang].name;
-    }
-  }
-
-  return names;
 }
 
 async function searchPrimeComponents(searchText = "", limit = 60) {
@@ -526,7 +439,6 @@ module.exports = {
   ensureDataLoaded,
   getItemByUniqueName,
   getItemMap,
-  getI18nForLanguage,
   searchCraftableItems,
   searchPrimeComponents,
   getMasteryItems,

@@ -9,7 +9,7 @@ import { notifyRelicProgress } from "../../utils/webhookWatcher";
 const { Text } = Typography;
 
 export default function RelicTrackerContent({ watchedPrimes, onToggleFound }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const foundComponents = useRelicStore((s) => s.foundComponents);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");

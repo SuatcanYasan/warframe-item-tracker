@@ -6,7 +6,7 @@ import { useTranslate } from "../../../hooks/useTranslate";
 const { Text } = Typography;
 
 function SetCard({ set }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const totalParts = set.components.length;
   const ownedParts = set.components.filter((c) => c.owned > 0).length;
   const completeSets = set.components.length > 0
@@ -35,7 +35,7 @@ function SetCard({ set }) {
         )}
       </div>
       <div className="item-card-body">
-        <div className="item-card-name">{tin(set.parentUniqueName, set.parentName)}</div>
+        <div className="item-card-name">{set.parentName}</div>
         <div className="item-card-type">{set.parentCategory || ""}</div>
         <div className="item-card-progress-bar">
           <div

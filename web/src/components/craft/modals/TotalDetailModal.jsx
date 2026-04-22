@@ -11,7 +11,7 @@ export default function TotalDetailModal({
   material, open, onClose,
   detailByItem, onSetCompleted, onBulkDonate,
 }) {
-  const { t, tin } = useTranslate();
+  const { t } = useTranslate();
   const selectedItems = useCraftStore((s) => s.selectedItems);
   const completedMap = useCraftStore((s) => s.completedMap);
 
@@ -53,7 +53,7 @@ export default function TotalDetailModal({
             onError={handleImgError}
           />
           <div style={{ flex: 1 }}>
-            <Text strong style={{ fontSize: 16 }}>{tin(material.uniqueName, material.name)}</Text>
+            <Text strong style={{ fontSize: 16 }}>{material.name}</Text>
             <Text type="secondary" style={{ display: "block", fontSize: 12 }}>
               {liveCompleted} / {liveTotal} — {t("remaining")}: {liveRemaining}
             </Text>
@@ -93,7 +93,7 @@ export default function TotalDetailModal({
                   onError={handleImgError}
                 />
                 <div className={`detail-req-name ${isDone ? "done" : ""}`}>
-                  {tin(item.uniqueName, item.name)}
+                  {item.name}
                 </div>
                 <div className="detail-req-bar">
                   <div

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import useItemI18n from "./useItemI18n";
 import { useAppStore } from "../stores/appStore";
 import { RTL_LANGUAGES } from "../constants/languages";
 
@@ -19,7 +18,6 @@ export function useTranslate() {
   }, [language, i18nInstance]);
 
   const t = (key, params) => i18nT(key, params);
-  const tin = useItemI18n(language);
 
-  return { t, tin, language };
+  return { t, language };
 }
