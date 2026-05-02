@@ -717,5 +717,8 @@
   "masteryAddedToCraft": "{name} Craft'a eklendi",
   "masteryCraftQuantityIncreased": "{name} adedi arttı",
   "masteryMarketLink": "warframe.market'te görüntüle",
-  "hintMasterySyncClick": "Senkronize modda kart tıklayınca Craft Takipçisine eklenir. Ustalık durumu profilinden canlı okunur."
+  "hintMasterySyncClick": "Senkronize modda kart tıklayınca Craft Takipçisine eklenir. Ustalık durumu profilinden canlı okunur.",
+  "navGroupCollect": "Yapım & Toplama",
+  "navGroupBuild": "Ustalık & Build",
+  "navGroupRotations": "Haftalık Rotasyonlar"
 }

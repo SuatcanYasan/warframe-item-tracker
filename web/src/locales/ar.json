@@ -717,5 +717,8 @@
   "masteryAddedToCraft": "تمت إضافة {name} إلى Craft",
   "masteryCraftQuantityIncreased": "تم زيادة كمية {name}",
   "masteryMarketLink": "العرض على warframe.market",
-  "hintMasterySyncClick": "في وضع Sync، يضيف النقر العنصر إلى متعقب الصناعة. حالة الإتقان تُقرأ مباشرة من الملف الشخصي."
+  "hintMasterySyncClick": "في وضع Sync، يضيف النقر العنصر إلى متعقب الصناعة. حالة الإتقان تُقرأ مباشرة من الملف الشخصي.",
+  "navGroupCollect": "الجمع والصناعة",
+  "navGroupBuild": "الإتقان والبيلد",
+  "navGroupRotations": "الدوران الأسبوعي"
 }

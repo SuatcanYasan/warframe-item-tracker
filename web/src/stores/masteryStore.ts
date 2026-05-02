@@ -14,6 +14,7 @@ interface MasteryState {
   realMR: number | null;
   realTotalXp: number | null;
   realBreakdown: MasteryBreakdown | null;
+  realDisplayName: string | null;
   lastImportAt: number | null;
   // 'manual' = user toggles items by hand. 'sync' = profile data
   // auto-refreshed every 5 min via /api/profile/import while the
@@ -31,6 +32,7 @@ interface MasteryState {
     totalXp: number | null,
     breakdown?: MasteryBreakdown | null,
     importedAt?: number | null,
+    displayName?: string | null,
   ) => void;
   clearRealProfile: () => void;
   toggleMultiSelectMode: () => void;
@@ -43,6 +45,7 @@ interface MasteryState {
     masteryRealTotalXp?: number | null;
     masteryRealBreakdown?: MasteryBreakdown | null;
     masteryLastImportAt?: number | null;
+    masteryRealDisplayName?: string | null;
     masteryMode?: "manual" | "sync";
     masterySyncPlayerId?: string | null;
   }) => void;
@@ -57,6 +60,7 @@ export const useMasteryStore = create<MasteryState>((set) => ({
   realMR: null,
   realTotalXp: null,
   realBreakdown: null,
+  realDisplayName: null,
   lastImportAt: null,
   mode: "manual",
   syncPlayerId: null,
@@ -64,15 +68,18 @@ export const useMasteryStore = create<MasteryState>((set) => ({
   setMode: (mode) => set({ mode }),
   setSyncPlayerId: (id) => set({ syncPlayerId: id }),
 
-  setRealProfile: (mr, totalXp, breakdown = null, importedAt = null) =>
-    set({
+  setRealProfile: (mr, totalXp, breakdown = null, importedAt = null, displayName) =>
+    set((state) => ({
       realMR: mr,
       realTotalXp: totalXp,
       realBreakdown: breakdown,
       lastImportAt: importedAt ?? (mr != null ? Date.now() : null),
-    }),
+      // Preserve previous displayName when caller doesn't pass one
+      // (e.g. snapshot restore from undo). Explicit null clears it.
+      realDisplayName: displayName === undefined ? state.realDisplayName : displayName,
+    })),
   clearRealProfile: () =>
-    set({ realMR: null, realTotalXp: null, realBreakdown: null, lastImportAt: null }),
+    set({ realMR: null, realTotalXp: null, realBreakdown: null, realDisplayName: null, lastImportAt: null }),
 
   cycleStatus: (uniqueName) =>
     set((state) => {
@@ -155,6 +162,7 @@ export const useMasteryStore = create<MasteryState>((set) => ({
       realMR: typeof persisted.masteryRealMR === "number" ? persisted.masteryRealMR : null,
       realTotalXp: typeof persisted.masteryRealTotalXp === "number" ? persisted.masteryRealTotalXp : null,
       realBreakdown: persisted.masteryRealBreakdown ?? null,
+      realDisplayName: typeof persisted.masteryRealDisplayName === "string" ? persisted.masteryRealDisplayName : null,
       lastImportAt: typeof persisted.masteryLastImportAt === "number" ? persisted.masteryLastImportAt : null,
       mode: persisted.masteryMode === "sync" ? "sync" : "manual",
       syncPlayerId:

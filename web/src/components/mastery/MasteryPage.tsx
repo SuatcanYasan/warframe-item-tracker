@@ -66,6 +66,7 @@ export default function MasteryPage() {
   const realMR = useMasteryStore((s) => s.realMR);
   const realTotalXp = useMasteryStore((s) => s.realTotalXp);
   const realBreakdown = useMasteryStore((s) => s.realBreakdown);
+  const realDisplayName = useMasteryStore((s) => s.realDisplayName);
   const lastImportAt = useMasteryStore((s) => s.lastImportAt);
   const { modal } = AntApp.useApp();
   const multiSelectMode = useMasteryStore((s) => s.multiSelectMode);
@@ -199,6 +200,7 @@ export default function MasteryPage() {
           realMR,
           realTotalXp,
           realBreakdown,
+          realDisplayName,
           lastImportAt,
         };
         setMasteredItems({});
@@ -213,6 +215,7 @@ export default function MasteryPage() {
               snapshot.realTotalXp,
               snapshot.realBreakdown,
               snapshot.lastImportAt,
+              snapshot.realDisplayName,
             );
           },
         });

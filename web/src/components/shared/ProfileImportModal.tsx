@@ -120,7 +120,7 @@ export default function ProfileImportModal({ open, onClose }: Props) {
     // realTotalMasteryXp already accounts for items + intrinsics + star
     // chart + junctions, so the calculator can show actual progress
     // through the current rank instead of guessing.
-    setRealProfile(summary.masteryRank, summary.realTotalMasteryXp, summary.breakdown, Date.now());
+    setRealProfile(summary.masteryRank, summary.realTotalMasteryXp, summary.breakdown, Date.now(), summary.displayName);
     toast.success(t("profileImportSuccess", { count: summary.itemCount, mr: summary.masteryRank }));
     handleClose();
   }

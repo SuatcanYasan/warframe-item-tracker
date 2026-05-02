@@ -84,6 +84,7 @@ export default function MRCalculatorPage() {
   const realMR = useMasteryStore((s) => s.realMR);
   const realTotalXp = useMasteryStore((s) => s.realTotalXp);
   const realBreakdown = useMasteryStore((s) => s.realBreakdown);
+  const realDisplayName = useMasteryStore((s) => s.realDisplayName);
   const lastImportAt = useMasteryStore((s) => s.lastImportAt);
   const lastImportRelative = useRelativeTime(lastImportAt);
   const [categorized, setCategorized] = useState<CategorizedItems | null>(null);
@@ -255,7 +256,17 @@ export default function MRCalculatorPage() {
             )}
           </div>
           <div className="mr-hero-info">
-            <div className="mr-hero-label">{t("mrCalcCurrent")}</div>
+            <div className="mr-hero-label">
+              {realDisplayName ? (
+                <>
+                  <span className="mr-hero-tenno">{realDisplayName}</span>
+                  <span className="mr-hero-sep">·</span>
+                  <span>{t("mrCalcCurrent")}</span>
+                </>
+              ) : (
+                t("mrCalcCurrent")
+              )}
+            </div>
             <div className="mr-hero-title">
               {getMRRankTitle(stats.currentMR)}
             </div>

@@ -84,6 +84,8 @@ export interface PersistedState {
   masteryRealBreakdown?: MasteryBreakdown | null;
   /** ms-since-epoch when the profile was last imported. */
   masteryLastImportAt?: number | null;
+  /** In-game display name from the imported profile (e.g. "IlyadaCreative"). */
+  masteryRealDisplayName?: string | null;
   /** Mastery page interaction mode. 'manual' = user toggles by hand,
    *  'sync' = profile data auto-refreshed every 5 min while page is visible. */
   masteryMode?: "manual" | "sync";

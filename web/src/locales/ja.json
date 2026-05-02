@@ -717,5 +717,8 @@
   "masteryAddedToCraft": "{name} をCraftに追加しました",
   "masteryCraftQuantityIncreased": "{name} の数量を増やしました",
   "masteryMarketLink": "warframe.market で見る",
-  "hintMasterySyncClick": "Syncモードでは、クリックでCraft Trackerに追加されます。Mastery状態はプロフィールからライブ読み込みされます。"
+  "hintMasterySyncClick": "Syncモードでは、クリックでCraft Trackerに追加されます。Mastery状態はプロフィールからライブ読み込みされます。",
+  "navGroupCollect": "収集とクラフト",
+  "navGroupBuild": "マスタリーとビルド",
+  "navGroupRotations": "週次ローテーション"
 }

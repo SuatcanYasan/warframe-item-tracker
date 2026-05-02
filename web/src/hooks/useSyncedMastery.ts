@@ -58,7 +58,7 @@ export function useSyncedMastery(): SyncedMasteryReturn {
           statusMap[it.uniqueName] = it.rank >= it.maxRank ? "mastered" : "owned";
         }
         setMasteredItems(statusMap);
-        setRealProfile(data.masteryRank, data.realTotalMasteryXp, data.breakdown, Date.now());
+        setRealProfile(data.masteryRank, data.realTotalMasteryXp, data.breakdown, Date.now(), data.displayName);
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         setError(msg);

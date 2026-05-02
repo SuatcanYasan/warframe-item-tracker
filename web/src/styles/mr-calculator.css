@@ -133,6 +133,20 @@
   letter-spacing: 0.6px;
   color: var(--wf-text-muted);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mr-hero-tenno {
+  color: var(--wf-primary);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.mr-hero-sep {
+  color: var(--wf-text-muted);
+  opacity: 0.5;
 }
 
 .mr-hero-title {
@@ -400,14 +414,17 @@
   font-size: 11px !important;
 }
 
-/* Breakdown card — shown after profile import. Per-source MR XP totals. */
+/* Breakdown card — shown after profile import. Per-source MR XP totals.
+   Accent on the left is rendered via inset box-shadow rather than a
+   wider border-left, so the rounded corners stay clean (mixed border
+   widths + border-radius produced a visible kink at the top-left). */
 .mr-calc-breakdown-card {
   background: var(--wf-bg-elevated);
   border: 1px solid var(--wf-border);
-  border-left: 3px solid var(--wf-primary);
   border-radius: 10px;
-  padding: 14px 18px;
+  padding: 14px 18px 14px 21px;
   margin: 12px 0 16px;
+  box-shadow: inset 3px 0 0 var(--wf-primary);
 }
 
 .mr-calc-breakdown-title {

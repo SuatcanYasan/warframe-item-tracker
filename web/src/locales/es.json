@@ -717,5 +717,8 @@
   "masteryAddedToCraft": "{name} añadido a Craft",
   "masteryCraftQuantityIncreased": "Cantidad de {name} aumentada",
   "masteryMarketLink": "Ver en warframe.market",
-  "hintMasterySyncClick": "En modo Sync, al hacer clic se añade al Craft Tracker. El estado de maestría se lee en vivo del perfil."
+  "hintMasterySyncClick": "En modo Sync, al hacer clic se añade al Craft Tracker. El estado de maestría se lee en vivo del perfil.",
+  "navGroupCollect": "Colección & Crafteo",
+  "navGroupBuild": "Maestría & Builds",
+  "navGroupRotations": "Rotaciones Semanales"
 }

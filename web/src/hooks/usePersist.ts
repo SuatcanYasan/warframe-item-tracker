@@ -34,6 +34,7 @@ export function usePersist(): void {
   const masteryRealTotalXp = useMasteryStore((s) => s.realTotalXp);
   const masteryRealBreakdown = useMasteryStore((s) => s.realBreakdown);
   const masteryLastImportAt = useMasteryStore((s) => s.lastImportAt);
+  const masteryRealDisplayName = useMasteryStore((s) => s.realDisplayName);
   const masteryMode = useMasteryStore((s) => s.mode);
   const masterySyncPlayerId = useMasteryStore((s) => s.syncPlayerId);
 
@@ -111,6 +112,7 @@ export function usePersist(): void {
       masteryRealTotalXp,
       masteryRealBreakdown,
       masteryLastImportAt,
+      masteryRealDisplayName,
       masteryMode,
       masterySyncPlayerId,
       storedVersion,
@@ -147,6 +149,7 @@ export function usePersist(): void {
     masteryRealTotalXp,
     masteryRealBreakdown,
     masteryLastImportAt,
+    masteryRealDisplayName,
     masteryMode,
     masterySyncPlayerId,
     storedVersion,

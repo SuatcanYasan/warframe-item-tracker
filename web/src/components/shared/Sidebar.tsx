@@ -35,16 +35,51 @@ export default function Sidebar({ onOpenSettings }: Props) {
     closeMobileSidebar();
   }
 
-  const navItems: NavItemDef[] = [
-    { key: "dashboard", path: "/", icon: <img src="/trackerlogo.png" alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("dashboard") },
-    { key: "craft", path: "/craft", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("craftTracker") },
-    { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("relicTracker") },
-    { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("inventoryTracker") },
-    { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("masteryTracker") },
-    { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("ampsTracker") },
-    { key: "arcanes", path: "/arcanes", icon: <img src={`${WF_ICONS}/Arcane.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("arcTitle") },
-    { key: "incarnon", path: "/incarnon", icon: <img src={`${WF_ICONS}/Stats.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("incTitle") },
-    { key: "wfrot", path: "/warframe-rotation", icon: <img src={`${WF_ICONS}/IconCategoryWarframe%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("wfRotTitle") },
+  // Grouped nav. Order in this array drives render order.
+  // First group has no label so the dashboard sits flush at the top.
+  const navGroups: { key: string; labelKey?: string; items: NavItemDef[] }[] = [
+    {
+      key: "main",
+      items: [
+        { key: "dashboard", path: "/", icon: <img src="/trackerlogo.png" alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("dashboard") },
+      ],
+    },
+    {
+      key: "collect",
+      labelKey: "navGroupCollect",
+      items: [
+        { key: "craft", path: "/craft", icon: <img src={`${WF_ICONS}/IconCategoryModular%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("craftTracker") },
+        { key: "relic", path: "/relic", icon: <img src={`${WF_ICONS}/IconProjectionT1%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("relicTracker") },
+        { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("inventoryTracker") },
+      ],
+    },
+    {
+      key: "build",
+      labelKey: "navGroupBuild",
+      items: [
+        { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("masteryTracker") },
+        { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("ampsTracker") },
+        { key: "arcanes", path: "/arcanes", icon: <img src={`${WF_ICONS}/Arcane.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("arcTitle") },
+      ],
+    },
+    {
+      key: "rotations",
+      labelKey: "navGroupRotations",
+      items: [
+        { key: "incarnon", path: "/incarnon", icon: <img src={`${WF_ICONS}/Stats.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("incTitle") },
+        { key: "wfrot", path: "/warframe-rotation", icon: <img src={`${WF_ICONS}/IconCategoryWarframe%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("wfRotTitle") },
+      ],
+    },
+    {
+      key: "tools",
+      labelKey: "tools",
+      items: [
+        { key: "timers", path: "/timers", icon: <img src={`${WF_ICONS}/IconTimer%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("timersTracker") },
+        { key: "activities", path: "/activities", icon: <img src={`${WF_ICONS}/IconAllyDown%28xRed%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("activitiesPage") },
+        { key: "checklist", path: "/checklist", icon: <img src={`${WF_ICONS}/IconQuest%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("checklistPage") },
+        { key: "farm", path: "/farm", icon: <img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" />, label: t("farmPlanner") },
+      ],
+    },
   ];
 
   return (
@@ -61,36 +96,24 @@ export default function Sidebar({ onOpenSettings }: Props) {
       </div>
 
       <nav className="sidebar-nav">
-        <div className="nav-section">{!collapsed && t("tracking")}</div>
-        {navItems.map((item) => (
-          <div
-            key={item.key}
-            className={`nav-item ${activePage === item.key ? "active" : ""}`}
-            onClick={() => handleNavClick(item.path)}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            {!collapsed && <span className="nav-label">{item.label}</span>}
+        {navGroups.map((group, gi) => (
+          <div key={group.key} className="nav-group">
+            {gi > 0 && <div className="nav-divider" />}
+            {group.labelKey && (
+              <div className="nav-section">{!collapsed && t(group.labelKey)}</div>
+            )}
+            {group.items.map((item) => (
+              <div
+                key={item.key}
+                className={`nav-item ${activePage === item.key ? "active" : ""}`}
+                onClick={() => handleNavClick(item.path)}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                {!collapsed && <span className="nav-label">{item.label}</span>}
+              </div>
+            ))}
           </div>
         ))}
-
-        <div className="nav-divider" />
-        <div className="nav-section">{!collapsed && t("tools")}</div>
-        <div className={`nav-item ${activePage === "timers" ? "active" : ""}`} onClick={() => handleNavClick("/timers")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconTimer%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
-          {!collapsed && <span className="nav-label">{t("timersTracker")}</span>}
-        </div>
-        <div className={`nav-item ${activePage === "activities" ? "active" : ""}`} onClick={() => handleNavClick("/activities")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconAllyDown%28xRed%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
-          {!collapsed && <span className="nav-label">{t("activitiesPage")}</span>}
-        </div>
-        <div className={`nav-item ${activePage === "checklist" ? "active" : ""}`} onClick={() => handleNavClick("/checklist")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconQuest%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
-          {!collapsed && <span className="nav-label">{t("checklistPage")}</span>}
-        </div>
-        <div className={`nav-item ${activePage === "farm" ? "active" : ""}`} onClick={() => handleNavClick("/farm")}>
-          <span className="nav-icon"><img src={`${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`} alt="" className="nav-item-img" onError={hideImgOnError} loading="lazy" decoding="async" /></span>
-          {!collapsed && <span className="nav-label">{t("farmPlanner")}</span>}
-        </div>
       </nav>
 
       <div className="sidebar-footer">

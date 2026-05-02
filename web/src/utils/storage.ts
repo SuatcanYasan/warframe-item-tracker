@@ -39,6 +39,7 @@ export function createDefaultPersistedState(): PersistedState {
     masteryRealTotalXp: null,
     masteryRealBreakdown: null,
     masteryLastImportAt: null,
+    masteryRealDisplayName: null,
     masteryMode: "manual",
     masterySyncPlayerId: null,
     storedVersion: null,
@@ -127,6 +128,8 @@ export function normalizePersistedState(raw: unknown): PersistedState {
       ? (next.masteryRealBreakdown as unknown as PersistedState["masteryRealBreakdown"])
       : null,
     masteryLastImportAt: typeof next.masteryLastImportAt === "number" ? next.masteryLastImportAt : null,
+    masteryRealDisplayName:
+      typeof next.masteryRealDisplayName === "string" && next.masteryRealDisplayName ? next.masteryRealDisplayName : null,
     masteryMode: next.masteryMode === "sync" ? "sync" : "manual",
     masterySyncPlayerId:
       typeof next.masterySyncPlayerId === "string" && next.masterySyncPlayerId.length === 24
