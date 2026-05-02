@@ -34,6 +34,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+        // Vendor bundle includes the WFCD profile parser (~2MB), so we
+        // raise the precache limit to 5MB. Initial download cost is one-
+        // time (per chunk hash); after that the SW serves it offline.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,

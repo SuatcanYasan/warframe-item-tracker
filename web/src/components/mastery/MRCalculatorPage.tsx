@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { Progress, Tag, Tooltip, Segmented } from "antd";
-import { RiseOutlined, ExperimentOutlined, AppstoreOutlined } from "@ant-design/icons";
+import { Progress, Tag, Tooltip, Segmented, Alert, Button } from "antd";
+import { RiseOutlined, ExperimentOutlined, AppstoreOutlined, CloudDownloadOutlined, CheckCircleFilled, ClockCircleOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
 import { showUndoToast } from "../../utils/undoToast";
 import { requestJson } from "../../utils/helpers";
+import { useRelativeTime } from "../../hooks/useRelativeTime";
 import SkeletonGrid, { SkeletonStatBar } from "../shared/SkeletonGrid";
 import EmptyState from "../shared/EmptyState";
 import type { MasteryItem, MasteryStatus } from "../../types";
+import {
+  computeCumulativeXP,
+  getMRForXP,
+  getRankProgress,
+  getMRRankTitle,
+  MAX_REGULAR_MR,
+} from "../../constants/masteryXp";
 
 const WF_ICONS = "https://wiki.warframe.com/images";
 
@@ -38,6 +46,10 @@ interface CalculatorStats {
   totalItemsAll: number;
   totalMasteredItems: number;
   totalOwnedItems: number;
+  /** True when realMR + realTotalXp came from a profile import. */
+  fromProfile: boolean;
+  /** Whether this user even has any data to display (false → CTA to import). */
+  hasAnyData: boolean;
 }
 
 const XP_PER_ITEM: Record<string, number> = {
@@ -52,20 +64,14 @@ const XP_PER_ITEM: Record<string, number> = {
   "Arch-Melee": 3000,
 };
 
-const MR_THRESHOLDS = [
-  0, 2500, 7500, 15000, 25000, 37500, 52500, 70000, 90000, 112500,
-  137500, 165000, 195000, 227500, 262500, 300000, 340000, 382500, 427500, 475000,
-  525000, 577500, 632500, 690000, 750000, 812500, 877500, 945000, 1015000, 1087500,
-  1162500, 1240000, 1320000, 1402500, 1487500, 1575000,
-];
-
-function mrFromXp(xp: number): number {
-  let level = 0;
-  for (let i = 0; i < MR_THRESHOLDS.length; i++) {
-    if (xp >= MR_THRESHOLDS[i]) level = i;
-    else break;
-  }
-  return level;
+function BreakdownRow({ label, value, hint }: { label: string; value: number; hint?: string }) {
+  return (
+    <div className="mr-calc-breakdown-row">
+      <span className="mr-calc-breakdown-label">{label}</span>
+      <span className="mr-calc-breakdown-value">{value.toLocaleString()}</span>
+      {hint && <span className="mr-calc-breakdown-hint">{hint}</span>}
+    </div>
+  );
 }
 
 export default function MRCalculatorPage() {
@@ -73,6 +79,13 @@ export default function MRCalculatorPage() {
   const masteredItems = useMasteryStore((s) => s.masteredItems) as Record<string, MasteryStatus>;
   const cycleStatus = useMasteryStore((s) => s.cycleStatus);
   const setStatus = useMasteryStore((s) => s.setStatus);
+  // From profile import. When set, override the per-item estimate with
+  // the actual in-game MR (DE knows the truth, our heuristic doesn't).
+  const realMR = useMasteryStore((s) => s.realMR);
+  const realTotalXp = useMasteryStore((s) => s.realTotalXp);
+  const realBreakdown = useMasteryStore((s) => s.realBreakdown);
+  const lastImportAt = useMasteryStore((s) => s.lastImportAt);
+  const lastImportRelative = useRelativeTime(lastImportAt);
   const [categorized, setCategorized] = useState<CategorizedItems | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [view, setView] = useState<"breakdown" | "suggestions">("breakdown");
@@ -131,25 +144,28 @@ export default function MRCalculatorPage() {
       totalXp += earned;
     }
 
-    const currentMR = mrFromXp(totalXp);
-    const nextThreshold = MR_THRESHOLDS[currentMR + 1] || MR_THRESHOLDS[MR_THRESHOLDS.length - 1];
-    const prevThreshold = MR_THRESHOLDS[currentMR] || 0;
-    const xpNeededForNext = Math.max(0, nextThreshold - totalXp);
-    const xpRangeOfRank = nextThreshold - prevThreshold;
-    const progressInRank = xpRangeOfRank > 0 ? Math.min(100, ((totalXp - prevThreshold) / xpRangeOfRank) * 100) : 100;
+    // Profile import wins. Otherwise fall back to per-item heuristic
+    // (which is wildly imprecise — items only contribute ~80% of MR XP).
+    const useReal = typeof realMR === "number" && typeof realTotalXp === "number";
+    const effectiveTotalXp = useReal ? (realTotalXp as number) : totalXp;
+    const fallbackMR = getMRForXP(totalXp);
+    const currentMR = useReal ? (realMR as number) : fallbackMR;
+    const progress = getRankProgress(useReal ? effectiveTotalXp : totalXp);
 
     return {
-      totalXp,
+      totalXp: effectiveTotalXp,
       currentMR,
-      nextThreshold,
-      xpNeededForNext,
-      progressInRank,
+      nextThreshold: progress.nextThreshold,
+      xpNeededForNext: progress.xpToNext,
+      progressInRank: progress.progressPct,
       perCategory,
       totalItemsAll,
       totalMasteredItems,
       totalOwnedItems,
+      fromProfile: useReal,
+      hasAnyData: useReal || totalMasteredItems + totalOwnedItems > 0,
     };
-  }, [categorized, masteredItems]);
+  }, [categorized, masteredItems, realMR, realTotalXp]);
 
   interface RecItem extends RemainingItem {
     category: string;
@@ -193,41 +209,121 @@ export default function MRCalculatorPage() {
 
   return (
     <div className="mr-calc-page">
-      {/* Top stat bar */}
-      <div className="summary-bar mr-calc-summary">
-        <motion.div className="stat-card mr-calc-current-rank" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="stat-label">{t("mrCalcCurrent")}</div>
-          <div className="mr-calc-rank-display">
-            <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" loading="lazy" />
-            <span className="mr-calc-rank-num">{stats.currentMR}</span>
-          </div>
-          <div className="stat-sub">{stats.totalXp.toLocaleString()} {t("mrCalcTotalXp")}</div>
-        </motion.div>
+      {/* Source banner — green if real, amber estimate warning otherwise */}
+      {stats.fromProfile ? (
+        <Alert
+          type="success"
+          showIcon
+          icon={<CheckCircleFilled />}
+          message={
+            <span>
+              <strong>{t("mrCalcSourceProfile")}</strong>
+              {lastImportRelative && (
+                <span style={{ marginLeft: 8, color: "var(--wf-text-muted)", fontSize: 12 }}>
+                  <ClockCircleOutlined /> {lastImportRelative}
+                </span>
+              )}
+            </span>
+          }
+          style={{ marginBottom: 12 }}
+        />
+      ) : (
+        <Alert
+          type="warning"
+          showIcon
+          message={t("mrCalcSourceEstimate")}
+          description={t("mrCalcSourceEstimateDesc")}
+          style={{ marginBottom: 12 }}
+        />
+      )}
 
-        <motion.div className="stat-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <div className="stat-label"><RiseOutlined /> {t("mrCalcNextRank", { rank: stats.currentMR + 1 })}</div>
-          <div className="stat-value" style={{ color: "var(--wf-primary)" }}>
-            {stats.xpNeededForNext.toLocaleString()}
+      {/* Hero "product" card — the user asked for the MR area to feel
+          more detailed, like a product page rather than three small
+          stat tiles. Big rank badge on the left, meta + progress on
+          the right, with the inventory/XP row tucked underneath. */}
+      <motion.div
+        className="mr-hero-card"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="mr-hero-main">
+          <div className="mr-hero-badge">
+            <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" loading="lazy" />
+            <span className="mr-hero-badge-num">{stats.currentMR}</span>
+            {stats.currentMR >= MAX_REGULAR_MR && (
+              <span className="mr-hero-badge-lr">LR</span>
+            )}
           </div>
-          <div className="stat-sub">{t("mrCalcXpNeeded")}</div>
+          <div className="mr-hero-info">
+            <div className="mr-hero-label">{t("mrCalcCurrent")}</div>
+            <div className="mr-hero-title">
+              {getMRRankTitle(stats.currentMR)}
+            </div>
+            <div className="mr-hero-meta-row">
+              <span className="mr-hero-meta">
+                <span className="mr-hero-meta-label">{t("mrCalcTotalXp")}</span>
+                <strong>{stats.totalXp.toLocaleString()}</strong>
+              </span>
+              <span className="mr-hero-meta">
+                <span className="mr-hero-meta-label">{t("mrCalcMasteredItems")}</span>
+                <strong>
+                  {stats.totalMasteredItems}
+                  <span className="mr-hero-meta-of"> / {stats.totalItemsAll}</span>
+                </strong>
+              </span>
+              <span className="mr-hero-meta">
+                <span className="mr-hero-meta-label">{t("masteryOwned")}</span>
+                <strong>{stats.totalOwnedItems}</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mr-hero-progress">
+          <div className="mr-hero-progress-header">
+            <span>
+              <RiseOutlined /> {t("mrCalcNextRank", { rank: stats.currentMR + 1 })}
+            </span>
+            <span className="mr-hero-progress-needed">
+              {stats.xpNeededForNext.toLocaleString()} {t("mrCalcXpNeeded")}
+            </span>
+          </div>
           <Progress
             percent={Math.round(stats.progressInRank)}
-            showInfo={false}
-            size="small"
-            strokeColor="var(--wf-primary)"
+            showInfo
+            size={["100%", 14]}
+            strokeColor={{ from: "color-mix(in srgb, var(--wf-primary) 60%, transparent)", to: "var(--wf-primary)" }}
             trailColor="var(--wf-border)"
-            style={{ marginTop: 8 }}
+            format={(p) => `${p}%`}
           />
-        </motion.div>
+        </div>
+      </motion.div>
 
-        <motion.div className="stat-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="stat-label"><AppstoreOutlined /> {t("mrCalcInventory")}</div>
-          <div className="stat-value">{stats.totalMasteredItems}<span className="mr-calc-stat-of"> / {stats.totalItemsAll}</span></div>
-          <div className="stat-sub">
-            {t("mrCalcMasteredItems")} · {stats.totalOwnedItems} {t("masteryOwned").toLowerCase()}
+      {/* Breakdown card — only shown when imported (real per-source numbers) */}
+      {stats.fromProfile && realBreakdown && (
+        <motion.div
+          className="mr-calc-breakdown-card"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="mr-calc-breakdown-title">{t("mrCalcBreakdownTitle")}</div>
+          <div className="mr-calc-breakdown-grid">
+            <BreakdownRow label={t("mrCalcBreakdownItems")} value={realBreakdown.items} />
+            <BreakdownRow
+              label={t("mrCalcBreakdownIntrinsics")}
+              value={realBreakdown.intrinsics}
+              hint={t("mrCalcBreakdownIntrinsicsHint", { ranks: realBreakdown.intrinsicRankTotal })}
+            />
+            <BreakdownRow
+              label={t("mrCalcBreakdownStarChart")}
+              value={realBreakdown.starChart}
+              hint={t("mrCalcBreakdownStarChartHint", { count: realBreakdown.missionCount })}
+            />
+            <BreakdownRow label={t("mrCalcBreakdownJunctions")} value={realBreakdown.junctions} />
           </div>
         </motion.div>
-      </div>
+      )}
 
       <Segmented
         block

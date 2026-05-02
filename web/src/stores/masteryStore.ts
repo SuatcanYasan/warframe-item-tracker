@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PersistedState, MasteryStatus } from "../types";
+import type { PersistedState, MasteryStatus, MasteryBreakdown } from "../types";
 
 type MasteredMap = Record<string, MasteryStatus>;
 
@@ -7,16 +7,45 @@ interface MasteryState {
   masteredItems: MasteredMap;
   multiSelectMode: boolean;
   multiSelectedIds: Set<string>;
+  // Real values from /api/profile/import — exact in-game MR, total mastery
+  // XP (items + intrinsics + missions + junctions), per-source breakdown,
+  // and when the import happened. These are ground truth; the per-item
+  // estimate is only used when no profile has been imported.
+  realMR: number | null;
+  realTotalXp: number | null;
+  realBreakdown: MasteryBreakdown | null;
+  lastImportAt: number | null;
+  // 'manual' = user toggles items by hand. 'sync' = profile data
+  // auto-refreshed every 5 min via /api/profile/import while the
+  // mastery page is visible. Stored player ID drives the polling hook.
+  mode: "manual" | "sync";
+  syncPlayerId: string | null;
+  setMode: (mode: "manual" | "sync") => void;
+  setSyncPlayerId: (id: string | null) => void;
   cycleStatus: (uniqueName: string) => void;
   setStatus: (uniqueName: string, status: MasteryStatus | null | undefined) => void;
   clearStatus: (uniqueName: string) => void;
   setMasteredItems: (itemsOrFn: MasteredMap | ((prev: MasteredMap) => MasteredMap)) => void;
+  setRealProfile: (
+    mr: number | null,
+    totalXp: number | null,
+    breakdown?: MasteryBreakdown | null,
+    importedAt?: number | null,
+  ) => void;
+  clearRealProfile: () => void;
   toggleMultiSelectMode: () => void;
   toggleMultiSelected: (uniqueName: string) => void;
   selectAllMulti: (uniqueNames: Iterable<string>) => void;
   clearMultiSelected: () => void;
   bulkSetStatus: (uniqueNames: Iterable<string>, status: MasteryStatus | null | undefined) => void;
-  hydrate: (persisted: Pick<PersistedState, "masteredItems">) => void;
+  hydrate: (persisted: Pick<PersistedState, "masteredItems"> & {
+    masteryRealMR?: number | null;
+    masteryRealTotalXp?: number | null;
+    masteryRealBreakdown?: MasteryBreakdown | null;
+    masteryLastImportAt?: number | null;
+    masteryMode?: "manual" | "sync";
+    masterySyncPlayerId?: string | null;
+  }) => void;
 }
 
 // States: undefined → "owned" → "mastered" → undefined (cycle)
@@ -25,6 +54,25 @@ export const useMasteryStore = create<MasteryState>((set) => ({
 
   multiSelectMode: false,
   multiSelectedIds: new Set<string>(),
+  realMR: null,
+  realTotalXp: null,
+  realBreakdown: null,
+  lastImportAt: null,
+  mode: "manual",
+  syncPlayerId: null,
+
+  setMode: (mode) => set({ mode }),
+  setSyncPlayerId: (id) => set({ syncPlayerId: id }),
+
+  setRealProfile: (mr, totalXp, breakdown = null, importedAt = null) =>
+    set({
+      realMR: mr,
+      realTotalXp: totalXp,
+      realBreakdown: breakdown,
+      lastImportAt: importedAt ?? (mr != null ? Date.now() : null),
+    }),
+  clearRealProfile: () =>
+    set({ realMR: null, realTotalXp: null, realBreakdown: null, lastImportAt: null }),
 
   cycleStatus: (uniqueName) =>
     set((state) => {
@@ -97,12 +145,22 @@ export const useMasteryStore = create<MasteryState>((set) => ({
     const raw = persisted?.masteredItems && typeof persisted.masteredItems === "object"
       ? persisted.masteredItems
       : {};
-    // Migrate old timestamp format → "mastered"
     const cleaned: MasteredMap = {};
     for (const [k, v] of Object.entries(raw)) {
       if (v === "owned" || v === "mastered") cleaned[k] = v;
       else if (typeof v === "number") cleaned[k] = "mastered";
     }
-    set({ masteredItems: cleaned });
+    set({
+      masteredItems: cleaned,
+      realMR: typeof persisted.masteryRealMR === "number" ? persisted.masteryRealMR : null,
+      realTotalXp: typeof persisted.masteryRealTotalXp === "number" ? persisted.masteryRealTotalXp : null,
+      realBreakdown: persisted.masteryRealBreakdown ?? null,
+      lastImportAt: typeof persisted.masteryLastImportAt === "number" ? persisted.masteryLastImportAt : null,
+      mode: persisted.masteryMode === "sync" ? "sync" : "manual",
+      syncPlayerId:
+        typeof persisted.masterySyncPlayerId === "string" && persisted.masterySyncPlayerId.length === 24
+          ? persisted.masterySyncPlayerId
+          : null,
+    });
   },
 }));

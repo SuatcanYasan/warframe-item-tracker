@@ -1,6 +1,10 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
-import { Button, Segmented, Spin } from "antd";
-import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, ClearOutlined, RiseOutlined } from "@ant-design/icons";
+import { Button, Segmented, Spin, App as AntApp, Dropdown, Tooltip } from "antd";
+import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, ClearOutlined, RiseOutlined, CloudDownloadOutlined, DeleteOutlined, MoreOutlined, FilterOutlined, PlusOutlined, ShoppingOutlined } from "@ant-design/icons";
+import toast from "react-hot-toast";
+import ProfileImportModal from "../shared/ProfileImportModal";
+import MasteryModeBar from "./MasteryModeBar";
+import { useSyncedMastery } from "../../hooks/useSyncedMastery";
 
 const MRCalculatorView = lazy(() => import("./MRCalculatorPage"));
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +12,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useTranslate } from "../../hooks/useTranslate";
 import type { TranslateFn } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
+import { useCraftStore } from "../../stores/craftStore";
 import { requestJson } from "../../utils/helpers";
 import { showUndoToast } from "../../utils/undoToast";
 import EmptyState from "../shared/EmptyState";
@@ -15,6 +20,16 @@ import SkeletonGrid, { SkeletonStatBar } from "../shared/SkeletonGrid";
 import ErrorState from "../shared/ErrorState";
 import HintPill from "../shared/HintPill";
 import type { MasteryItem, MasteryStatus } from "../../types";
+
+// Sync mode replaces toggle-on-click with "add to craft tracker" so
+// users can plan items they don't yet own. Master state then reflects
+// the imported profile, not manual taps.
+function isPrimeName(name: string): boolean {
+  return /\bPrime\b/i.test(name);
+}
+function marketSlug(name: string): string {
+  return name.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
 
 type CategorizedItems = Record<string, MasteryItem[]>;
 
@@ -46,6 +61,13 @@ export default function MasteryPage() {
   const masteredItems = useMasteryStore((s) => s.masteredItems) as Record<string, MasteryStatus>;
   const cycleStatus = useMasteryStore((s) => s.cycleStatus);
   const clearStatus = useMasteryStore((s) => s.clearStatus);
+  const setMasteredItems = useMasteryStore((s) => s.setMasteredItems);
+  const clearRealProfile = useMasteryStore((s) => s.clearRealProfile);
+  const realMR = useMasteryStore((s) => s.realMR);
+  const realTotalXp = useMasteryStore((s) => s.realTotalXp);
+  const realBreakdown = useMasteryStore((s) => s.realBreakdown);
+  const lastImportAt = useMasteryStore((s) => s.lastImportAt);
+  const { modal } = AntApp.useApp();
   const multiSelectMode = useMasteryStore((s) => s.multiSelectMode);
   const multiSelectedIds = useMasteryStore((s) => s.multiSelectedIds);
   const toggleMultiSelectMode = useMasteryStore((s) => s.toggleMultiSelectMode);
@@ -53,6 +75,11 @@ export default function MasteryPage() {
   const selectAllMulti = useMasteryStore((s) => s.selectAllMulti);
   const clearMultiSelected = useMasteryStore((s) => s.clearMultiSelected);
   const bulkSetStatus = useMasteryStore((s) => s.bulkSetStatus);
+  const mode = useMasteryStore((s) => s.mode);
+  const addCraftItem = useCraftStore((s) => s.addItem);
+  const craftSelectedItems = useCraftStore((s) => s.selectedItems);
+
+  const { isSyncing, manualRefresh, error: syncError } = useSyncedMastery();
 
   const [categorizedItems, setCategorizedItems] = useState<CategorizedItems | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,6 +87,13 @@ export default function MasteryPage() {
   const [search, setSearch] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [activeView, setActiveView] = useState<"items" | "calculator">("items");
+  const [importOpen, setImportOpen] = useState(false);
+  const [showOnlyMissing, setShowOnlyMissing] = useState(false);
+
+  const craftIdSet = useMemo(
+    () => new Set(craftSelectedItems.map((i) => i.uniqueName)),
+    [craftSelectedItems],
+  );
 
   const loadItems = () => {
     let cancelled = false;
@@ -92,10 +126,12 @@ export default function MasteryPage() {
     });
   };
 
-  // Right-click → instantly clear status (skip cycle).
+  // Right-click → instantly clear status (manual mode only). In sync
+  // mode the master state mirrors the in-game profile, so we don't let
+  // the user clear it locally — that would just get overwritten.
   const handleContextMenu = (e: React.MouseEvent, uniqueName: string) => {
     e.preventDefault();
-    if (multiSelectMode) return;
+    if (multiSelectMode || mode === "sync") return;
     const container = document.querySelector('.app-content') as HTMLElement | null;
     const scrollTop = container?.scrollTop || 0;
     const prev = useMasteryStore.getState().masteredItems[uniqueName];
@@ -111,10 +147,77 @@ export default function MasteryPage() {
     });
   };
 
+  // In sync mode the click action becomes "add to Craft Tracker" so the
+  // user can plan items they don't yet have. Toggling status is disabled
+  // because the next sync would overwrite it anyway.
+  const handleAddToCraft = (item: MasteryItem) => {
+    const status = masteredItems[item.uniqueName];
+    if (status === "mastered") {
+      toast(t("masteryAlreadyMastered"), { icon: "✓" });
+      return;
+    }
+    addCraftItem({
+      uniqueName: item.uniqueName,
+      name: item.name,
+      imageUrl: item.imageUrl,
+      type: item.type ?? null,
+      category: item.category ?? null,
+    });
+    const wasInCraft = craftIdSet.has(item.uniqueName);
+    toast.success(
+      wasInCraft
+        ? t("masteryCraftQuantityIncreased", { name: item.name })
+        : t("masteryAddedToCraft", { name: item.name }),
+    );
+  };
+
   // Card click in multi-select mode toggles selection instead of cycling.
-  const handleCardClick = (uniqueName: string) => {
-    if (multiSelectMode) toggleMultiSelected(uniqueName);
-    else handleCycle(uniqueName);
+  const handleCardClick = (item: MasteryItem) => {
+    if (multiSelectMode) toggleMultiSelected(item.uniqueName);
+    else if (mode === "sync") handleAddToCraft(item);
+    else handleCycle(item.uniqueName);
+  };
+
+  // Wipe every owned/mastered status AND any profile-import data
+  // (realMR / realTotalXp / breakdown / lastImportAt). Earlier we kept
+  // import data on a "different fact" rationale, but that left the
+  // header still claiming MR 22 with empty categories below — confusing.
+  // Total reset is more intuitive; user can re-import to bring it back.
+  // 5-second undo restores the full snapshot.
+  const handleClearAll = () => {
+    const total = Object.keys(masteredItems).length;
+    if (total === 0 && realMR == null) return;
+    modal.confirm({
+      title: t("masteryClearAllTitle"),
+      content: t("masteryClearAllContent", { count: total }),
+      okText: t("masteryClearAllOk"),
+      cancelText: t("masteryClearAllCancel"),
+      okButtonProps: { danger: true },
+      onOk: () => {
+        const snapshot = {
+          masteredItems: { ...masteredItems },
+          realMR,
+          realTotalXp,
+          realBreakdown,
+          lastImportAt,
+        };
+        setMasteredItems({});
+        clearRealProfile();
+        showUndoToast({
+          message: t("masteryClearedToast", { count: total }),
+          undoLabel: t("undo"),
+          onUndo: () => {
+            setMasteredItems(snapshot.masteredItems);
+            useMasteryStore.getState().setRealProfile(
+              snapshot.realMR,
+              snapshot.realTotalXp,
+              snapshot.realBreakdown,
+              snapshot.lastImportAt,
+            );
+          },
+        });
+      },
+    });
   };
 
   const filteredCategories = useMemo(() => {
@@ -133,6 +236,9 @@ export default function MasteryPage() {
               (i.name || "").toLowerCase().includes(query)
           );
         }
+        if (showOnlyMissing) {
+          items = items.filter((i) => !masteredItems[i.uniqueName]);
+        }
 
         const statusOrder: Record<string, number> = { mastered: 0, owned: 1 };
         const sorted = [...items].sort((a, b) => {
@@ -145,7 +251,7 @@ export default function MasteryPage() {
         return { key: cat, items: sorted };
       })
       .filter((c) => c.items.length > 0);
-  }, [categorizedItems, search, masteredItems]);
+  }, [categorizedItems, search, masteredItems, showOnlyMissing]);
 
   const stats = useMemo(() => {
     if (!categorizedItems) return { total: 0, owned: 0, mastered: 0 };
@@ -240,11 +346,21 @@ export default function MasteryPage() {
         ]}
         style={{ marginBottom: 14 }}
       />
-      <HintPill
-        id="mastery-right-click-2026"
-        title={t("hintDidYouKnow")}
-        description={t("hintMasteryRightClick")}
-      />
+      <MasteryModeBar isSyncing={isSyncing} onRefresh={manualRefresh} syncError={syncError} />
+      {mode === "manual" && (
+        <HintPill
+          id="mastery-right-click-2026"
+          title={t("hintDidYouKnow")}
+          description={t("hintMasteryRightClick")}
+        />
+      )}
+      {mode === "sync" && (
+        <HintPill
+          id="mastery-sync-click-2026"
+          title={t("hintDidYouKnow")}
+          description={t("hintMasterySyncClick")}
+        />
+      )}
       {/* Summary Cards */}
       <div className="summary-bar mastery-summary-grid">
         <motion.div className="stat-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
@@ -327,12 +443,51 @@ export default function MasteryPage() {
         <div className="craft-toolbar-right">
           <Button
             size="small"
-            type={multiSelectMode ? "primary" : "default"}
-            icon={<CheckOutlined />}
-            onClick={toggleMultiSelectMode}
+            type={showOnlyMissing ? "primary" : "default"}
+            icon={<FilterOutlined />}
+            onClick={() => setShowOnlyMissing((v) => !v)}
           >
-            {multiSelectMode ? t("multiSelectExit") : t("multiSelectMode")}
+            {t("masteryFilterMissing")}
           </Button>
+          {mode === "manual" && (
+            <Button
+              size="small"
+              icon={<CloudDownloadOutlined />}
+              onClick={() => setImportOpen(true)}
+            >
+              {t("profileImportButton")}
+            </Button>
+          )}
+          {mode === "manual" && (
+            <Button
+              size="small"
+              type={multiSelectMode ? "primary" : "default"}
+              icon={<CheckOutlined />}
+              onClick={toggleMultiSelectMode}
+            >
+              {multiSelectMode ? t("multiSelectExit") : t("multiSelectMode")}
+            </Button>
+          )}
+          {/* Destructive action tucked into an overflow menu so the
+              toolbar stays compact and there's no fat-finger danger. */}
+          <Dropdown
+            trigger={["click"]}
+            menu={{
+              items: [
+                {
+                  key: "clear-all",
+                  icon: <DeleteOutlined />,
+                  label: t("masteryClearAll"),
+                  danger: true,
+                  disabled: Object.keys(masteredItems).length === 0 && realMR == null,
+                  onClick: handleClearAll,
+                },
+              ],
+            }}
+            placement="bottomRight"
+          >
+            <Button size="small" icon={<MoreOutlined />} aria-label={t("masteryClearAll")} />
+          </Dropdown>
         </div>
       </div>
 
@@ -360,6 +515,14 @@ export default function MasteryPage() {
                 {cat.items.map((item) => {
                   const status = masteredItems[item.uniqueName];
                   const isSelected = multiSelectedIds.has(item.uniqueName);
+                  const inCraft = craftIdSet.has(item.uniqueName);
+                  const showAddCraft = mode === "sync" && status !== "mastered" && !multiSelectMode;
+                  const showMarket = isPrimeName(item.name) && !multiSelectMode;
+                  const hoverHint = multiSelectMode
+                    ? (isSelected ? t("multiSelectDeselect") : t("multiSelectSelect"))
+                    : mode === "sync"
+                      ? (status === "mastered" ? t("masteryAlreadyMastered") : t("masteryAddToCraft"))
+                      : getNextAction(status, t);
                   return (
                     <motion.div
                       key={item.uniqueName}
@@ -367,7 +530,7 @@ export default function MasteryPage() {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.15 }}
                       className={`mastery-card ${status || ""} ${isSelected ? "multi-selected" : ""}`}
-                      onClick={() => handleCardClick(item.uniqueName)}
+                      onClick={() => handleCardClick(item)}
                       onContextMenu={(e) => handleContextMenu(e, item.uniqueName)}
                     >
                       {multiSelectMode && (
@@ -375,11 +538,7 @@ export default function MasteryPage() {
                           {isSelected && <CheckOutlined />}
                         </div>
                       )}
-                      <div className="mastery-card-hover-hint">
-                        {multiSelectMode
-                          ? (isSelected ? t("multiSelectDeselect") : t("multiSelectSelect"))
-                          : getNextAction(status, t)}
-                      </div>
+                      <div className="mastery-card-hover-hint">{hoverHint}</div>
                       <div className="mastery-card-img-wrap">
                         {item.imageUrl ? (
                           <img
@@ -401,6 +560,34 @@ export default function MasteryPage() {
                             <img src="https://wiki.warframe.com/images/IconMasteryRank.png" alt="" className="mastery-mr-icon" loading="lazy" decoding="async" />
                           </div>
                         )}
+                        <div className="mastery-card-overlay">
+                          {showMarket && (
+                            <Tooltip title={t("masteryMarketLink")}>
+                              <a
+                                className="mastery-card-overlay-btn market"
+                                href={`https://warframe.market/items/${marketSlug(item.name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={t("masteryMarketLink")}
+                              >
+                                <ShoppingOutlined />
+                              </a>
+                            </Tooltip>
+                          )}
+                          {showAddCraft && (
+                            <Tooltip title={inCraft ? t("masteryAlreadyInCraft") : t("masteryAddToCraft")}>
+                              <button
+                                className={`mastery-card-overlay-btn add-craft ${inCraft ? "in-craft" : ""}`}
+                                onClick={(e) => { e.stopPropagation(); handleAddToCraft(item); }}
+                                aria-label={t("masteryAddToCraft")}
+                                type="button"
+                              >
+                                <PlusOutlined />
+                              </button>
+                            </Tooltip>
+                          )}
+                        </div>
                       </div>
                       <div className="mastery-card-name" title={item.name}>
                         {item.name}
@@ -475,6 +662,8 @@ export default function MasteryPage() {
           </Button>
         </div>
       )}
+
+      <ProfileImportModal open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   );
 }

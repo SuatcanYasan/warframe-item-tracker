@@ -35,6 +35,12 @@ export function createDefaultPersistedState(): PersistedState {
     incarnonClaimed: {},
     wfRotationClaimed: {},
     arcaneCounts: {},
+    masteryRealMR: null,
+    masteryRealTotalXp: null,
+    masteryRealBreakdown: null,
+    masteryLastImportAt: null,
+    masteryMode: "manual",
+    masterySyncPlayerId: null,
     storedVersion: null,
   };
 }
@@ -115,6 +121,17 @@ export function normalizePersistedState(raw: unknown): PersistedState {
     arcaneCounts: isObjectRecord(next.arcaneCounts)
       ? (next.arcaneCounts as Record<string, number>)
       : {},
+    masteryRealMR: typeof next.masteryRealMR === "number" ? next.masteryRealMR : null,
+    masteryRealTotalXp: typeof next.masteryRealTotalXp === "number" ? next.masteryRealTotalXp : null,
+    masteryRealBreakdown: isObjectRecord(next.masteryRealBreakdown)
+      ? (next.masteryRealBreakdown as unknown as PersistedState["masteryRealBreakdown"])
+      : null,
+    masteryLastImportAt: typeof next.masteryLastImportAt === "number" ? next.masteryLastImportAt : null,
+    masteryMode: next.masteryMode === "sync" ? "sync" : "manual",
+    masterySyncPlayerId:
+      typeof next.masterySyncPlayerId === "string" && next.masterySyncPlayerId.length === 24
+        ? next.masterySyncPlayerId
+        : null,
     storedVersion: typeof next.storedVersion === "string" ? next.storedVersion : null,
   };
 }

@@ -30,6 +30,12 @@ export function usePersist(): void {
   const foundComponents = useRelicStore((s) => s.foundComponents);
   const inventoryParts = useInventoryStore((s) => s.inventoryParts);
   const masteredItems = useMasteryStore((s) => s.masteredItems);
+  const masteryRealMR = useMasteryStore((s) => s.realMR);
+  const masteryRealTotalXp = useMasteryStore((s) => s.realTotalXp);
+  const masteryRealBreakdown = useMasteryStore((s) => s.realBreakdown);
+  const masteryLastImportAt = useMasteryStore((s) => s.lastImportAt);
+  const masteryMode = useMasteryStore((s) => s.mode);
+  const masterySyncPlayerId = useMasteryStore((s) => s.syncPlayerId);
 
   const trackedSets = useAmpStore((s) => s.trackedSets);
   const ampMasteryParts = useAmpStore((s) => s.masteryParts);
@@ -101,6 +107,12 @@ export function usePersist(): void {
       incarnonClaimed,
       wfRotationClaimed,
       arcaneCounts,
+      masteryRealMR,
+      masteryRealTotalXp,
+      masteryRealBreakdown,
+      masteryLastImportAt,
+      masteryMode,
+      masterySyncPlayerId,
       storedVersion,
     };
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -131,6 +143,12 @@ export function usePersist(): void {
     incarnonClaimed,
     wfRotationClaimed,
     arcaneCounts,
+    masteryRealMR,
+    masteryRealTotalXp,
+    masteryRealBreakdown,
+    masteryLastImportAt,
+    masteryMode,
+    masterySyncPlayerId,
     storedVersion,
   ]);
 }

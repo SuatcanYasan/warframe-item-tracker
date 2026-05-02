@@ -549,6 +549,212 @@ app.get("/api/timers", async (_req, res) => {
   }
 });
 
+// ============================================================================
+// /api/profile/import — DE proxy + WFCD profile parser
+// ----------------------------------------------------------------------------
+// DE's getProfileViewingData.php is public but CORS-blocked, so we proxy it.
+// playerId is a 24-char hex string from the player's local EE.log file.
+// The browser-friendly alternative (POST raw JSON body) lets users bypass
+// playerId discovery entirely.
+//
+// Privacy: we don't persist anything — request → DE → parse → minimal
+// summary returned to caller. No log of playerIds.
+// ============================================================================
+
+const DE_PROFILE_URL = "https://content.warframe.com/dynamic/getProfileViewingData.php";
+
+let _profileParserPromise = null;
+function loadProfileParser() {
+  if (!_profileParserPromise) {
+    _profileParserPromise = import("@wfcd/profile-parser/Parser")
+      .then((m) => m.default || m)
+      .catch((err) => {
+        _profileParserPromise = null;
+        throw err;
+      });
+  }
+  return _profileParserPromise;
+}
+
+// 32-byte hex MongoDB ObjectId (24 chars). Reject anything else to avoid
+// attacker-controlled URL injection into upstream.
+const PLAYER_ID_RE = /^[a-f0-9]{24}$/i;
+
+// Per-item-category MR XP scaling. Mirrored from web/src/constants/masteryXp.ts
+// (server can't import the .ts file directly without a build step).
+const FRAME_AFFINITY_PER_RANK_SQ = 1000;
+const WEAPON_AFFINITY_PER_RANK_SQ = 500;
+
+function detectCategory(uniqueName) {
+  const u = String(uniqueName || "");
+  if (/Necramech|MechSuit/i.test(u)) return { perRankXp: 200, maxRank: 40, scaling: FRAME_AFFINITY_PER_RANK_SQ };
+  if (/Hoverboard|KDrive|Kdrive|K-Drive/i.test(u)) return { perRankXp: 100, maxRank: 30, scaling: WEAPON_AFFINITY_PER_RANK_SQ };
+  if (/\b(Kuva|Tenet|Paracesis|Coda)\b/i.test(u)) return { perRankXp: 100, maxRank: 40, scaling: WEAPON_AFFINITY_PER_RANK_SQ };
+  if (/Sentinel/i.test(u)) return { perRankXp: 200, maxRank: 30, scaling: FRAME_AFFINITY_PER_RANK_SQ };
+  if (/KubrowPet|CatbrowPet|InfestedCatbrow|InfestedKubrow|MoaPets|PetPredasite|PetVulpaphyla/i.test(u)) {
+    return { perRankXp: 200, maxRank: 30, scaling: FRAME_AFFINITY_PER_RANK_SQ };
+  }
+  if (/Archwing/i.test(u)) return { perRankXp: 200, maxRank: 30, scaling: FRAME_AFFINITY_PER_RANK_SQ };
+  if (/Powersuit/i.test(u)) return { perRankXp: 200, maxRank: 30, scaling: FRAME_AFFINITY_PER_RANK_SQ };
+  return { perRankXp: 100, maxRank: 30, scaling: WEAPON_AFFINITY_PER_RANK_SQ };
+}
+
+function affinityToRank(affinity, info) {
+  const safe = Math.max(0, Number(affinity) || 0);
+  const maxAffinity = info.scaling * info.maxRank * info.maxRank;
+  if (safe >= maxAffinity) return info.maxRank;
+  return Math.min(info.maxRank, Math.floor(Math.sqrt(safe / info.scaling)));
+}
+
+const MR_XP_PER_INTRINSIC_RANK = 1_500;
+const MR_XP_PER_JUNCTION = 1_000;
+const MR_XP_PER_STAR_CHART_NODE = 63;
+// Hard-coded junction count — DE doesn't expose junction-completion data
+// in profile and the count is fixed at game level (~14 junctions on the
+// star chart). We use this if MR ≥ 8 (junctions unlock progressively but
+// most are done by then). For low-MR users we scale conservatively.
+function estimateJunctionXp(masteryRank) {
+  // 14 junctions max; assume players above MR 8 have finished most of them.
+  if (masteryRank >= 16) return 14 * MR_XP_PER_JUNCTION;
+  if (masteryRank >= 8) return Math.round((masteryRank / 16) * 14 * MR_XP_PER_JUNCTION);
+  return Math.round((masteryRank / 8) * 5 * MR_XP_PER_JUNCTION);
+}
+
+function summarizeProfile(profile) {
+  // ---- Items (xpInfo carries lifetime affinity) ----
+  // Convert each item's affinity to its rank, then to MR XP.
+  let itemsXp = 0;
+  const xpItems = (profile.loadout?.xpInfo || []).map((it) => {
+    const info = detectCategory(it.uniqueName);
+    const lifetimeAffinity = Number(it.xp) || 0;
+    const rank = affinityToRank(lifetimeAffinity, info);
+    const masteryXp = rank * info.perRankXp;
+    itemsXp += masteryXp;
+    return {
+      uniqueName: it.uniqueName,
+      affinity: lifetimeAffinity,
+      rank,
+      maxRank: info.maxRank,
+      masteryXp,
+    };
+  });
+
+  // ---- Intrinsics (Drifter + Railjack) ----
+  // The parser flattens individual intrinsic ranks under one map. Sum
+  // every numeric value, skipping aggregate "railjack"/"drifter" totals
+  // that double-count.
+  const intrinsicAggregates = new Set(["railjack", "drifter"]);
+  let intrinsicRankTotal = 0;
+  if (profile.intrinsics && typeof profile.intrinsics === "object") {
+    for (const [key, val] of Object.entries(profile.intrinsics)) {
+      if (intrinsicAggregates.has(key)) continue;
+      if (typeof val === "number" && val > 0) intrinsicRankTotal += val;
+    }
+  }
+  const intrinsicsXp = intrinsicRankTotal * MR_XP_PER_INTRINSIC_RANK;
+
+  // ---- Star chart nodes ----
+  const missionCount = Array.isArray(profile.missions) ? profile.missions.length : 0;
+  const starChartXp = missionCount * MR_XP_PER_STAR_CHART_NODE;
+
+  // ---- Junctions (estimated from MR, no profile field for it) ----
+  const junctionXp = estimateJunctionXp(profile.masteryRank || 0);
+
+  const realTotalMasteryXp = itemsXp + intrinsicsXp + starChartXp + junctionXp;
+
+  return {
+    accountId: profile.accountId,
+    displayName: profile.displayName,
+    platformNames: profile.platformNames || [],
+    masteryRank: profile.masteryRank,
+    itemCount: xpItems.length,
+    xpItems,
+    realTotalMasteryXp,
+    breakdown: {
+      items: itemsXp,
+      intrinsics: intrinsicsXp,
+      starChart: starChartXp,
+      junctions: junctionXp,
+      intrinsicRankTotal,
+      missionCount,
+    },
+  };
+}
+
+app.post("/api/profile/import", async (req, res) => {
+  const playerId = String(req.body?.playerId || "").trim();
+  const rawProfileJson = req.body?.rawProfileJson;
+
+  let profileData;
+
+  if (rawProfileJson) {
+    // User uploaded their own JSON dump (from browse.wf-style flow). Trust
+    // it — they've already passed it through their browser to fetch.
+    if (typeof rawProfileJson !== "object") {
+      return res.status(400).json({ error: "rawProfileJson must be an object" });
+    }
+    profileData = rawProfileJson;
+  } else {
+    // Server-side proxy. Validate playerId before injecting into URL.
+    if (!PLAYER_ID_RE.test(playerId)) {
+      return res.status(400).json({
+        error: "Invalid playerId. Must be a 24-character hex string from EE.log.",
+      });
+    }
+
+    try {
+      const upstream = await fetch(`${DE_PROFILE_URL}?playerId=${playerId}`, {
+        signal: AbortSignal.timeout(15000),
+        headers: {
+          "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
+          "Accept": "application/json, text/plain, */*",
+        },
+      });
+      if (!upstream.ok) {
+        return res.status(upstream.status === 404 ? 404 : 502).json({
+          error: upstream.status === 404
+            ? "Player not found. Double-check the playerId from EE.log."
+            : `DE responded with ${upstream.status}`,
+        });
+      }
+      const text = await upstream.text();
+      if (!text) {
+        return res.status(502).json({ error: "DE returned empty body" });
+      }
+      try {
+        profileData = JSON.parse(text);
+      } catch {
+        return res.status(502).json({ error: "DE returned invalid JSON" });
+      }
+    } catch (error) {
+      console.warn("[profile-import] proxy failed:", error.message);
+      return res.status(502).json({ error: "Could not reach Warframe profile API" });
+    }
+  }
+
+  // Parse with @wfcd/profile-parser. The parser console.logs notes for
+  // missing optional fields; we suppress them just like in worldstate fetch.
+  let parsed;
+  const PARSER_NOISE = /^(No defined|Skipping|Profile)/;
+  const origLog = console.log;
+  console.log = (msg, ...args) => {
+    if (typeof msg === "string" && PARSER_NOISE.test(msg)) return;
+    origLog(msg, ...args);
+  };
+  try {
+    const ProfileParser = await loadProfileParser();
+    parsed = new ProfileParser(profileData, "en", false);
+  } catch (error) {
+    console.warn("[profile-import] parse failed:", error.message);
+    return res.status(422).json({ error: `Profile data could not be parsed: ${error.message}` });
+  } finally {
+    console.log = origLog;
+  }
+
+  const summary = summarizeProfile(parsed.profile);
+  res.json(summary);
+});
+
 app.use((req, res) => {
   if (req.path.startsWith("/api/")) {
     return res.status(404).json({ error: "Not found" });

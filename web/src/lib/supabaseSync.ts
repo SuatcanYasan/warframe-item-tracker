@@ -101,6 +101,15 @@ async function syncTable({ table, rows, keyCols, markOnly = false }: SyncTableAr
   const prev = lastKeys.get(table) || new Set<string>();
   const toDelete = [...prev].filter((k) => !current.has(k));
 
+  // Pre-warm hash + keys BEFORE the network call. This way, the
+  // Realtime echo (Supabase fires "row changed" events back at us
+  // for our own writes) sees the already-updated hash and skips
+  // the redundant pull-and-hydrate, which would otherwise repaint
+  // each intermediate state during a bulk clear (333 deletes →
+  // 333 separate UI repaints from 333 → 0).
+  lastKeys.set(table, current);
+  lastHash.set(table, hash);
+
   if (rows.length > 0) {
     const withUser = rows.map((r) => ({ user_id: userId, ...r }));
     const onConflict = ["user_id", ...keyCols].join(",");
@@ -108,18 +117,33 @@ async function syncTable({ table, rows, keyCols, markOnly = false }: SyncTableAr
     if (error) console.warn(`[sync:${table}] upsert:`, error.message);
   }
 
-  for (const k of toDelete) {
-    const parts = k.split(KEY_SEP);
-    const filter: Record<string, string> = { user_id: userId };
-    keyCols.forEach((c, i) => {
-      filter[c] = parts[i];
-    });
-    const { error } = await supabase.from(table).delete().match(filter);
-    if (error) console.warn(`[sync:${table}] delete:`, error.message);
+  // Batch deletes when possible. Single-key tables (most of them)
+  // collapse to one `.in()` query; composite-key tables fall back to
+  // per-row matches. Either way the upstream sees fewer transactions
+  // → fewer Realtime events → no flicker on bulk clears.
+  if (toDelete.length > 0) {
+    if (keyCols.length === 1) {
+      const col = keyCols[0];
+      const values = toDelete.map((k) => k);
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq("user_id", userId)
+        .in(col, values);
+      if (error) console.warn(`[sync:${table}] batch delete:`, error.message);
+    } else {
+      // Composite key — Supabase has no batch path for tuple matches,
+      // so we still loop. This only affects craft_completed and
+      // relic_found_components which rarely see bulk wipes.
+      for (const k of toDelete) {
+        const parts = k.split(KEY_SEP);
+        const filter: Record<string, string> = { user_id: userId };
+        keyCols.forEach((c, i) => { filter[c] = parts[i]; });
+        const { error } = await supabase.from(table).delete().match(filter);
+        if (error) console.warn(`[sync:${table}] delete:`, error.message);
+      }
+    }
   }
-
-  lastKeys.set(table, current);
-  lastHash.set(table, hash);
   return { ok: true };
 }
 
@@ -154,6 +178,13 @@ interface ProfileInput {
   completionView?: string;
   onboardingDone?: boolean;
   storedVersion?: string | null;
+  // Profile-import fields. Optional — only present when the user ran
+  // /api/profile/import. Stored on user_profiles as nullable columns
+  // (added via migration: see SQL in repo docs).
+  masteryRealMR?: number | null;
+  masteryRealTotalXp?: number | null;
+  masteryRealBreakdown?: unknown;
+  masteryLastImportAt?: number | null;
 }
 
 interface ProfileRow {
@@ -164,6 +195,30 @@ interface ProfileRow {
   completion_view: string | null;
   onboarding_done: boolean;
   stored_version: string | null;
+  // Profile-import columns — populated only after the user runs import.
+  // We always send them; if the SQL migration hasn't been applied,
+  // Supabase rejects the unknown columns and we strip them on retry.
+  mastery_real_mr?: number | null;
+  mastery_real_total_xp?: number | null;
+  mastery_real_breakdown?: unknown;
+  mastery_last_import_at?: string | null;
+}
+
+// Supabase rejects upserts that reference columns that don't exist in
+// the table. We attempt the full upsert first; on schema-mismatch error
+// we strip the new mastery_real_* columns and retry — which keeps the
+// app working even if the user hasn't run the SQL migration.
+const PROFILE_IMPORT_COLUMNS = [
+  "mastery_real_mr",
+  "mastery_real_total_xp",
+  "mastery_real_breakdown",
+  "mastery_last_import_at",
+] as const;
+
+function stripProfileImportColumns(row: ProfileRow): ProfileRow {
+  const out = { ...row } as Record<string, unknown>;
+  for (const c of PROFILE_IMPORT_COLUMNS) delete out[c];
+  return out as unknown as ProfileRow;
 }
 
 export async function pushProfile(profile: ProfileInput, opts: SyncOptions = {}): Promise<SyncResult> {
@@ -177,6 +232,12 @@ export async function pushProfile(profile: ProfileInput, opts: SyncOptions = {})
     completion_view: profile.completionView ?? null,
     onboarding_done: !!profile.onboardingDone,
     stored_version: profile.storedVersion ?? null,
+    mastery_real_mr: profile.masteryRealMR ?? null,
+    mastery_real_total_xp: profile.masteryRealTotalXp ?? null,
+    mastery_real_breakdown: profile.masteryRealBreakdown ?? null,
+    mastery_last_import_at: profile.masteryLastImportAt
+      ? new Date(profile.masteryLastImportAt).toISOString()
+      : null,
   };
   const hash = JSON.stringify(rowData);
   if (lastHash.get("user_profiles") === hash) return { ok: true, skipped: true };
@@ -187,7 +248,24 @@ export async function pushProfile(profile: ProfileInput, opts: SyncOptions = {})
   const { error } = await supabase
     .from("user_profiles")
     .upsert({ user_id: userId, ...rowData }, { onConflict: "user_id" });
-  if (error) console.warn("[sync:user_profiles] upsert:", error.message);
+
+  if (error) {
+    // Likely cause: the mastery_real_* columns don't exist yet because
+    // the SQL migration hasn't been applied. Strip them and retry — the
+    // rest of the profile still syncs, just without the import fields.
+    const isSchemaError = /column .*mastery_real_/i.test(error.message || "")
+      || /unknown column/i.test(error.message || "");
+    if (isSchemaError) {
+      const stripped = stripProfileImportColumns(rowData);
+      const retry = await supabase
+        .from("user_profiles")
+        .upsert({ user_id: userId, ...stripped }, { onConflict: "user_id" });
+      if (retry.error) console.warn("[sync:user_profiles] retry failed:", retry.error.message);
+      lastHash.set("user_profiles", hash);
+      return { ok: !retry.error };
+    }
+    console.warn("[sync:user_profiles] upsert:", error.message);
+  }
   lastHash.set("user_profiles", hash);
   return { ok: !error };
 }
@@ -524,6 +602,12 @@ export async function pullAllState(): Promise<PullAllStateResult | null> {
       completionView: (profile?.completion_view as PersistedState["completionView"] | undefined),
       onboardingDone: !!profile?.onboarding_done,
       storedVersion: profile?.stored_version || null,
+      masteryRealMR: typeof profile?.mastery_real_mr === "number" ? profile.mastery_real_mr : null,
+      masteryRealTotalXp: typeof profile?.mastery_real_total_xp === "number" ? profile.mastery_real_total_xp : null,
+      masteryRealBreakdown: (profile?.mastery_real_breakdown as PersistedState["masteryRealBreakdown"]) ?? null,
+      masteryLastImportAt: profile?.mastery_last_import_at
+        ? new Date(profile.mastery_last_import_at as string).getTime()
+        : null,
       selectedItems: craftItems,
       completedMap: craftCompleted,
       relicFoundComponents: relicFound,
@@ -553,6 +637,10 @@ export async function pushAllState(
         completionView: payload.completionView,
         onboardingDone: payload.onboardingDone,
         storedVersion: payload.storedVersion,
+        masteryRealMR: payload.masteryRealMR ?? null,
+        masteryRealTotalXp: payload.masteryRealTotalXp ?? null,
+        masteryRealBreakdown: payload.masteryRealBreakdown ?? null,
+        masteryLastImportAt: payload.masteryLastImportAt ?? null,
       },
       opts,
     ),
@@ -604,6 +692,10 @@ const perTableHydrators: Record<string, () => Promise<void>> = {
       completion_view: p.completion_view ?? null,
       onboarding_done: !!p.onboarding_done,
       stored_version: p.stored_version ?? null,
+      mastery_real_mr: p.mastery_real_mr ?? null,
+      mastery_real_total_xp: p.mastery_real_total_xp ?? null,
+      mastery_real_breakdown: p.mastery_real_breakdown ?? null,
+      mastery_last_import_at: p.mastery_last_import_at ?? null,
     };
     const hash = JSON.stringify(rowData);
     if (lastHash.get("user_profiles") === hash) return;
@@ -618,6 +710,16 @@ const perTableHydrators: Record<string, () => Promise<void>> = {
     });
     useCraftStore.setState({
       completionView: (p.completion_view as PersistedState["completionView"]) || "all",
+    });
+    // Hydrate profile-import scalars on the mastery store so MR Calculator
+    // picks up cross-device changes via Realtime.
+    useMasteryStore.setState({
+      realMR: typeof p.mastery_real_mr === "number" ? p.mastery_real_mr : null,
+      realTotalXp: typeof p.mastery_real_total_xp === "number" ? p.mastery_real_total_xp : null,
+      realBreakdown: (p.mastery_real_breakdown as PersistedState["masteryRealBreakdown"]) ?? null,
+      lastImportAt: p.mastery_last_import_at
+        ? new Date(p.mastery_last_import_at as string).getTime()
+        : null,
     });
   },
   craft_items: async () => {

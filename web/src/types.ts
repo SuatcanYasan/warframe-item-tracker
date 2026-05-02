@@ -75,7 +75,30 @@ export interface PersistedState {
   incarnonClaimed: Record<string, number>;
   wfRotationClaimed: Record<string, number>;
   arcaneCounts: Record<string, number>;
+  // Real MR + total XP from /api/profile/import (DE proxy). Optional —
+  // only populated after the user runs the profile import flow. The
+  // MR Calculator prefers these over its own per-item estimate.
+  masteryRealMR?: number | null;
+  masteryRealTotalXp?: number | null;
+  /** Per-source breakdown of realTotalXp (items / intrinsics / starChart / junctions). */
+  masteryRealBreakdown?: MasteryBreakdown | null;
+  /** ms-since-epoch when the profile was last imported. */
+  masteryLastImportAt?: number | null;
+  /** Mastery page interaction mode. 'manual' = user toggles by hand,
+   *  'sync' = profile data auto-refreshed every 5 min while page is visible. */
+  masteryMode?: "manual" | "sync";
+  /** Player ID stored for the sync mode auto-refresh poll. */
+  masterySyncPlayerId?: string | null;
   storedVersion: string | null;
+}
+
+export interface MasteryBreakdown {
+  items: number;
+  intrinsics: number;
+  starChart: number;
+  junctions: number;
+  intrinsicRankTotal: number;
+  missionCount: number;
 }
 
 // ---- Mastery item (from API) ----

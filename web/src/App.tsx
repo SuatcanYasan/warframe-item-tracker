@@ -34,6 +34,9 @@ import { useMasteryStore } from "./stores/masteryStore";
 import { useAmpStore } from "./stores/ampStore";
 import { useChecklistStore } from "./stores/checklistStore";
 import { useFarmStore } from "./stores/farmStore";
+import { useIncarnonStore } from "./stores/incarnonStore";
+import { useWfRotationStore } from "./stores/wfRotationStore";
+import { useArcaneStore } from "./stores/arcaneStore";
 
 import { useTranslate } from "./hooks/useTranslate";
 import {
@@ -666,6 +669,43 @@ function hydrateAllStores(persisted) {
   useAmpStore.getState().hydrate(normalized);
   useChecklistStore.getState().hydrate(normalized);
   useFarmStore.getState().hydrate(normalized);
+  useIncarnonStore.getState().hydrate(normalized);
+  useWfRotationStore.getState().hydrate(normalized);
+  useArcaneStore.getState().hydrate(normalized);
+}
+
+// When the user picks "Use Cloud" in the conflict modal, the cloud
+// snapshot doesn't always cover every feature — three of our trackers
+// (Incarnon, WF Rotation, Arcane) plus the profile import's realMR/
+// realTotalXp aren't synced to Supabase yet. A naive cloud-wins hydrate
+// would wipe those local-only fields. Merge: cloud takes precedence on
+// every field it actually populates; local fills the gaps for fields
+// cloud has nothing to say about.
+function mergeCloudOverLocal(local, cloud) {
+  const isEmptyObj = (v) => !v || (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0);
+  const isEmptyArr = (v) => Array.isArray(v) && v.length === 0;
+  const merged = { ...local, ...cloud };
+  // Per-field rule: if cloud's value looks empty (no items, no keys),
+  // keep local. This catches "feature wasn't synced" without trampling
+  // intentional clears (those land as a non-empty wipe → still cloud).
+  const FIELDS = [
+    "selectedItems", "completedMap", "relicWatchedPrimes", "relicFoundComponents",
+    "inventoryParts", "masteredItems", "trackedSets", "masteryParts",
+    "completedMaterials", "checklistItems", "farmResources",
+    "incarnonClaimed", "wfRotationClaimed", "arcaneCounts",
+  ];
+  for (const k of FIELDS) {
+    const cloudVal = cloud?.[k];
+    if (isEmptyObj(cloudVal) || isEmptyArr(cloudVal) || cloudVal === undefined) {
+      merged[k] = local[k];
+    }
+  }
+  // Profile import scalars: nullable; cloud only "wins" when explicitly set.
+  if (cloud?.masteryRealMR == null) merged.masteryRealMR = local.masteryRealMR;
+  if (cloud?.masteryRealTotalXp == null) merged.masteryRealTotalXp = local.masteryRealTotalXp;
+  if (cloud?.masteryRealBreakdown == null) merged.masteryRealBreakdown = local.masteryRealBreakdown;
+  if (cloud?.masteryLastImportAt == null) merged.masteryLastImportAt = local.masteryLastImportAt;
+  return merged;
 }
 
 async function preWarmCloudHashes() {
@@ -789,8 +829,9 @@ function CraftApp() {
         return;  // bootstrap stays gated until user picks
       }
 
-      // No conflict: hydrate from cloud, pre-warm hashes.
-      hydrateAllStores(cloudState);
+      // No conflict: hydrate from cloud — but still merge so local-only
+      // features (Incarnon/WF Rotation/Arcane/realMR) survive.
+      hydrateAllStores(mergeCloudOverLocal(initialPersisted, cloudState));
       await preWarmCloudHashes();
       markBootstrapReady();
     })();
@@ -819,7 +860,11 @@ function CraftApp() {
   const handleUseCloud = async () => {
     const { syncConflict, clearSyncConflict } = useAppStore.getState();
     if (!syncConflict) return;
-    hydrateAllStores(syncConflict.cloud);
+    // Cloud-wins, but local fills the gaps for fields cloud doesn't sync
+    // (Incarnon/WF Rotation/Arcane + profile import scalars). Otherwise
+    // those collections would silently get wiped on every cloud-pick.
+    const merged = mergeCloudOverLocal(syncConflict.local, syncConflict.cloud);
+    hydrateAllStores(merged);
     await preWarmCloudHashes();
     clearSyncConflict();
     markBootstrapReady();
