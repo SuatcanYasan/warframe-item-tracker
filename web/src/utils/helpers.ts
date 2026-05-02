@@ -1,12 +1,21 @@
+// First file migrated to TypeScript. Pure utilities — easiest start
+// (no React, no stores, no DOM ambiguity beyond image elements).
+//
+// Migration plan: utils → stores → hooks → components, in that order.
+
+import type { SyntheticEvent } from "react";
+
 export const FALLBACK_ICON =
   "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='8' fill='%2311182a'/><path d='M24 10l10 6v12l-10 6-10-6V16z' fill='%233f568f'/></svg>";
+
+type ImgEventLike = Pick<SyntheticEvent<HTMLImageElement>, "currentTarget" | "target"> | { currentTarget?: HTMLImageElement; target?: HTMLImageElement } | undefined | null;
 
 // <img onError={handleImgError} /> — fallback chain:
 //   1. `data-img-fallback` (per-image override — wiki when WFCD CDN 404s)
 //   2. raw.githubusercontent.com (when jsDelivr 403/blocks the file)
 //   3. FALLBACK_ICON (final placeholder; clears onerror to prevent loops)
-export function handleImgError(event) {
-  const img = event?.currentTarget || event?.target;
+export function handleImgError(event: ImgEventLike): void {
+  const img = (event?.currentTarget || event?.target) as HTMLImageElement | undefined;
   if (!img) return;
 
   const fallbackUrl = img.dataset?.imgFallback;
@@ -31,8 +40,8 @@ export function handleImgError(event) {
 
 // <img onError={hideImgOnError} /> — hide the image entirely when the
 // upstream URL 404s (used for optional wiki icons that may not exist).
-export function hideImgOnError(event) {
-  const img = event?.currentTarget || event?.target;
+export function hideImgOnError(event: ImgEventLike): void {
+  const img = (event?.currentTarget || event?.target) as HTMLImageElement | undefined;
   if (!img) return;
   img.onerror = null;
   img.style.display = "none";
@@ -43,7 +52,7 @@ export function hideImgOnError(event) {
 //   "Ash Prime Set"         -> "ash_prime_set"
 //   "Ash Prime Neuroptics"  -> "ash_prime_neuroptics"
 //   "Baro Ki'Teer"          -> "baro_kiteer"
-export function makeMarketSlug(name) {
+export function makeMarketSlug(name: string | null | undefined): string {
   return String(name || "")
     .toLowerCase()
     .replace(/[''`]/g, "")
@@ -51,12 +60,15 @@ export function makeMarketSlug(name) {
     .replace(/^_+|_+$/g, "");
 }
 
-export function marketUrl(name) {
+export function marketUrl(name: string | null | undefined): string {
   const slug = makeMarketSlug(name);
   return slug ? `https://warframe.market/items/${slug}` : "https://warframe.market/";
 }
 
-export async function requestJson(url, options = {}) {
+export async function requestJson<T = unknown>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T> {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json" },
     ...options,
@@ -64,15 +76,34 @@ export async function requestJson(url, options = {}) {
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`);
   }
-  return response.json();
+  return (await response.json()) as T;
 }
 
-export function makeRequirementKey(parentUniqueName, requirementUniqueName) {
+export function makeRequirementKey(parentUniqueName: string, requirementUniqueName: string): string {
   return `${parentUniqueName}::${requirementUniqueName}`;
 }
 
-export function enrichRequirements(requirements, completedByRequirement, viewMode) {
-  const enriched = (requirements || []).map((requirement) => {
+export interface Requirement {
+  uniqueName: string;
+  name: string;
+  quantity: number;
+}
+
+export interface EnrichedRequirement extends Requirement {
+  completedQuantity: number;
+  remainingQuantity: number;
+  isDone: boolean;
+  completionPercent: number;
+}
+
+export type ViewMode = "all" | "open" | "done";
+
+export function enrichRequirements(
+  requirements: Requirement[] | null | undefined,
+  completedByRequirement: Record<string, number> | null | undefined,
+  viewMode: ViewMode,
+): EnrichedRequirement[] {
+  const enriched: EnrichedRequirement[] = (requirements || []).map((requirement) => {
     const completedQuantity = Math.min(
       requirement.quantity,
       Math.max(0, Number(completedByRequirement?.[requirement.uniqueName]) || 0),

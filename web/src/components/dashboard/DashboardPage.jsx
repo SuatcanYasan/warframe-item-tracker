@@ -18,6 +18,12 @@ import { useCraftStore } from "../../stores/craftStore";
 import { useRelicStore } from "../../stores/relicStore";
 import { useInventoryStore } from "../../stores/inventoryStore";
 import { useMasteryStore } from "../../stores/masteryStore";
+import { useIncarnonStore, isClaimed as incClaimed } from "../../stores/incarnonStore";
+import { useWfRotationStore } from "../../stores/wfRotationStore";
+import { useArcaneStore } from "../../stores/arcaneStore";
+import { getCurrentRotation as incCurrentRotation, INCARNON_GROUPS } from "../../constants/incarnonRotation";
+import { getCurrentRotation as wfCurrentRotation, WF_GROUPS } from "../../constants/wfRotation";
+import { ARCANES, ARCANE_MAX_COPIES, ARCANE_RANK_THRESHOLDS } from "../../constants/arcanes";
 
 const WF_ICONS = "https://wiki.warframe.com/images";
 
@@ -276,6 +282,47 @@ export default function DashboardPage() {
   // Top stats
   const totalTracked = selectedItems.length + relicStats.primes + invStats.parts + masteryStats.total;
 
+  // --- Feature widgets (MR XP / Incarnon / WF Rotation / Arcanes) ---
+  const incClaimedMap = useIncarnonStore((s) => s.claimed);
+  const wfClaimedMap = useWfRotationStore((s) => s.claimed);
+  const arcaneCounts = useArcaneStore((s) => s.arcaneCounts);
+
+  const incCurrent = useMemo(() => {
+    const { groupIndex } = incCurrentRotation();
+    const group = INCARNON_GROUPS[groupIndex];
+    const claimed = group.weapons.filter((w) => incClaimedMap[`${group.key}:${w.name}`]).length;
+    return { group, claimed, total: group.weapons.length };
+  }, [incClaimedMap]);
+
+  const wfCurrent = useMemo(() => {
+    const { groupIndex } = wfCurrentRotation();
+    const group = WF_GROUPS[groupIndex];
+    const claimed = group.warframes.filter((w) => wfClaimedMap[`${group.key}:${w.name}`]).length;
+    return { group, claimed, total: group.warframes.length };
+  }, [wfClaimedMap]);
+
+  const arcaneStats = useMemo(() => {
+    const counts = arcaneCounts || {};
+    const ids = Object.keys(counts);
+    const totalCopies = ids.reduce((sum, id) => sum + (counts[id] || 0), 0);
+    // R5 max = ARCANE_MAX_COPIES (21)
+    const maxedCount = ids.filter((id) => counts[id] >= ARCANE_MAX_COPIES).length;
+    return { tracked: ids.length, totalCopies, maxedCount, total: ARCANES.length };
+  }, [arcaneCounts]);
+
+  // MR XP estimate — without re-fetching categorized items, derive a
+  // rough total from masteredItems counts. ~4500 XP avg per item works
+  // since WF and weapons mix is usually ~50/50. Click → MR XP tab for
+  // the precise calculator.
+  const mrEstimate = useMemo(() => {
+    const ESTIMATED_XP_AVG = 4500;
+    const xp = masteryStats.mastered * ESTIMATED_XP_AVG + masteryStats.owned * (ESTIMATED_XP_AVG * 0.5);
+    // Coarse mr lookup — every 2500 XP the rank goes up roughly linearly
+    // until MR 30 (~1.16M XP). Use a cubic-ish approximation: rank = √(xp/1300).
+    const approxMR = Math.max(0, Math.floor(Math.sqrt(xp / 1300)));
+    return { xp: Math.round(xp), approxMR, mastered: masteryStats.mastered, owned: masteryStats.owned };
+  }, [masteryStats]);
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-welcome">
@@ -425,6 +472,63 @@ export default function DashboardPage() {
           </div>
           {masteryStats.total === 0 && <EmptyCTA label={t("dashboardStartMastery")} onClick={() => navigate("/mastery")} />}
           <div className="dashboard-card-bar"><div className="dashboard-card-bar-fill" style={{ width: "0%" }} /></div>
+        </motion.div>
+      </div>
+
+      {/* Feature widgets — MR XP, Incarnon, WF Rotation, Arcanes */}
+      <div className="dashboard-grid-features">
+        {/* MR XP */}
+        <motion.div className="dashboard-feature-card" style={{ "--accent": "#f59e0b" }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.30 }} onClick={() => navigate("/mastery")}>
+          <div className="feature-card-header">
+            <span className="feature-card-emoji">📈</span>
+            <span className="feature-card-title">{t("mrCalcTitle")}</span>
+            <RightOutlined className="feature-card-arrow" />
+          </div>
+          <div className="feature-card-big-value">~MR {mrEstimate.approxMR}</div>
+          <div className="feature-card-sub">{mrEstimate.xp.toLocaleString()} {t("mrCalcTotalXp")} · {mrEstimate.mastered + mrEstimate.owned} {t("masteryTotalItems").toLowerCase()}</div>
+        </motion.div>
+
+        {/* Incarnon Bu Hafta */}
+        <motion.div className="dashboard-feature-card" style={{ "--accent": "#fbbf24" }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} onClick={() => navigate("/incarnon")}>
+          <div className="feature-card-header">
+            <span className="feature-card-emoji">⚡</span>
+            <span className="feature-card-title">{t("incTitle")}</span>
+            <RightOutlined className="feature-card-arrow" />
+          </div>
+          <div className="feature-card-big-value">{t("incRotationLabel", { letter: incCurrent.group.key })}</div>
+          <div className="feature-card-sub">{incCurrent.group.weapons.map((w) => w.name).join(" · ")}</div>
+          <div className="feature-card-progress">
+            <div className="feature-card-progress-bar"><div className="feature-card-progress-fill" style={{ width: `${(incCurrent.claimed / incCurrent.total) * 100}%`, background: "#fbbf24" }} /></div>
+            <span className="feature-card-progress-text">{incCurrent.claimed}/{incCurrent.total}</span>
+          </div>
+        </motion.div>
+
+        {/* WF Rotation Bu Hafta */}
+        <motion.div className="dashboard-feature-card" style={{ "--accent": "#60a5fa" }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }} onClick={() => navigate("/warframe-rotation")}>
+          <div className="feature-card-header">
+            <span className="feature-card-emoji">🛡️</span>
+            <span className="feature-card-title">{t("wfRotTitle")}</span>
+            <RightOutlined className="feature-card-arrow" />
+          </div>
+          <div className="feature-card-big-value">{t("wfRotRotationLabel", { letter: wfCurrent.group.key })}</div>
+          <div className="feature-card-sub">{wfCurrent.group.warframes.map((w) => w.name).join(" · ")}</div>
+          <div className="feature-card-progress">
+            <div className="feature-card-progress-bar"><div className="feature-card-progress-fill" style={{ width: `${(wfCurrent.claimed / wfCurrent.total) * 100}%`, background: "#60a5fa" }} /></div>
+            <span className="feature-card-progress-text">{wfCurrent.claimed}/{wfCurrent.total}</span>
+          </div>
+        </motion.div>
+
+        {/* Arcanes */}
+        <motion.div className="dashboard-feature-card" style={{ "--accent": "#a855f7" }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42 }} onClick={() => navigate("/arcanes")}>
+          <div className="feature-card-header">
+            <span className="feature-card-emoji">🔮</span>
+            <span className="feature-card-title">{t("arcTitle")}</span>
+            <RightOutlined className="feature-card-arrow" />
+          </div>
+          <div className="feature-card-big-value">{arcaneStats.tracked} / {arcaneStats.total}</div>
+          <div className="feature-card-sub">
+            {arcaneStats.totalCopies} {t("arcCopies") || "kopya"} · {arcaneStats.maxedCount} R5
+          </div>
         </motion.div>
       </div>
 

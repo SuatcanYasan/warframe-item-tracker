@@ -736,3 +736,112 @@
     font-size: 18px;
   }
 }
+
+/* Dashboard feature widgets — MR XP, Incarnon, WF Rotation, Arcanes */
+.dashboard-grid-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.dashboard-feature-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-left: 3px solid var(--accent, var(--wf-primary));
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 130px;
+}
+
+.dashboard-feature-card:hover {
+  border-color: color-mix(in srgb, var(--accent, var(--wf-primary)) 50%, var(--wf-border));
+  transform: translateY(-1px);
+}
+
+.feature-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.feature-card-emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.feature-card-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wf-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feature-card-arrow {
+  color: var(--wf-text-muted);
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.feature-card-big-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent, var(--wf-primary));
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.feature-card-sub {
+  font-size: 11px;
+  color: var(--wf-text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 28px;
+}
+
+.feature-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.feature-card-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--wf-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.feature-card-progress-fill {
+  height: 100%;
+  background: var(--accent, var(--wf-primary));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.feature-card-progress-text {
+  font-size: 10px;
+  color: var(--wf-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

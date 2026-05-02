@@ -25,6 +25,7 @@ const ALL_ITEMS = [
   { key: "activities", path: "/activities", img: `${WF_ICONS}/IconAllyDown%28xRed%29.png`, labelKey: "activitiesPage" },
   { key: "checklist", path: "/checklist", img: `${WF_ICONS}/IconQuest%28xWhite%29.png`, labelKey: "checklistPage" },
   { key: "farm", path: "/farm", img: `${WF_ICONS}/IconMissionMarkerLoot%28xWhite%29.png`, labelKey: "farmPlanner" },
+  { key: "arcanes", path: "/arcanes", img: `${WF_ICONS}/Arcane.png`, labelKey: "arcTitle" },
 ];
 
 const LEFT_ITEMS = [ALL_ITEMS[0], ALL_ITEMS[1]];

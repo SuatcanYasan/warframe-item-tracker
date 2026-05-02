@@ -8,6 +8,8 @@ import { useAmpStore } from "../stores/ampStore";
 import { useChecklistStore } from "../stores/checklistStore";
 import { useFarmStore } from "../stores/farmStore";
 import { useIncarnonStore } from "../stores/incarnonStore";
+import { useWfRotationStore } from "../stores/wfRotationStore";
+import { useArcaneStore } from "../stores/arcaneStore";
 import { savePersistedState, normalizePersistedState } from "../utils/storage";
 import { broadcastTabSync, onTabSync } from "../utils/tabSync";
 import { pushAllState, subscribeWithHydrate, waitForBootstrap } from "../lib/supabaseSync";
@@ -36,6 +38,8 @@ export function usePersist() {
   const checklistItems = useChecklistStore((s) => s.items);
   const farmResources = useFarmStore((s) => s.trackedResources);
   const incarnonClaimed = useIncarnonStore((s) => s.claimed);
+  const wfRotationClaimed = useWfRotationStore((s) => s.claimed);
+  const arcaneCounts = useArcaneStore((s) => s.arcaneCounts);
 
   // Debounce localStorage writes: batch rapid edits (e.g. typing in theme editor,
   // dragging sliders) into a single JSON.stringify + setItem every 300ms. Flush
@@ -57,6 +61,8 @@ export function usePersist() {
     useChecklistStore.getState().hydrate(normalized);
     useFarmStore.getState().hydrate(normalized);
     useIncarnonStore.getState().hydrate(normalized);
+    useWfRotationStore.getState().hydrate(normalized);
+    useArcaneStore.getState().hydrate(normalized);
   };
 
   // Cross-tab sync (same browser)
@@ -99,6 +105,8 @@ export function usePersist() {
       checklistItems,
       farmResources,
       incarnonClaimed,
+      wfRotationClaimed,
+      arcaneCounts,
       storedVersion,
     };
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -136,6 +144,8 @@ export function usePersist() {
     checklistItems,
     farmResources,
     incarnonClaimed,
+    wfRotationClaimed,
+    arcaneCounts,
     storedVersion,
   ]);
 }

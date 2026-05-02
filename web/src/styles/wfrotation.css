@@ -1,0 +1,230 @@
+/* Warframe Rotation page (Steel Path Circuit weekly Warframe pick) */
+
+.wfr-page {
+  padding-bottom: 60px;
+}
+
+.wfr-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.wfr-header-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;  /* cool blue for warframe theme */
+  background: color-mix(in srgb, #60a5fa 14%, var(--wf-bg-elevated));
+  border: 1px solid color-mix(in srgb, #60a5fa 30%, transparent);
+}
+
+.wfr-header-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, #60a5fa 40%, transparent));
+}
+
+.wfr-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--wf-text);
+}
+
+.wfr-subtitle {
+  font-size: 13px;
+  color: var(--wf-text-muted);
+  margin: 2px 0 0;
+}
+
+.wfr-current-card {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #60a5fa 12%, var(--wf-bg-elevated)) 0%,
+    var(--wf-bg-elevated) 100%
+  );
+  border-color: color-mix(in srgb, #60a5fa 28%, transparent);
+}
+
+.wfr-current-group {
+  font-size: 24px;
+  font-weight: 700;
+  color: #60a5fa;
+  margin: 6px 0;
+  letter-spacing: 1px;
+}
+
+/* Upcoming weeks grid */
+.wfr-upcoming-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.wfr-week-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.wfr-week-card.current {
+  border-color: color-mix(in srgb, #60a5fa 50%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #60a5fa 25%, transparent),
+              0 0 24px -4px color-mix(in srgb, #60a5fa 30%, transparent);
+}
+
+.wfr-week-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.wfr-week-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wf-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wfr-week-date {
+  font-size: 11px;
+  color: var(--wf-text-muted);
+  margin-top: 2px;
+}
+
+.wfr-week-tag {
+  font-weight: 600 !important;
+  margin-inline-end: 0 !important;
+}
+
+.wfr-week-warframes,
+.wfr-group-warframes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wfr-week-progress {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--wf-text-muted);
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--wf-border);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Warframe pill — clickable button */
+.wfr-warframe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  color: var(--wf-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  border-left: 3px solid var(--cat-tint, var(--wf-primary));
+}
+
+.wfr-warframe:hover {
+  background: color-mix(in srgb, var(--cat-tint) 10%, transparent);
+  border-color: color-mix(in srgb, var(--cat-tint) 35%, var(--wf-border));
+}
+
+.wfr-warframe.claimed {
+  background: color-mix(in srgb, var(--cat-tint) 16%, transparent);
+  border-color: color-mix(in srgb, var(--cat-tint) 45%, var(--wf-border));
+  opacity: 0.95;
+}
+
+.wfr-warframe.claimed .wfr-warframe-name {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.7;
+}
+
+.wfr-warframe.highlight {
+  border-color: color-mix(in srgb, #60a5fa 35%, var(--wf-border));
+}
+
+.wfr-warframe-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.wfr-warframe-name {
+  flex: 1;
+  font-weight: 500;
+  text-align: start;
+}
+
+.wfr-warframe-role {
+  font-size: 10px;
+  color: var(--wf-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wfr-warframe-check {
+  color: var(--cat-tint, var(--wf-primary));
+  font-size: 14px;
+}
+
+/* All-groups view */
+.wfr-all-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.wfr-group-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.wfr-group-card.current {
+  border-color: color-mix(in srgb, #60a5fa 50%, transparent);
+}
+
+.wfr-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--wf-border);
+}
+
+.wfr-group-letter {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--wf-primary);
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 1px;
+}
+
+.wfr-group-count {
+  font-size: 12px;
+  color: var(--wf-text-muted);
+  font-variant-numeric: tabular-nums;
+}

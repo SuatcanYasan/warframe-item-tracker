@@ -70,11 +70,13 @@ const RelicTrackerContent = lazy(() => import("./components/relic/RelicPage"));
 const InventoryTrackerContent = lazy(() => import("./components/inventory/InventoryPage"));
 const MasteryPage = lazy(() => import("./components/mastery/MasteryPage"));
 const IncarnonRotationPage = lazy(() => import("./components/incarnon/IncarnonRotationPage"));
+const WFRotationPage = lazy(() => import("./components/wfrotation/WFRotationPage"));
 const TimersPage = lazy(() => import("./components/timers/TimersPage"));
 const AmpsPage = lazy(() => import("./components/amps/AmpsPage"));
 const ActivitiesPage = lazy(() => import("./components/activities/ActivitiesPage"));
 const ChecklistPage = lazy(() => import("./components/checklist/ChecklistPage"));
 const FarmPlannerPage = lazy(() => import("./components/farm/FarmPlannerPage"));
+const ArcaneTrackerPage = lazy(() => import("./components/arcane/ArcaneTrackerPage"));
 const PrivacyPolicy = lazy(() => import("./components/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./components/legal/TermsOfService"));
 
@@ -462,11 +464,13 @@ function CraftAppContent() {
             {/* Legacy redirect — MR XP is now a tab inside /mastery */}
             <Route path="/mr-calculator" element={<MasteryPage />} />
             <Route path="/incarnon" element={<IncarnonRotationPage />} />
+            <Route path="/warframe-rotation" element={<WFRotationPage />} />
             <Route path="/timers" element={<TimersPage />} />
             <Route path="/amps" element={<AmpsPage />} />
             <Route path="/activities" element={<ActivitiesPage />} />
             <Route path="/checklist" element={<ChecklistPage />} />
             <Route path="/farm" element={<FarmPlannerPage />} />
+            <Route path="/arcanes" element={<ArcaneTrackerPage />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/craft" element={

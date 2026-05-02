@@ -32,6 +32,8 @@ export function createDefaultPersistedState() {
     checklistItems: [],
     farmResources: [],
     incarnonClaimed: {},
+    wfRotationClaimed: {},
+    arcaneCounts: {},
     storedVersion: null,
   };
 }
@@ -95,6 +97,10 @@ export function normalizePersistedState(raw) {
     farmResources: Array.isArray(next.farmResources) ? next.farmResources : [],
     incarnonClaimed:
       next.incarnonClaimed && typeof next.incarnonClaimed === "object" ? next.incarnonClaimed : {},
+    wfRotationClaimed:
+      next.wfRotationClaimed && typeof next.wfRotationClaimed === "object" ? next.wfRotationClaimed : {},
+    arcaneCounts:
+      next.arcaneCounts && typeof next.arcaneCounts === "object" ? next.arcaneCounts : {},
     storedVersion: next.storedVersion || null,
   };
 }

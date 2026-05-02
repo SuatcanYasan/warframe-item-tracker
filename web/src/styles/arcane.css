@@ -1,0 +1,295 @@
+/* Arcane Tracker page */
+
+.arc-page {
+  padding-bottom: 60px;
+}
+
+.arc-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.arc-header-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--wf-primary);
+  background: color-mix(in srgb, var(--wf-primary) 14%, var(--wf-bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--wf-primary) 30%, transparent);
+}
+
+.arc-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--wf-text);
+}
+
+.arc-subtitle {
+  font-size: 13px;
+  color: var(--wf-text-muted);
+  margin: 2px 0 0;
+}
+
+/* Toolbar — matches the styling of the craft toolbar but scoped to .arc- */
+.arc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0 14px;
+}
+
+.arc-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+}
+
+.arc-search-icon {
+  color: var(--wf-text-muted);
+  font-size: 14px;
+  margin-inline-end: 8px;
+}
+
+.arc-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--wf-text);
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.arc-search-input::placeholder {
+  color: var(--wf-text-muted);
+}
+
+.arc-search-clear {
+  background: transparent;
+  border: none;
+  color: var(--wf-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.arc-search-clear:hover {
+  color: var(--wf-text);
+}
+
+/* Card grid */
+.arc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.arc-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 3px solid var(--zone-tint, var(--wf-primary));
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.arc-card:hover {
+  border-color: color-mix(in srgb, var(--zone-tint) 35%, var(--wf-border));
+  transform: translateY(-1px);
+}
+
+.arc-card-maxed {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--zone-tint) 14%, var(--wf-bg-elevated)) 0%,
+    var(--wf-bg-elevated) 100%
+  );
+  border-color: color-mix(in srgb, var(--zone-tint) 45%, var(--wf-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--zone-tint) 25%, transparent),
+              0 0 24px -6px color-mix(in srgb, var(--zone-tint) 30%, transparent);
+}
+
+.arc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arc-card-img-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--zone-tint) 12%, var(--wf-bg-base));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--zone-tint) 25%, var(--wf-border));
+}
+
+.arc-card-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.arc-card-maxed-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--wf-bg-elevated);
+  color: var(--zone-tint, var(--wf-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: 1px solid color-mix(in srgb, var(--zone-tint) 35%, var(--wf-border));
+}
+
+.arc-card-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.arc-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wf-text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arc-card-zone {
+  margin-top: 4px;
+  background: transparent;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-inline-end: 0;
+}
+
+/* Counter row */
+.arc-card-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arc-counter-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--wf-border);
+  background: var(--wf-bg-base);
+  color: var(--wf-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.arc-counter-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--zone-tint) 12%, var(--wf-bg-base));
+  border-color: color-mix(in srgb, var(--zone-tint) 40%, var(--wf-border));
+}
+
+.arc-counter-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.arc-card-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.arc-card-input .ant-input-number-input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.arc-card-of-max {
+  font-size: 12px;
+  color: var(--wf-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Progress + rank */
+.arc-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arc-card-progress .ant-progress {
+  flex: 1;
+  margin: 0;
+}
+
+.arc-card-rank {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--zone-tint, var(--wf-primary));
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: end;
+}
+
+/* Footer */
+.arc-card-footer {
+  font-size: 11px;
+  color: var(--wf-text-muted);
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--wf-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.arc-card-footer-done {
+  color: color-mix(in srgb, var(--zone-tint) 80%, var(--wf-text));
+  font-weight: 600;
+}
+
+/* Compact summary cards on mobile */
+@media (max-width: 600px) {
+  .arc-grid {
+    grid-template-columns: 1fr;
+  }
+  .arc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .arc-search {
+    max-width: none;
+  }
+}
