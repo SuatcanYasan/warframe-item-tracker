@@ -42,6 +42,9 @@ export function createDefaultPersistedState(): PersistedState {
     masteryRealDisplayName: null,
     masteryMode: "manual",
     masterySyncPlayerId: null,
+    junctionsCompleted: {},
+    intrinsicRanks: {},
+    starChartCompleted: {},
     storedVersion: null,
   };
 }
@@ -135,6 +138,15 @@ export function normalizePersistedState(raw: unknown): PersistedState {
       typeof next.masterySyncPlayerId === "string" && next.masterySyncPlayerId.length === 24
         ? next.masterySyncPlayerId
         : null,
+    junctionsCompleted: isObjectRecord(next.junctionsCompleted)
+      ? (next.junctionsCompleted as Record<string, true>)
+      : {},
+    intrinsicRanks: isObjectRecord(next.intrinsicRanks)
+      ? (next.intrinsicRanks as Record<string, number>)
+      : {},
+    starChartCompleted: isObjectRecord(next.starChartCompleted)
+      ? (next.starChartCompleted as Record<string, true>)
+      : {},
     storedVersion: typeof next.storedVersion === "string" ? next.storedVersion : null,
   };
 }

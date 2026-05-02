@@ -91,6 +91,12 @@ export interface PersistedState {
   masteryMode?: "manual" | "sync";
   /** Player ID stored for the sync mode auto-refresh poll. */
   masterySyncPlayerId?: string | null;
+  /** Junction completion map (key like "VenusJunction" → true). */
+  junctionsCompleted?: Record<string, true>;
+  /** Intrinsic ranks (key like "tactical" → 0-10). */
+  intrinsicRanks?: Record<string, number>;
+  /** Star chart node completion map (key like "SolNode50" → true). */
+  starChartCompleted?: Record<string, true>;
   storedVersion: string | null;
 }
 

@@ -1,18 +1,24 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Button, Segmented, Spin, App as AntApp, Dropdown, Tooltip } from "antd";
-import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, ClearOutlined, RiseOutlined, CloudDownloadOutlined, DeleteOutlined, MoreOutlined, FilterOutlined, PlusOutlined, ShoppingOutlined } from "@ant-design/icons";
+import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, ClearOutlined, RiseOutlined, CloudDownloadOutlined, DeleteOutlined, MoreOutlined, FilterOutlined, PlusOutlined, ShoppingOutlined, NodeIndexOutlined, ThunderboltOutlined, GlobalOutlined } from "@ant-design/icons";
 import toast from "react-hot-toast";
 import ProfileImportModal from "../shared/ProfileImportModal";
 import MasteryModeBar from "./MasteryModeBar";
 import { useSyncedMastery } from "../../hooks/useSyncedMastery";
 
 const MRCalculatorView = lazy(() => import("./MRCalculatorPage"));
+const JunctionsView = lazy(() => import("./MasteryJunctionsView"));
+const IntrinsicsView = lazy(() => import("./MasteryIntrinsicsView"));
+const StarChartView = lazy(() => import("./MasteryStarChartView"));
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useTranslate } from "../../hooks/useTranslate";
 import type { TranslateFn } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
 import { useCraftStore } from "../../stores/craftStore";
+import { useJunctionStore } from "../../stores/junctionStore";
+import { useIntrinsicStore } from "../../stores/intrinsicStore";
+import { useStarChartStore } from "../../stores/starChartStore";
 import { requestJson } from "../../utils/helpers";
 import { showUndoToast } from "../../utils/undoToast";
 import EmptyState from "../shared/EmptyState";
@@ -79,6 +85,12 @@ export default function MasteryPage() {
   const mode = useMasteryStore((s) => s.mode);
   const addCraftItem = useCraftStore((s) => s.addItem);
   const craftSelectedItems = useCraftStore((s) => s.selectedItems);
+  const junctionsCompleted = useJunctionStore((s) => s.completed);
+  const setJunctionsCompleted = useJunctionStore((s) => s.setCompleted);
+  const intrinsicRanks = useIntrinsicStore((s) => s.ranks);
+  const setAllIntrinsics = useIntrinsicStore((s) => s.setAll);
+  const starChartCompleted = useStarChartStore((s) => s.completed);
+  const setStarChartCompleted = useStarChartStore((s) => s.setCompleted);
 
   const { isSyncing, manualRefresh, error: syncError } = useSyncedMastery();
 
@@ -87,7 +99,7 @@ export default function MasteryPage() {
   const [error, setError] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [activeView, setActiveView] = useState<"items" | "calculator">("items");
+  const [activeView, setActiveView] = useState<"items" | "junctions" | "intrinsics" | "starchart" | "calculator">("items");
   const [importOpen, setImportOpen] = useState(false);
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
 
@@ -202,9 +214,15 @@ export default function MasteryPage() {
           realBreakdown,
           realDisplayName,
           lastImportAt,
+          junctionsCompleted: { ...junctionsCompleted },
+          intrinsicRanks: { ...intrinsicRanks },
+          starChartCompleted: { ...starChartCompleted },
         };
         setMasteredItems({});
         clearRealProfile();
+        setJunctionsCompleted({});
+        setAllIntrinsics({});
+        setStarChartCompleted({});
         showUndoToast({
           message: t("masteryClearedToast", { count: total }),
           undoLabel: t("undo"),
@@ -217,6 +235,9 @@ export default function MasteryPage() {
               snapshot.lastImportAt,
               snapshot.realDisplayName,
             );
+            setJunctionsCompleted(snapshot.junctionsCompleted);
+            setAllIntrinsics(snapshot.intrinsicRanks);
+            setStarChartCompleted(snapshot.starChartCompleted);
           },
         });
       },
@@ -317,21 +338,34 @@ export default function MasteryPage() {
     { name: "rem", value: 100 - Math.max(0, Math.min(100, pct)) },
   ];
 
-  if (activeView === "calculator") {
+  type ActiveView = "items" | "junctions" | "intrinsics" | "starchart" | "calculator";
+  const segmentedOptions = [
+    { value: "items", icon: <TrophyFilled />, label: t("masteryTabItems") },
+    { value: "starchart", icon: <GlobalOutlined />, label: t("masteryTabStarChart") },
+    { value: "junctions", icon: <NodeIndexOutlined />, label: t("masteryTabJunctions") },
+    { value: "intrinsics", icon: <ThunderboltOutlined />, label: t("masteryTabIntrinsics") },
+    { value: "calculator", icon: <RiseOutlined />, label: t("masteryTabCalculator") },
+  ];
+
+  if (activeView !== "items") {
+    const ViewMap: Record<Exclude<ActiveView, "items">, typeof MRCalculatorView> = {
+      calculator: MRCalculatorView,
+      junctions: JunctionsView,
+      intrinsics: IntrinsicsView,
+      starchart: StarChartView,
+    };
+    const View = ViewMap[activeView];
     return (
       <>
         <Segmented
           block
           value={activeView}
-          onChange={(v) => setActiveView(v as "items" | "calculator")}
-          options={[
-            { value: "items", icon: <TrophyFilled />, label: t("masteryTabItems") },
-            { value: "calculator", icon: <RiseOutlined />, label: t("masteryTabCalculator") },
-          ]}
+          onChange={(v) => setActiveView(v as ActiveView)}
+          options={segmentedOptions}
           style={{ marginBottom: 14 }}
         />
         <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: 80 }}><Spin size="large" /></div>}>
-          <MRCalculatorView />
+          <View />
         </Suspense>
       </>
     );
@@ -342,11 +376,8 @@ export default function MasteryPage() {
       <Segmented
         block
         value={activeView}
-        onChange={(v) => setActiveView(v as "items" | "calculator")}
-        options={[
-          { value: "items", icon: <TrophyFilled />, label: t("masteryTabItems") },
-          { value: "calculator", icon: <RiseOutlined />, label: t("masteryTabCalculator") },
-        ]}
+        onChange={(v) => setActiveView(v as ActiveView)}
+        options={segmentedOptions}
         style={{ marginBottom: 14 }}
       />
       <MasteryModeBar isSyncing={isSyncing} onRefresh={manualRefresh} syncError={syncError} />

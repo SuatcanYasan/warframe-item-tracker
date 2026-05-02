@@ -250,6 +250,71 @@ app.get("/api/mastery/items", async (_req, res) => {
   }
 });
 
+app.get("/api/mastery/junctions", (_req, res) => {
+  res.json({
+    junctions: JUNCTIONS.map(({ key, from, to }) => ({ key, from, to })),
+    xpPerJunction: MR_XP_PER_JUNCTION,
+  });
+});
+
+// Static schema for the intrinsics view. Keys must match the field
+// names produced by summarizeProfile (intrinsicRanks).
+const INTRINSICS_SCHEMA = [
+  { key: "tactical",    category: "railjack", maxRank: 10 },
+  { key: "piloting",    category: "railjack", maxRank: 10 },
+  { key: "gunnery",     category: "railjack", maxRank: 10 },
+  { key: "engineering", category: "railjack", maxRank: 10 },
+  { key: "command",     category: "railjack", maxRank: 10 },
+  { key: "riding",      category: "drifter",  maxRank: 10 },
+  { key: "combat",      category: "drifter",  maxRank: 10 },
+  { key: "opportunity", category: "drifter",  maxRank: 10 },
+  { key: "endurance",   category: "drifter",  maxRank: 10 },
+];
+
+app.get("/api/mastery/intrinsics", (_req, res) => {
+  res.json({
+    intrinsics: INTRINSICS_SCHEMA,
+    xpPerRank: MR_XP_PER_INTRINSIC_RANK,
+  });
+});
+
+// Star chart node listing — built once at module load from the
+// bundled solNodes data (warframe-worldstate-data). We strip Conclave
+// and Relay nodes (no MR XP) and require a "(Planet)" suffix in the
+// node name so we know which system to group into.
+let STAR_CHART_NODES = null;
+function getStarChartNodes() {
+  if (STAR_CHART_NODES) return STAR_CHART_NODES;
+  // eslint-disable-next-line global-require
+  const sol = require("../node_modules/warframe-worldstate-data/dist/data/solNodes.json");
+  const EXCLUDE = new Set(["Conclave", "Relay", "Ancient Retribution"]);
+  const out = {};
+  for (const [k, n] of Object.entries(sol)) {
+    if (EXCLUDE.has(n.type)) continue;
+    const m = /\(([^)]+)\)$/.exec(n.value || "");
+    if (!m) continue;
+    const planet = m[1].trim();
+    const name = n.value.replace(/\s*\([^)]+\)\s*$/, "").trim();
+    (out[planet] ||= []).push({
+      key: k,
+      name,
+      missionType: n.type,
+      faction: n.enemy,
+    });
+  }
+  // Sort each planet alphabetically by name
+  for (const arr of Object.values(out)) arr.sort((a, b) => a.name.localeCompare(b.name));
+  STAR_CHART_NODES = out;
+  return STAR_CHART_NODES;
+}
+
+app.get("/api/mastery/star-chart", (_req, res) => {
+  res.json({
+    nodesByPlanet: getStarChartNodes(),
+    xpPerNode: MR_XP_PER_STAR_CHART_NODE,
+  });
+});
+
 app.get("/api/amps", async (_req, res) => {
   try {
     const amps = await getAmps();
@@ -609,15 +674,42 @@ function affinityToRank(affinity, info) {
 const MR_XP_PER_INTRINSIC_RANK = 1_500;
 const MR_XP_PER_JUNCTION = 1_000;
 const MR_XP_PER_STAR_CHART_NODE = 63;
-// Hard-coded junction count — DE doesn't expose junction-completion data
-// in profile and the count is fixed at game level (~14 junctions on the
-// star chart). We use this if MR ≥ 8 (junctions unlock progressively but
-// most are done by then). For low-MR users we scale conservatively.
-function estimateJunctionXp(masteryRank) {
-  // 14 junctions max; assume players above MR 8 have finished most of them.
-  if (masteryRank >= 16) return 14 * MR_XP_PER_JUNCTION;
-  if (masteryRank >= 8) return Math.round((masteryRank / 16) * 14 * MR_XP_PER_JUNCTION);
-  return Math.round((masteryRank / 8) * 5 * MR_XP_PER_JUNCTION);
+
+// Star chart junctions. DE doesn't expose junction completion in
+// profile data, but it can be inferred: if the player has any mission
+// node on planet X, they must have completed the junction leading to X.
+// `from` = planet that hosts the junction node; `to` = planet it unlocks.
+// `requiredPlanet` is what we look for in the player's missions to
+// confirm completion.
+const JUNCTIONS = [
+  { key: "VenusJunction",   from: "Earth",   to: "Venus",   requiredPlanet: "Venus" },
+  { key: "MercuryJunction", from: "Venus",   to: "Mercury", requiredPlanet: "Mercury" },
+  { key: "MarsJunction",    from: "Earth",   to: "Mars",    requiredPlanet: "Mars" },
+  { key: "PhobosJunction",  from: "Mars",    to: "Phobos",  requiredPlanet: "Phobos" },
+  { key: "CeresJunction",   from: "Phobos",  to: "Ceres",   requiredPlanet: "Ceres" },
+  { key: "JupiterJunction", from: "Ceres",   to: "Jupiter", requiredPlanet: "Jupiter" },
+  { key: "EuropaJunction",  from: "Jupiter", to: "Europa",  requiredPlanet: "Europa" },
+  { key: "SaturnJunction",  from: "Jupiter", to: "Saturn",  requiredPlanet: "Saturn" },
+  { key: "UranusJunction",  from: "Saturn",  to: "Uranus",  requiredPlanet: "Uranus" },
+  { key: "NeptuneJunction", from: "Uranus",  to: "Neptune", requiredPlanet: "Neptune" },
+  { key: "PlutoJunction",   from: "Neptune", to: "Pluto",   requiredPlanet: "Pluto" },
+  { key: "SednaJunction",   from: "Pluto",   to: "Sedna",   requiredPlanet: "Sedna" },
+  { key: "ErisJunction",    from: "Pluto",   to: "Eris",    requiredPlanet: "Eris" },
+  { key: "LuaJunction",     from: "Earth",   to: "Lua",     requiredPlanet: "Lua" },
+];
+
+// Walk the player's mission list. Each Mission carries `node` like
+// "Hydron (Sedna)" or just the node name; the planet is in parens.
+// We just collect the unique planet set and check which junction
+// requirements are satisfied.
+function inferJunctionsFromMissions(missions) {
+  const planetSet = new Set();
+  for (const m of missions || []) {
+    const raw = m?.node || "";
+    const match = /\(([^)]+)\)/.exec(raw);
+    if (match) planetSet.add(match[1].trim());
+  }
+  return JUNCTIONS.filter((j) => planetSet.has(j.requiredPlanet)).map((j) => j.key);
 }
 
 function summarizeProfile(profile) {
@@ -640,25 +732,35 @@ function summarizeProfile(profile) {
   });
 
   // ---- Intrinsics (Drifter + Railjack) ----
-  // The parser flattens individual intrinsic ranks under one map. Sum
-  // every numeric value, skipping aggregate "railjack"/"drifter" totals
-  // that double-count.
-  const intrinsicAggregates = new Set(["railjack", "drifter"]);
+  // Parser splits each intrinsic into its own field. We grab the 9
+  // individual ranks (5 Railjack + 4 Drifter) — `railjack`/`drifter`
+  // are aggregate totals that would double-count.
+  const intrinsicRanks = {
+    tactical:    Number(profile.intrinsics?.tactical) || 0,
+    piloting:    Number(profile.intrinsics?.piloting) || 0,
+    gunnery:     Number(profile.intrinsics?.gunnery) || 0,
+    engineering: Number(profile.intrinsics?.engineering) || 0,
+    command:     Number(profile.intrinsics?.command) || 0,
+    riding:      Number(profile.intrinsics?.riding) || 0,
+    combat:      Number(profile.intrinsics?.combat) || 0,
+    opportunity: Number(profile.intrinsics?.opportunity) || 0,
+    endurance:   Number(profile.intrinsics?.endurance) || 0,
+  };
   let intrinsicRankTotal = 0;
-  if (profile.intrinsics && typeof profile.intrinsics === "object") {
-    for (const [key, val] of Object.entries(profile.intrinsics)) {
-      if (intrinsicAggregates.has(key)) continue;
-      if (typeof val === "number" && val > 0) intrinsicRankTotal += val;
-    }
-  }
+  for (const v of Object.values(intrinsicRanks)) intrinsicRankTotal += v;
   const intrinsicsXp = intrinsicRankTotal * MR_XP_PER_INTRINSIC_RANK;
 
   // ---- Star chart nodes ----
   const missionCount = Array.isArray(profile.missions) ? profile.missions.length : 0;
   const starChartXp = missionCount * MR_XP_PER_STAR_CHART_NODE;
+  const completedNodeKeys = Array.isArray(profile.missions)
+    ? profile.missions.map((m) => m?.nodeKey).filter(Boolean)
+    : [];
 
-  // ---- Junctions (estimated from MR, no profile field for it) ----
-  const junctionXp = estimateJunctionXp(profile.masteryRank || 0);
+  // ---- Junctions (inferred from missions: any node on planet X means
+  // the junction TO X has been completed) ----
+  const completedJunctionKeys = inferJunctionsFromMissions(profile.missions);
+  const junctionXp = completedJunctionKeys.length * MR_XP_PER_JUNCTION;
 
   const realTotalMasteryXp = itemsXp + intrinsicsXp + starChartXp + junctionXp;
 
@@ -670,6 +772,9 @@ function summarizeProfile(profile) {
     itemCount: xpItems.length,
     xpItems,
     realTotalMasteryXp,
+    completedJunctionKeys,
+    intrinsicRanks,
+    completedNodeKeys,
     breakdown: {
       items: itemsXp,
       intrinsics: intrinsicsXp,

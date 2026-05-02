@@ -12,6 +12,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
+import { useJunctionStore } from "../../stores/junctionStore";
+import { useIntrinsicStore } from "../../stores/intrinsicStore";
+import { useStarChartStore } from "../../stores/starChartStore";
 import { requestJson } from "../../utils/helpers";
 import type { MasteryStatus } from "../../types";
 
@@ -30,6 +33,9 @@ interface ProfileSummary {
     intrinsicRankTotal: number;
     missionCount: number;
   };
+  completedJunctionKeys?: string[];
+  intrinsicRanks?: Record<string, number>;
+  completedNodeKeys?: string[];
   // xpItems shape changed: each item now carries derived rank/maxRank/masteryXp.
   xpItems: { uniqueName: string; affinity: number; rank: number; maxRank: number; masteryXp: number }[];
 }
@@ -121,6 +127,13 @@ export default function ProfileImportModal({ open, onClose }: Props) {
     // chart + junctions, so the calculator can show actual progress
     // through the current rank instead of guessing.
     setRealProfile(summary.masteryRank, summary.realTotalMasteryXp, summary.breakdown, Date.now(), summary.displayName);
+    const junctionMap: Record<string, true> = {};
+    for (const k of summary.completedJunctionKeys || []) junctionMap[k] = true;
+    useJunctionStore.getState().setCompleted(junctionMap);
+    if (summary.intrinsicRanks) useIntrinsicStore.getState().setAll(summary.intrinsicRanks);
+    const nodeMap: Record<string, true> = {};
+    for (const k of summary.completedNodeKeys || []) nodeMap[k] = true;
+    useStarChartStore.getState().setCompleted(nodeMap);
     toast.success(t("profileImportSuccess", { count: summary.itemCount, mr: summary.masteryRank }));
     handleClose();
   }

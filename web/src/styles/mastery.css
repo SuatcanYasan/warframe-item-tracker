@@ -511,3 +511,156 @@
   color: #22c55e;
   border-color: color-mix(in srgb, #22c55e 40%, var(--wf-border));
 }
+
+/* ==== Junctions view ==== */
+.junction-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.junction-card-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.junction-from {
+  color: var(--wf-text-muted);
+}
+
+.junction-arrow {
+  font-size: 10px;
+  color: var(--wf-primary);
+  opacity: 0.7;
+}
+
+.junction-to {
+  color: var(--wf-text);
+  font-weight: 600;
+}
+
+.mastery-readonly-hint {
+  font-size: 12px;
+  color: var(--wf-text-muted);
+  margin: 8px 0 12px;
+  padding: 6px 12px;
+  background: color-mix(in srgb, var(--wf-primary) 5%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--wf-primary) 50%, transparent);
+  border-radius: 4px;
+}
+
+/* ==== Intrinsics view ==== */
+.intrinsic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.intrinsic-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intrinsic-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.intrinsic-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wf-text);
+}
+
+.intrinsic-card-rank {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wf-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.intrinsic-card-of {
+  font-size: 12px;
+  color: var(--wf-text-muted);
+  font-weight: 400;
+}
+
+.intrinsic-card-controls {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* ==== Star chart view ==== */
+.star-chart-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.star-node-card {
+  position: relative;
+  flex-direction: column;
+  padding: 10px 12px;
+  align-items: stretch;
+  text-align: left;
+  gap: 4px;
+}
+
+.star-node-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.star-node-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wf-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.star-node-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--wf-text-muted);
+}
+
+.star-node-type {
+  color: var(--wf-text);
+  opacity: 0.85;
+}
+
+.star-node-faction {
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.star-node-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wf-primary) 25%, var(--wf-bg-base));
+  color: var(--wf-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.star-node-card.mastered {
+  border-color: color-mix(in srgb, var(--wf-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--wf-primary) 8%, var(--wf-bg-elevated));
+}

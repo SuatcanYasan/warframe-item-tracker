@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMasteryStore } from "../stores/masteryStore";
+import { useJunctionStore } from "../stores/junctionStore";
+import { useIntrinsicStore } from "../stores/intrinsicStore";
+import { useStarChartStore } from "../stores/starChartStore";
 import { requestJson } from "../utils/helpers";
 import type { MasteryStatus, MasteryBreakdown } from "../types";
 
@@ -13,6 +16,9 @@ interface ProfileSummary {
   itemCount: number;
   realTotalMasteryXp: number;
   breakdown: MasteryBreakdown;
+  completedJunctionKeys?: string[];
+  intrinsicRanks?: Record<string, number>;
+  completedNodeKeys?: string[];
   xpItems: { uniqueName: string; affinity: number; rank: number; maxRank: number; masteryXp: number }[];
 }
 
@@ -59,6 +65,13 @@ export function useSyncedMastery(): SyncedMasteryReturn {
         }
         setMasteredItems(statusMap);
         setRealProfile(data.masteryRank, data.realTotalMasteryXp, data.breakdown, Date.now(), data.displayName);
+        const junctionMap: Record<string, true> = {};
+        for (const k of data.completedJunctionKeys || []) junctionMap[k] = true;
+        useJunctionStore.getState().setCompleted(junctionMap);
+        if (data.intrinsicRanks) useIntrinsicStore.getState().setAll(data.intrinsicRanks);
+        const nodeMap: Record<string, true> = {};
+        for (const k of data.completedNodeKeys || []) nodeMap[k] = true;
+        useStarChartStore.getState().setCompleted(nodeMap);
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         setError(msg);

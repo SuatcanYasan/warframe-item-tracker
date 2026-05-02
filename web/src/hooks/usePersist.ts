@@ -10,6 +10,9 @@ import { useFarmStore } from "../stores/farmStore";
 import { useIncarnonStore } from "../stores/incarnonStore";
 import { useWfRotationStore } from "../stores/wfRotationStore";
 import { useArcaneStore } from "../stores/arcaneStore";
+import { useJunctionStore } from "../stores/junctionStore";
+import { useIntrinsicStore } from "../stores/intrinsicStore";
+import { useStarChartStore } from "../stores/starChartStore";
 import { savePersistedState, normalizePersistedState } from "../utils/storage";
 import { broadcastTabSync, onTabSync } from "../utils/tabSync";
 import { pushAllState, subscribeWithHydrate, waitForBootstrap } from "../lib/supabaseSync";
@@ -46,6 +49,9 @@ export function usePersist(): void {
   const incarnonClaimed = useIncarnonStore((s) => s.claimed);
   const wfRotationClaimed = useWfRotationStore((s) => s.claimed);
   const arcaneCounts = useArcaneStore((s) => s.arcaneCounts);
+  const junctionsCompleted = useJunctionStore((s) => s.completed);
+  const intrinsicRanks = useIntrinsicStore((s) => s.ranks);
+  const starChartCompleted = useStarChartStore((s) => s.completed);
 
   // Debounce localStorage writes
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,6 +71,9 @@ export function usePersist(): void {
     useIncarnonStore.getState().hydrate(normalized);
     useWfRotationStore.getState().hydrate(normalized);
     useArcaneStore.getState().hydrate(normalized);
+    useJunctionStore.getState().hydrate(normalized);
+    useIntrinsicStore.getState().hydrate(normalized);
+    useStarChartStore.getState().hydrate(normalized);
   };
 
   useEffect(() => onTabSync(hydrateAll), []);
@@ -115,6 +124,9 @@ export function usePersist(): void {
       masteryRealDisplayName,
       masteryMode,
       masterySyncPlayerId,
+      junctionsCompleted,
+      intrinsicRanks,
+      starChartCompleted,
       storedVersion,
     };
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -152,6 +164,9 @@ export function usePersist(): void {
     masteryRealDisplayName,
     masteryMode,
     masterySyncPlayerId,
+    junctionsCompleted,
+    intrinsicRanks,
+    starChartCompleted,
     storedVersion,
   ]);
 }
