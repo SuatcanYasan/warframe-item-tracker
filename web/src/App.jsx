@@ -46,6 +46,7 @@ import { usePersist } from "./hooks/usePersist";
 import Sidebar from "./components/shared/Sidebar";
 import AppHeader from "./components/shared/AppHeader";
 import AppFooter from "./components/shared/AppFooter";
+import AppErrorBoundary from "./components/shared/AppErrorBoundary";
 import MobileNav from "./components/shared/MobileNav";
 import SummaryBar from "./components/craft/SummaryBar";
 import ItemCardGrid from "./components/craft/ItemCardGrid";
@@ -155,6 +156,18 @@ function CraftAppContent() {
       detail: { themeName, tokens: customThemeTokens },
     }));
   }, [themeName, customThemeTokens]);
+
+  // --- RTL: toggle <html dir> + body class when language changes ---
+  // Arabic is the only RTL locale we ship; everything else stays LTR.
+  // AntD components pick up `direction` via ConfigProvider below; this
+  // effect handles the document/body so our custom CSS can flip via
+  // [dir=rtl] selectors in styles/rtl.css.
+  const language = useAppStore((s) => s.language);
+  useEffect(() => {
+    const isRtl = language === "ar";
+    document.documentElement.dir = isRtl ? "rtl" : "ltr";
+    document.body.classList.toggle("rtl", isRtl);
+  }, [language]);
 
   // --- Theme CSS vars ---
   useEffect(() => {
@@ -433,11 +446,13 @@ function CraftAppContent() {
   // --- Render ---
   return (
     <>
+      <a href="#main-content" className="skip-link">{t("skipToMain")}</a>
       <div className="app-shell-layout">
         <Sidebar onOpenSettings={openThemeDrawer} />
         <AppHeader />
 
-        <main className="app-content">
+        <main className="app-content" id="main-content" tabIndex={-1}>
+          <AppErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
@@ -569,6 +584,7 @@ function CraftAppContent() {
             } />
           </Routes>
           </Suspense>
+          </AppErrorBoundary>
           <div className="app-content-spacer" />
           <AppFooter />
         </main>
@@ -693,6 +709,7 @@ function CraftApp() {
 
   const themeName = useAppStore((s) => s.themeName);
   const customThemeTokens = useAppStore((s) => s.customThemeTokens);
+  const language = useAppStore((s) => s.language);
 
   // Listen for theme changes from CraftAppContent via custom events
   useEffect(() => {
@@ -794,6 +811,7 @@ function CraftApp() {
 
   return (
     <ConfigProvider
+      direction={language === "ar" ? "rtl" : "ltr"}
       theme={{
         algorithm: themeOptions[themeName]?.algorithm || themeOptions.orokin.algorithm,
         token: { fontFamily: "'Exo 2', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif", ...customThemeTokens },

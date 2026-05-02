@@ -587,5 +587,6 @@
   "helpFarmTips": "Cerca risorsa",
   "helpFarmActions": "Aggiungi risorsa",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "Click-destro per cancellare — annullabile 5s."
+  "hintMasteryRightClickUndo": "Click-destro per cancellare — annullabile 5s.",
+  "skipToMain": "Vai al contenuto principale"
 }

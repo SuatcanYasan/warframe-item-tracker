@@ -485,6 +485,9 @@
   "emptySearchDesc": "Try a different search term or clear filters.",
   "errorRetry": "Retry",
   "errorWorkOffline": "Work offline",
+  "errorBoundaryTitle": "The app crashed",
+  "errorBoundaryDesc": "An unexpected error broke this view. Refreshing usually fixes it — your data is safe.",
+  "errorBoundaryReload": "Refresh",
   "errorNetworkTitle": "Couldn't load this",
   "errorNetworkDesc": "Check your connection and try again.",
   "errorServerTitle": "Something went wrong",
@@ -587,5 +590,6 @@
   "helpFarmTips": "Search a resource or item to see where it drops\nMission node + drop chance shown together\nUse multiple resources to plan a single farm session",
   "helpFarmActions": "Add resource — search and add tracked drops",
   "helpFarmShortcuts": "Ctrl/⌘ K — command palette",
-  "hintMasteryRightClickUndo": "Right-click any card to clear its status — you'll get a 5s undo if you change your mind."
+  "hintMasteryRightClickUndo": "Right-click any card to clear its status — you'll get a 5s undo if you change your mind.",
+  "skipToMain": "Skip to main content"
 }

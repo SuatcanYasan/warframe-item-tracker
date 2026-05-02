@@ -587,5 +587,6 @@
   "helpFarmTips": "Resource veya item ara, nereden düştüğünü gör\nMission node + drop oranı birlikte\nÇoklu resource ile tek seferde plan",
   "helpFarmActions": "Resource ekle — ara ve takip et",
   "helpFarmShortcuts": "Ctrl/⌘ K — komut paleti",
-  "hintMasteryRightClickUndo": "Karta sağ tıkla durumu temizlersin — fikrin değişirse 5sn boyunca geri alabilirsin."
+  "hintMasteryRightClickUndo": "Karta sağ tıkla durumu temizlersin — fikrin değişirse 5sn boyunca geri alabilirsin.",
+  "skipToMain": "Ana içeriğe atla"
 }

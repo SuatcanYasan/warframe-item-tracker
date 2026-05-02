@@ -1,3 +1,9 @@
+import { initSentry } from "./lib/sentry";
+
+// Init Sentry before anything else loads so early render errors are captured.
+// No-op when VITE_SENTRY_DSN is unset (dev / local).
+initSentry();
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

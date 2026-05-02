@@ -587,5 +587,6 @@
   "helpFarmTips": "البحث عن مورد",
   "helpFarmActions": "إضافة مورد",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "يمين للمسح — تراجع 5 ث."
+  "hintMasteryRightClickUndo": "يمين للمسح — تراجع 5 ث.",
+  "skipToMain": "تخطى إلى المحتوى الرئيسي"
 }

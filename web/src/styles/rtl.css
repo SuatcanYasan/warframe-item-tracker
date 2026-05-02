@@ -1,0 +1,97 @@
+/* =========================================================================
+   RTL OVERRIDES
+   -------------------------------------------------------------------------
+   Activated when the user picks Arabic (lang === "ar"). App.jsx sets
+   <html dir="rtl"> + .rtl on body; AntD components flip via ConfigProvider
+   direction="rtl". This file fixes our custom (non-AntD) layout pieces
+   that were authored as LTR-only.
+
+   Rules:
+     - Only [dir=rtl] selectors here. LTR behaviour must stay untouched.
+     - Numerics (countdowns, "X / Y" counters, version strings) stay LTR
+       since Arabic typesetting still uses Western digits in this app.
+   ========================================================================= */
+
+/* ----- App shell grid: swap sidebar to the right side ------------------- */
+[dir=rtl] .app-shell-layout {
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "header sidebar"
+    "content sidebar";
+}
+
+[dir=rtl] .sidebar {
+  border-right: none;
+  border-left: 1px solid var(--wf-border, rgba(255,255,255,0.06));
+}
+
+/* Collapse-button chevron points the other way in RTL */
+[dir=rtl] .collapse-btn .nav-icon .anticon {
+  transform: scaleX(-1);
+}
+
+/* Active nav item: gold accent on the right edge in LTR -> left in RTL.
+   The base style uses border-color, not a side border, so nothing to flip
+   here. Keeping this block as a placeholder for future per-side tweaks. */
+
+/* ----- Header: flip flex direction so the "left" cluster sits right ---- */
+[dir=rtl] .app-header {
+  /* swap left/right via flex reverse — keeps space-between behaviour */
+  flex-direction: row-reverse;
+}
+
+[dir=rtl] .app-header-left,
+[dir=rtl] .app-header-right {
+  flex-direction: row-reverse;
+}
+
+/* Breadcrumb chevron mirror */
+[dir=rtl] .breadcrumb-sep {
+  transform: scaleX(-1);
+  display: inline-block;
+}
+
+/* ----- Content area --------------------------------------------------- */
+/* The grid handles column placement; padding is symmetric (20px 24px) so
+   no override needed. Inner content uses logical flex/grid so it adapts. */
+
+/* ----- Craft toolbar / content header --------------------------------- */
+[dir=rtl] .content-header,
+[dir=rtl] .content-tabs,
+[dir=rtl] .content-actions,
+[dir=rtl] .craft-toolbar,
+[dir=rtl] .craft-toolbar-left,
+[dir=rtl] .craft-filter-group,
+[dir=rtl] .craft-category-pills {
+  flex-direction: row-reverse;
+}
+
+/* ant Buttons inside content-actions — icon position flips automatically
+   via ConfigProvider, but our custom inline icons (DownloadOutlined etc.)
+   sit in a flex row that we just reversed, so they're already correct. */
+
+/* ----- Numeric values stay LTR --------------------------------------- */
+/* Countdowns (timers, activities, dashboard slider, baro) — digits + ":"
+   read left-to-right even in Arabic copy. Force the direction so a value
+   like "12:34:56" doesn't render as "56:34:12". */
+[dir=rtl] .timer-countdown,
+[dir=rtl] .timer-slider-countdown,
+[dir=rtl] .baro-countdown,
+[dir=rtl] .activity-countdown,
+[dir=rtl] .activity-countdown-large,
+[dir=rtl] .item-card-progress-text,
+[dir=rtl] .content-tab-badge,
+[dir=rtl] .multi-select-count,
+[dir=rtl] .ant-progress-text {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ----- Drawers / Modals ---------------------------------------------- */
+/* AntD handles these via ConfigProvider direction="rtl". No overrides. */
+
+/* ----- Misc safety --------------------------------------------------- */
+/* Any inline icon that visually points "forward" (chevrons, arrows) and
+   was authored as a glyph rather than an AntD icon needs to mirror. The
+   .breadcrumb-sep one is the main offender; add more selectors here when
+   they surface. */

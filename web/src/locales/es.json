@@ -587,5 +587,6 @@
   "helpFarmTips": "Buscar recurso",
   "helpFarmActions": "Añadir recurso",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "Click-derecho para limpiar — deshacer 5s."
+  "hintMasteryRightClickUndo": "Click-derecho para limpiar — deshacer 5s.",
+  "skipToMain": "Saltar al contenido principal"
 }

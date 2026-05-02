@@ -587,5 +587,6 @@
   "helpFarmTips": "Rechercher ressource",
   "helpFarmActions": "Ajouter ressource",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "Clic-droit pour effacer — annulable 5s."
+  "hintMasteryRightClickUndo": "Clic-droit pour effacer — annulable 5s.",
+  "skipToMain": "Aller au contenu principal"
 }

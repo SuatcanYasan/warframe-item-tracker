@@ -587,5 +587,6 @@
   "helpFarmTips": "リソース検索",
   "helpFarmActions": "リソース追加",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "右クリックでクリア — 5秒で取消可能。"
+  "hintMasteryRightClickUndo": "右クリックでクリア — 5秒で取消可能。",
+  "skipToMain": "メインコンテンツへスキップ"
 }

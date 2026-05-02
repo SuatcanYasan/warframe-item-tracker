@@ -70,11 +70,25 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ["react", "react-dom"],
-          antd: ["antd", "@ant-design/icons"],
+        // Function form is more reliable than the object form when
+        // dependencies are deeply nested or imported transitively.
+        // Splits vendor code into stable chunks for better caching —
+        // when only app code changes, antd/react/supabase don't redownload.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("/antd/") || id.includes("/@ant-design/")) return "antd";
+          if (id.includes("/react-router") || id.includes("/react-dom/") || id.match(/\/react\//)) return "react";
+          if (id.includes("/framer-motion/")) return "motion";
+          if (id.includes("/@supabase/")) return "supabase";
+          if (id.includes("/@tanstack/react-query")) return "query";
+          if (id.includes("/recharts/") || id.includes("/d3-")) return "recharts";
+          if (id.includes("/@dnd-kit/")) return "dnd";
+          if (id.includes("/@tanstack/react-table") || id.includes("/@tanstack/table-core")) return "tanstable";
+          if (id.includes("/i18next") || id.includes("/react-i18next")) return "i18n";
+          return "vendor";
         },
       },
     },

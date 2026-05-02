@@ -1,0 +1,76 @@
+/* Accessibility utilities */
+
+/* Skip-link — hidden until focused, jumps from header to main content
+ * for keyboard / screen-reader users to bypass nav. */
+.skip-link {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  width: auto;
+  height: auto;
+  padding: 10px 16px;
+  background: var(--wf-primary);
+  color: var(--wf-bg-base);
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  outline: 3px solid var(--wf-text);
+  outline-offset: 2px;
+}
+
+/* Visually hidden — for sr-only labels (e.g., on icon-only buttons
+ * where the icon already conveys meaning visually). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visible focus indicator on keyboard nav. AntD removes outlines on
+ * its components for design reasons, but :focus-visible (keyboard only)
+ * should always show one for accessibility. */
+:focus-visible {
+  outline: 2px solid var(--wf-primary);
+  outline-offset: 2px;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--wf-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen-reader status region (used by sync indicator) — visually empty
+ * but announced by SR. */
+.aria-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Reduce motion — respect OS preference for less animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

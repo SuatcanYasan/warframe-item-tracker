@@ -587,5 +587,6 @@
   "helpFarmTips": "Искать ресурс",
   "helpFarmActions": "Добавить ресурс",
   "helpFarmShortcuts": "Ctrl/⌘ K",
-  "hintMasteryRightClickUndo": "ПКМ для очистки — отмена 5с."
+  "hintMasteryRightClickUndo": "ПКМ для очистки — отмена 5с.",
+  "skipToMain": "Перейти к основному содержанию"
 }

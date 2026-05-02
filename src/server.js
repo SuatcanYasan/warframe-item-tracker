@@ -1,3 +1,33 @@
+// Sentry must be imported and initialized BEFORE any other module — its
+// auto-instrumentation patches Node internals (http, express, etc.) at
+// require-time. No-op when SENTRY_DSN is unset (dev / local).
+const Sentry = require("@sentry/node");
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || "production",
+    tracesSampleRate: 0.1,
+    sendDefaultPii: false,
+    // Strip request body / headers / cookies that may carry user identity
+    // or auth tokens before anything is shipped upstream.
+    beforeSend(event) {
+      if (event.user) delete event.user;
+      if (event.request) {
+        delete event.request.cookies;
+        delete event.request.data;
+        if (event.request.headers) {
+          for (const k of Object.keys(event.request.headers)) {
+            if (/authorization|cookie|x-access-token|api[_-]?key/i.test(k)) {
+              event.request.headers[k] = "[Filtered]";
+            }
+          }
+        }
+      }
+      return event;
+    },
+  });
+}
+
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -419,6 +449,23 @@ app.use((req, res) => {
   }
 
   return res.sendFile(path.join(webDistPath, "index.html"));
+});
+
+// Sentry's Express error handler — must be registered after all routes /
+// middleware, before any custom error handlers. No-op when DSN is unset.
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
+// Fallback error handler — runs after Sentry, returns a sanitized JSON 500
+// for API routes so we never leak stack traces to clients.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
+  console.error("Unhandled error:", err);
+  if (req.path && req.path.startsWith("/api/")) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+  return res.status(500).send("Internal server error");
 });
 
 // Self-ping to prevent free-tier hosts (Render, etc.) from sleeping.

@@ -587,5 +587,6 @@
   "helpFarmTips": "Ressource suchen\nDrop-Chance",
   "helpFarmActions": "Ressource hinzufügen",
   "helpFarmShortcuts": "Strg/⌘ K",
-  "hintMasteryRightClickUndo": "Rechtsklick zum Löschen — 5s zum Rückgängigmachen."
+  "hintMasteryRightClickUndo": "Rechtsklick zum Löschen — 5s zum Rückgängigmachen.",
+  "skipToMain": "Zum Hauptinhalt springen"
 }
