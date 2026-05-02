@@ -1,0 +1,132 @@
+// Compact share-state encoder/decoder using browser-native DEFLATE.
+// Fallback to plain base64 if CompressionStream isn't available.
+//
+// Format: "v1." + base64url(deflate(JSON.stringify(payload)))
+
+import type { PersistedState } from "../types";
+
+const MAGIC = "v1.";
+
+export type SharePayload = Partial<PersistedState>;
+
+function toBase64Url(bytes: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(str: string): Uint8Array {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
+  const bin = atob(padded);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function streamToBytes(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      total += value.length;
+    }
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return out;
+}
+
+export async function encodeShareState(payload: SharePayload): Promise<string> {
+  const json = JSON.stringify(payload);
+  const bytes = new TextEncoder().encode(json);
+
+  if (typeof CompressionStream !== "undefined") {
+    // Cast: Uint8Array is a valid BodyInit at runtime; older lib.dom types
+    // omit it from the union but Node/Browser implementations accept it.
+    const stream = new Response(bytes as unknown as BodyInit).body!.pipeThrough(
+      new CompressionStream("deflate-raw"),
+    );
+    const compressed = await streamToBytes(stream);
+    return MAGIC + toBase64Url(compressed);
+  }
+  // Fallback — plain base64
+  return "p0." + toBase64Url(bytes);
+}
+
+export async function decodeShareState(encoded: string): Promise<SharePayload> {
+  if (!encoded || typeof encoded !== "string") throw new Error("empty");
+  if (encoded.startsWith(MAGIC)) {
+    const bytes = fromBase64Url(encoded.slice(MAGIC.length));
+    if (typeof DecompressionStream !== "undefined") {
+      const stream = new Response(bytes as unknown as BodyInit).body!.pipeThrough(
+        new DecompressionStream("deflate-raw"),
+      );
+      const raw = await streamToBytes(stream);
+      return JSON.parse(new TextDecoder().decode(raw)) as SharePayload;
+    }
+    throw new Error("browser does not support DecompressionStream");
+  }
+  if (encoded.startsWith("p0.")) {
+    const bytes = fromBase64Url(encoded.slice(3));
+    return JSON.parse(new TextDecoder().decode(bytes)) as SharePayload;
+  }
+  throw new Error("unknown share format");
+}
+
+// Keys of the persisted state that are safe/useful to share.
+// Deliberately excludes: language, theme, customThemeTokens, themeProfiles,
+// onboardingDone, storedVersion (user-local preferences, not tracker data).
+export const SHAREABLE_KEYS = [
+  "selectedItems",
+  "completedMap",
+  "completionView",
+  "relicFoundComponents",
+  "inventoryParts",
+  "masteredItems",
+  "trackedSets",
+  "masteryParts",
+  "completedMaterials",
+  "checklistItems",
+] as const;
+
+type ShareableKey = typeof SHAREABLE_KEYS[number];
+
+export function buildSharePayload(persistedState: PersistedState): SharePayload {
+  const out: SharePayload = {};
+  for (const k of SHAREABLE_KEYS) {
+    const value = persistedState[k as ShareableKey];
+    if (value !== undefined) {
+      // TypeScript can't narrow the destination key to match — assignment is safe.
+      (out as Record<string, unknown>)[k] = value;
+    }
+  }
+  return out;
+}
+
+export interface ShareCounts {
+  selectedItems: number;
+  inventoryParts: number;
+  masteredItems: number;
+  trackedSets: number;
+  checklistItems: number;
+  relicFoundComponents: number;
+}
+
+export function countSharePayload(payload: SharePayload): ShareCounts {
+  return {
+    selectedItems: payload.selectedItems?.length || 0,
+    inventoryParts: Object.keys(payload.inventoryParts || {}).length,
+    masteredItems: Object.keys(payload.masteredItems || {}).length,
+    trackedSets: payload.trackedSets?.length || 0,
+    checklistItems: payload.checklistItems?.length || 0,
+    relicFoundComponents: Object.keys(payload.relicFoundComponents || {}).length,
+  };
+}
