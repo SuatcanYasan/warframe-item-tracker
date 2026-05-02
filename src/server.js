@@ -436,7 +436,23 @@ async function fetchFromDE() {
     stage = "load-parser";
     const WorldState = await loadParser();
     stage = "parse";
-    const ws = await WorldState.build(text, { locale: "en", platform: "pc" });
+    // The WFCD parser console.logs informational notes when optional
+    // fields are missing from DE's payload (e.g. "No defined kuva data,
+    // skipping data" for KuvaMissions, "No outpost data, skipping" for
+    // SentientOutposts). We don't surface these fields anywhere, so the
+    // logs are pure noise — silence them just for the parse call.
+    const PARSER_NOISE = /^No (defined kuva|outpost) data, skipping/;
+    const origLog = console.log;
+    console.log = (msg, ...args) => {
+      if (typeof msg === "string" && PARSER_NOISE.test(msg)) return;
+      origLog(msg, ...args);
+    };
+    let ws;
+    try {
+      ws = await WorldState.build(text, { locale: "en", platform: "pc" });
+    } finally {
+      console.log = origLog;
+    }
     if (!ws) {
       console.warn("[worldstate] parser returned null");
       return null;
