@@ -52,6 +52,7 @@
     "react-router-dom": "^7.14.0",
     "recharts": "^3.8.1",
     "vite-plugin-pwa": "^1.2.0",
+    "warframe-worldstate-parser": "^5.3.6",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },

@@ -62,13 +62,15 @@ app.use(
       directives: {
         "default-src": ["'self'"],
         "script-src": ["'self'"],
-        "style-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "style-src-elem": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         "img-src": ["'self'", "data:", "https:"],
-        "font-src": ["'self'", "data:"],
+        "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
         "connect-src": [
           "'self'",
           "https://api.warframestat.us",
           "https://content.warframe.com",
+          "https://api.warframe.com",
           "https://cdn.jsdelivr.net",
           "https://wiki.warframe.com",
           "https://*.supabase.co",
@@ -329,9 +331,39 @@ app.get("/api/activities", async (_req, res) => {
   }
 });
 
+// Primary source: Digital Extremes' raw worldstate. Always available
+// since this is what powers the in-game world. Parsed locally with
+// the same WFCD parser warframestat.us uses, so the output shape is
+// identical (frontend doesn't need any changes).
+//
+// IMPORTANT: We use the new api.warframe.com endpoint directly. The
+// old content.warframe.com URL still works via a 301 redirect, but
+// adding ANY query parameter (including a cache-bust) causes the
+// new CDN to return 409 Conflict — so we keep the URL pristine and
+// rely on our 30s in-process cache for freshness control instead.
+const DE_WORLDSTATE_URL = "https://api.warframe.com/cdn/worldState.php";
+// Secondary source: warframestat.us. Kept for redundancy in case DE
+// blocks our IP — but as of 2026-05 the convenience endpoints are
+// flaky (200 + empty body or 404 on per-field paths), so we no longer
+// rely on it as primary.
 const WF_STAT_BASE = "https://api.warframestat.us/pc";
-// Single shared worldstate cache — the upstream API dropped per-field
-// endpoints, so we fetch the whole /pc/ payload once and slice it.
+
+// Lazy-loaded ESM parser (server is CJS — must dynamic import).
+// If the import rejects (e.g. transient ESM-loader hiccup), null the
+// promise so the next call retries instead of caching the rejection.
+let _wfParserPromise = null;
+function loadParser() {
+  if (!_wfParserPromise) {
+    _wfParserPromise = import("warframe-worldstate-parser")
+      .then((m) => m.default || m)
+      .catch((err) => {
+        _wfParserPromise = null;
+        throw err;
+      });
+  }
+  return _wfParserPromise;
+}
+
 let worldstateCache = { data: null, ts: 0 };
 
 // Per-field fallback endpoints — used when the bulk /pc/ payload comes
@@ -373,6 +405,54 @@ async function fetchJsonOrNull(url) {
   }
 }
 
+// Pull DE's raw worldstate and parse it with the WFCD parser. The
+// parser yields the same shape warframestat.us would (cetusCycle,
+// vallisCycle, cambionCycle, voidTrader, fissures[], invasions[],
+// sortie, archonHunt, arbitration, nightwave) — so the rest of the
+// pipeline doesn't care which source we used.
+async function fetchFromDE() {
+  let stage = "init";
+  try {
+    stage = "fetch";
+    // No query string — DE's new CDN rejects any with 409 Conflict.
+    const response = await fetch(DE_WORLDSTATE_URL, {
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
+        "Accept": "application/json, text/plain, */*",
+      },
+    });
+    if (!response.ok) {
+      console.warn(`[worldstate] DE responded ${response.status} ${response.statusText}`);
+      return null;
+    }
+    stage = "read-body";
+    const text = await response.text();
+    if (!text) {
+      console.warn("[worldstate] DE returned empty body");
+      return null;
+    }
+
+    stage = "load-parser";
+    const WorldState = await loadParser();
+    stage = "parse";
+    const ws = await WorldState.build(text, { locale: "en", platform: "pc" });
+    if (!ws) {
+      console.warn("[worldstate] parser returned null");
+      return null;
+    }
+
+    // Parser objects carry methods + non-serializable fields. JSON
+    // round-trip strips those, leaving plain data ready for transport.
+    stage = "serialize";
+    return JSON.parse(JSON.stringify(ws));
+  } catch (error) {
+    console.warn(`[worldstate] DE source failed at ${stage}: ${error.name}: ${error.message}`);
+    if (error.cause) console.warn(`  cause: ${error.cause.message || error.cause}`);
+    return null;
+  }
+}
+
 async function fetchWorldstateOnce() {
   // Cache-bust to bypass any CDN-side stale empty body.
   const data = await fetchJsonOrNull(`${WF_STAT_BASE}/?cb=${Date.now()}`);
@@ -400,7 +480,17 @@ async function getWorldstate() {
   const cacheFresh = worldstateCache.data && now - worldstateCache.ts < 30000;
   if (cacheFresh) return worldstateCache.data;
 
-  // 5 attempts on the bulk endpoint with exponential backoff (50→800ms).
+  // PRIMARY: Digital Extremes' raw worldstate, parsed locally. This is
+  // the canonical source — warframestat.us is just a public mirror that
+  // happens to be unstable lately.
+  const fromDE = await fetchFromDE();
+  if (fromDE) {
+    worldstateCache = { data: fromDE, ts: Date.now() };
+    return fromDE;
+  }
+
+  // SECONDARY: warframestat.us bulk endpoint, in case DE blocks our IP
+  // or the parser hits an unsupported payload. 5 attempts w/ backoff.
   for (let i = 0; i < 5; i++) {
     const data = await fetchWorldstateOnce();
     if (data) {
