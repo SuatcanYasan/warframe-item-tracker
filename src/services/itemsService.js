@@ -57,6 +57,10 @@ function normalizeItem(item) {
           uniqueName: component.uniqueName,
           name: component.name,
           itemCount: component.itemCount ?? 1,
+          // Components carry their own image (Receiver, Barrel, generic
+          // Prime plug etc.). Without this, totals fell back to the hex
+          // placeholder for every prime sub-part.
+          imageName: component.imageName || null,
           drops: normalizeDrops(component.drops),
         }))
       : [],

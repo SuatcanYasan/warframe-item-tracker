@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { DeleteOutlined, HolderOutlined, CheckOutlined } from "@ant-design/icons";
-import { Empty, Typography } from "antd";
+import EmptyState from "../shared/EmptyState";
 import {
   DndContext,
   closestCenter,
@@ -19,8 +19,6 @@ import DropInfoPopover from "../relic/DropInfoPopover";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useRelativeTime } from "../../hooks/useRelativeTime";
 import { useCraftStore } from "../../stores/craftStore";
-
-const { Text } = Typography;
 
 function AddedAtLabel({ timestamp }) {
   const relative = useRelativeTime(timestamp);
@@ -125,7 +123,7 @@ function SortableItemCard({ item, index, enrichedByItem, onOpenDetail, onRemoveI
   );
 }
 
-export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRemoveItem }) {
+export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRemoveItem, onOpenSearchDrawer }) {
   const { t } = useTranslate();
   const selectedSearch = useCraftStore((s) => s.selectedSearch);
   const selectedFilter = useCraftStore((s) => s.selectedFilter);
@@ -154,11 +152,22 @@ export default function ItemCardGrid({ items, enrichedByItem, onOpenDetail, onRe
     reorderItems(oldIndex, newIndex);
   }
 
+  const hasFilters = Boolean(selectedSearch) || selectedFilter !== "all" || selectedCategory !== "all";
   if (items.length === 0) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<Text type="secondary">{t("noSelected")}</Text>} />
-      </div>
+    return hasFilters ? (
+      <EmptyState
+        icon="search"
+        title={t("emptySearchTitle")}
+        description={t("emptySearchDesc")}
+      />
+    ) : (
+      <EmptyState
+        icon="craft"
+        title={t("emptyCraftTitle")}
+        description={t("emptyCraftDesc")}
+        ctaLabel={t("emptyCraftCta")}
+        onCta={onOpenSearchDrawer}
+      />
     );
   }
 

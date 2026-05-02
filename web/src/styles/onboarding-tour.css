@@ -1,0 +1,107 @@
+.onboarding-tour-modal .ant-modal-content {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--wf-primary) 25%, transparent);
+}
+
+.onboarding-tour {
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-tour > .ant-progress {
+  margin: 0 0 0 0 !important;
+  border-radius: 0 !important;
+}
+.onboarding-tour > .ant-progress .ant-progress-outer,
+.onboarding-tour > .ant-progress .ant-progress-inner {
+  border-radius: 0 !important;
+}
+
+.onboarding-tour-step {
+  padding: 40px 36px 28px;
+  text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-tour-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  color: var(--wf-primary);
+  background: color-mix(in srgb, var(--wf-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wf-primary) 22%, transparent);
+  margin-bottom: 22px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--wf-primary) 5%, transparent);
+}
+
+.onboarding-tour-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--wf-text);
+  margin: 0 0 10px 0;
+  line-height: 1.25;
+}
+
+.onboarding-tour-desc {
+  font-size: 14px;
+  color: var(--wf-text-muted);
+  line-height: 1.6;
+  max-width: 380px;
+  margin: 0;
+}
+
+.onboarding-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-top: 1px solid var(--wf-border);
+  gap: 12px;
+}
+
+.onboarding-tour-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.onboarding-tour-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wf-border);
+  transition: all 0.2s ease;
+}
+
+.onboarding-tour-dot.active {
+  width: 22px;
+  border-radius: 4px;
+  background: var(--wf-primary);
+}
+
+.onboarding-tour-dot.done {
+  background: color-mix(in srgb, var(--wf-primary) 50%, var(--wf-border));
+}
+
+@media (max-width: 600px) {
+  .onboarding-tour-step {
+    padding: 28px 20px 16px;
+    min-height: 240px;
+  }
+  .onboarding-tour-title {
+    font-size: 18px;
+  }
+  .onboarding-tour-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 30px;
+  }
+}

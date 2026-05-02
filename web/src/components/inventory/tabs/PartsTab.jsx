@@ -8,8 +8,8 @@ import {
   CaretDownOutlined,
   CheckOutlined,
 } from "@ant-design/icons";
-import { Empty, Typography } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
+import EmptyState from "../../shared/EmptyState";
 import {
   useReactTable,
   getCoreRowModel,
@@ -18,8 +18,6 @@ import {
 } from "@tanstack/react-table";
 import { FALLBACK_ICON, marketUrl, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
-
-const { Text } = Typography;
 
 function PartCard({ part, onUpdateQty, onRemove, multiMode, isSelected, onToggleMulti }) {
   const { t } = useTranslate();
@@ -205,15 +203,19 @@ function PartsTable({ partsList, onUpdateQty, onRemove, t }) {
   );
 }
 
-export default function PartsTab({ partsList, onUpdateQty, onRemove, multiMode, multiIds, onToggleMulti }) {
+export default function PartsTab({ partsList, onUpdateQty, onRemove, multiMode, multiIds, onToggleMulti, onOpenAddDrawer }) {
   const { t } = useTranslate();
   const [viewMode, setViewMode] = useState("card");
 
   if (partsList.length === 0) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<Text type="secondary">{t("noParts")}</Text>} />
-      </div>
+      <EmptyState
+        icon="inventory"
+        title={t("emptyInventoryTitle")}
+        description={t("emptyInventoryDesc")}
+        ctaLabel={t("emptyInventoryCta")}
+        onCta={onOpenAddDrawer}
+      />
     );
   }
 

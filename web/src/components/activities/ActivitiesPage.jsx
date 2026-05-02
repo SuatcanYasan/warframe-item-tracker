@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "antd";
 import { CompassOutlined } from "@ant-design/icons";
 import { requestJson } from "../../utils/helpers";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -9,6 +8,8 @@ import InvasionsTab from "./tabs/InvasionsTab";
 import NightwaveTab from "./tabs/NightwaveTab";
 import SortieArchonTab from "./tabs/SortieArchonTab";
 import ArbitrationTab from "./tabs/ArbitrationTab";
+import SkeletonGrid from "../shared/SkeletonGrid";
+import ErrorState from "../shared/ErrorState";
 
 const TABS = [
   { key: "fissures", labelKey: "actFissuresTab" },
@@ -22,7 +23,7 @@ export default function ActivitiesPage() {
   const { t } = useTranslate();
   const [activeTab, setActiveTab] = useState("fissures");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["activities"],
     queryFn: () => requestJson("/api/activities"),
     refetchInterval: 60_000,    // refetch every minute
@@ -55,7 +56,13 @@ export default function ActivitiesPage() {
 
       <div className="activities-body">
         {isLoading ? (
-          <Skeleton active paragraph={{ rows: 6 }} />
+          <SkeletonGrid variant="row" count={6} />
+        ) : isError ? (
+          <ErrorState
+            title={t("errorActivitiesTitle")}
+            description={t("errorActivitiesDesc")}
+            onRetry={() => refetch()}
+          />
         ) : (
           <>
             {activeTab === "fissures" && <FissuresTab fissures={data?.fissures || []} />}

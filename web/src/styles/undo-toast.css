@@ -1,0 +1,27 @@
+.undo-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.undo-toast-msg {
+  color: var(--wf-text);
+  font-size: 13px;
+}
+
+.undo-toast-btn {
+  background: color-mix(in srgb, var(--wf-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wf-primary) 35%, transparent);
+  color: var(--wf-primary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.15s ease;
+}
+
+.undo-toast-btn:hover {
+  background: color-mix(in srgb, var(--wf-primary) 28%, transparent);
+}

@@ -108,3 +108,37 @@
   background: color-mix(in srgb, var(--wf-primary) 12%, transparent);
   color: var(--wf-primary, #CA8A04);
 }
+
+/* === TotalDetailModal — sticky bulk donate footer + bounded scroll === */
+.total-detail-modal-body {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(85vh - 120px);
+}
+
+.total-detail-scroll {
+  overflow-y: auto;
+  max-height: 50vh;
+  padding-right: 4px;
+  padding-bottom: 8px;
+}
+
+.total-detail-bulk-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 14px;
+  margin-top: 12px;
+  background: var(--wf-bg-elevated, #152344);
+  border: 1px solid var(--wf-border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+}
+
+/* === Sync conflict modal === */
+.sync-conflict-card {
+  padding: 14px;
+  background: var(--wf-bg-container, #0f1a30);
+  border: 1px solid var(--wf-border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+}

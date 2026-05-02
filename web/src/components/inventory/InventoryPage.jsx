@@ -235,6 +235,7 @@ export default function InventoryTrackerContent() {
           multiMode={multiMode}
           multiIds={multiIds}
           onToggleMulti={toggleMultiId}
+          onOpenAddDrawer={() => setDrawerOpen(true)}
         />
       )}
 

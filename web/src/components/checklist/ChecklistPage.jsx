@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { Input, Button, Segmented, Empty, Tooltip, Progress } from "antd";
+import { Input, Button, Segmented, Progress } from "antd";
 import { PlusOutlined, DeleteOutlined, CheckOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useChecklistStore, isItemDoneNow } from "../../stores/checklistStore";
+import EmptyState from "../shared/EmptyState";
 
 const PRESETS = [
   { text: "Sortie", type: "daily" },
@@ -169,21 +170,16 @@ export default function ChecklistPage() {
       </div>
 
       {totalItems === 0 ? (
-        <div className="checklist-empty">
-          <Empty description={
-            <div>
-              <div style={{ marginBottom: 8, fontWeight: 600 }}>{t("checklistEmptyTitle")}</div>
-              <div style={{ fontSize: 12, color: "var(--wf-text-muted)", marginBottom: 12 }}>
-                {t("checklistEmptyHint")}
-              </div>
-              <Tooltip title={t("checklistPresetsTip")}>
-                <Button type="primary" onClick={handleAddPresets}>
-                  {t("checklistAddPresets")}
-                </Button>
-              </Tooltip>
-            </div>
-          } />
-        </div>
+        <EmptyState
+          icon="checklist"
+          title={t("emptyChecklistTitle")}
+          description={t("emptyChecklistDesc")}
+          ctaLabel={t("emptyChecklistCta")}
+          ctaIcon={<ThunderboltOutlined />}
+          onCta={handleAddPresets}
+          secondaryLabel={t("emptyChecklistAdd")}
+          onSecondary={() => document.querySelector(".checklist-add input")?.focus()}
+        />
       ) : (
         <>
           {renderGroup(dailyItems, "checklistDaily", "daily")}

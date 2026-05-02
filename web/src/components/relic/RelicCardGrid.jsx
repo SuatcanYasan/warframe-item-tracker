@@ -8,6 +8,7 @@ import {
 import { FALLBACK_ICON, handleImgError } from "../../utils/helpers";
 import { useItemDrops } from "../../hooks/useApiQueries";
 import { useTranslate } from "../../hooks/useTranslate";
+import EmptyState from "../shared/EmptyState";
 
 const { Text } = Typography;
 
@@ -255,12 +256,11 @@ export default function RelicCardGrid({ watchedPrimes, foundComponents, onToggle
 
   if (watchedPrimes.length === 0) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={<Text type="secondary">{t("noWatchedPrimes")}</Text>}
-        />
-      </div>
+      <EmptyState
+        icon="craft"
+        title={t("emptyRelicTitle")}
+        description={t("emptyRelicDesc")}
+      />
     );
   }
 

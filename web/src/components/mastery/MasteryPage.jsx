@@ -1,10 +1,16 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined } from "@ant-design/icons";
+import { Button } from "antd";
+import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, AppstoreAddOutlined, ClearOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
 import { requestJson } from "../../utils/helpers";
+import { showUndoToast } from "../../utils/undoToast";
+import EmptyState from "../shared/EmptyState";
+import SkeletonGrid, { SkeletonStatBar } from "../shared/SkeletonGrid";
+import ErrorState from "../shared/ErrorState";
+import HintPill from "../shared/HintPill";
 
 function getNextAction(status, t) {
   if (!status) return t("masteryClickOwned");
@@ -27,24 +33,40 @@ export default function MasteryPage() {
   const { t } = useTranslate();
   const masteredItems = useMasteryStore((s) => s.masteredItems);
   const cycleStatus = useMasteryStore((s) => s.cycleStatus);
+  const clearStatus = useMasteryStore((s) => s.clearStatus);
+  const multiSelectMode = useMasteryStore((s) => s.multiSelectMode);
+  const multiSelectedIds = useMasteryStore((s) => s.multiSelectedIds);
+  const toggleMultiSelectMode = useMasteryStore((s) => s.toggleMultiSelectMode);
+  const toggleMultiSelected = useMasteryStore((s) => s.toggleMultiSelected);
+  const selectAllMulti = useMasteryStore((s) => s.selectAllMulti);
+  const clearMultiSelected = useMasteryStore((s) => s.clearMultiSelected);
+  const bulkSetStatus = useMasteryStore((s) => s.bulkSetStatus);
 
   const [categorizedItems, setCategorizedItems] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  useEffect(() => {
+  const loadItems = () => {
     let cancelled = false;
     setLoading(true);
+    setError(false);
     requestJson("/api/mastery/items")
       .then((data) => {
         if (!cancelled) setCategorizedItems(data);
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
+  };
+
+  useEffect(() => {
+    return loadItems();
   }, []);
 
   const scrollRef = useRef(null);
@@ -57,6 +79,31 @@ export default function MasteryPage() {
     requestAnimationFrame(() => {
       if (container) container.scrollTop = scrollTop;
     });
+  };
+
+  // Right-click → instantly clear status (skip cycle).
+  const handleContextMenu = (e, uniqueName) => {
+    e.preventDefault();
+    if (multiSelectMode) return;  // bulk-only in multi mode
+    const container = document.querySelector('.app-content');
+    const scrollTop = container?.scrollTop || 0;
+    const prev = useMasteryStore.getState().masteredItems[uniqueName];
+    if (!prev) return;  // already cleared, nothing to undo
+    clearStatus(uniqueName);
+    requestAnimationFrame(() => {
+      if (container) container.scrollTop = scrollTop;
+    });
+    showUndoToast({
+      message: t("undoMasteryCleared"),
+      undoLabel: t("undo"),
+      onUndo: () => useMasteryStore.getState().setStatus(uniqueName, prev),
+    });
+  };
+
+  // Card click in multi-select mode toggles selection instead of cycling.
+  const handleCardClick = (uniqueName) => {
+    if (multiSelectMode) toggleMultiSelected(uniqueName);
+    else handleCycle(uniqueName);
   };
 
   const filteredCategories = useMemo(() => {
@@ -127,10 +174,20 @@ export default function MasteryPage() {
 
   if (loading) {
     return (
-      <div className="mastery-loading">
-        <TrophyFilled className="mastery-loading-icon" />
-        <span>{t("masteryLoading")}</span>
-      </div>
+      <>
+        <SkeletonStatBar count={4} />
+        <SkeletonGrid variant="card" count={12} />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title={t("errorMasteryTitle")}
+        description={t("errorMasteryDesc")}
+        onRetry={loadItems}
+      />
     );
   }
 
@@ -143,6 +200,11 @@ export default function MasteryPage() {
 
   return (
     <>
+      <HintPill
+        id="mastery-right-click-2026"
+        title={t("hintDidYouKnow")}
+        description={t("hintMasteryRightClick")}
+      />
       {/* Summary Cards */}
       <div className="summary-bar mastery-summary-grid">
         <motion.div className="stat-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
@@ -222,9 +284,28 @@ export default function MasteryPage() {
             </>
           )}
         </div>
+        <div className="craft-toolbar-right">
+          <Button
+            size="small"
+            type={multiSelectMode ? "primary" : "default"}
+            icon={<CheckOutlined />}
+            onClick={toggleMultiSelectMode}
+          >
+            {multiSelectMode ? t("multiSelectExit") : t("multiSelectMode")}
+          </Button>
+        </div>
       </div>
 
       {/* Category sections */}
+      {visibleCategories.length === 0 && (
+        <EmptyState
+          icon="search"
+          title={t("emptyMasteryTitle")}
+          description={t("emptyMasteryDesc")}
+          ctaLabel={search ? t("multiSelectClearSelection") : null}
+          onCta={search ? () => setSearch("") : undefined}
+        />
+      )}
       <div className="mastery-sections">
         {visibleCategories.map((cat) => (
           <div key={cat.key} className="mastery-category">
@@ -238,17 +319,26 @@ export default function MasteryPage() {
               <AnimatePresence>
                 {cat.items.map((item) => {
                   const status = masteredItems[item.uniqueName];
+                  const isSelected = multiSelectedIds.has(item.uniqueName);
                   return (
                     <motion.div
                       key={item.uniqueName}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.15 }}
-                      className={`mastery-card ${status || ""}`}
-                      onClick={() => handleCycle(item.uniqueName)}
+                      className={`mastery-card ${status || ""} ${isSelected ? "multi-selected" : ""}`}
+                      onClick={() => handleCardClick(item.uniqueName)}
+                      onContextMenu={(e) => handleContextMenu(e, item.uniqueName)}
                     >
+                      {multiSelectMode && (
+                        <div className={`mastery-card-checkbox ${isSelected ? "checked" : ""}`}>
+                          {isSelected && <CheckOutlined />}
+                        </div>
+                      )}
                       <div className="mastery-card-hover-hint">
-                        {getNextAction(status, t)}
+                        {multiSelectMode
+                          ? (isSelected ? t("multiSelectDeselect") : t("multiSelectSelect"))
+                          : getNextAction(status, t)}
                       </div>
                       <div className="mastery-card-img-wrap">
                         {item.imageUrl ? (
@@ -284,6 +374,67 @@ export default function MasteryPage() {
           </div>
         ))}
       </div>
+
+      {/* Floating action bar — appears in multi-select mode with selected items */}
+      {multiSelectMode && (
+        <div className="mastery-bulk-bar">
+          <span className="mastery-bulk-count">
+            {multiSelectedIds.size} {t("multiSelected")}
+          </span>
+          <Button
+            size="small"
+            onClick={() => {
+              const allIds = visibleCategories.flatMap((c) => c.items.map((i) => i.uniqueName));
+              selectAllMulti(allIds);
+            }}
+          >
+            {t("multiSelectAll")}
+          </Button>
+          <Button
+            size="small"
+            disabled={multiSelectedIds.size === 0}
+            onClick={clearMultiSelected}
+          >
+            {t("multiSelectClearSelection")}
+          </Button>
+          <span className="mastery-bulk-sep" />
+          <Button
+            size="small"
+            type="primary"
+            icon={<InboxOutlined />}
+            disabled={multiSelectedIds.size === 0}
+            onClick={() => bulkSetStatus([...multiSelectedIds], "owned")}
+          >
+            {t("masteryBulkMarkOwned")}
+          </Button>
+          <Button
+            size="small"
+            icon={<CheckCircleOutlined />}
+            disabled={multiSelectedIds.size === 0}
+            style={{ borderColor: "var(--wf-primary)", color: "var(--wf-primary)" }}
+            onClick={() => bulkSetStatus([...multiSelectedIds], "mastered")}
+          >
+            {t("masteryBulkMarkMastered")}
+          </Button>
+          <Button
+            size="small"
+            icon={<ClearOutlined />}
+            danger
+            disabled={multiSelectedIds.size === 0}
+            onClick={() => bulkSetStatus([...multiSelectedIds], null)}
+          >
+            {t("masteryBulkClear")}
+          </Button>
+          <span className="mastery-bulk-sep" />
+          <Button
+            size="small"
+            icon={<CloseOutlined />}
+            onClick={toggleMultiSelectMode}
+          >
+            {t("multiSelectExit")}
+          </Button>
+        </div>
+      )}
     </>
   );
 }

@@ -1,9 +1,7 @@
-import { Empty, Typography } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { FALLBACK_ICON, marketUrl, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
-
-const { Text } = Typography;
+import EmptyState from "../../shared/EmptyState";
 
 function SetCard({ set }) {
   const { t } = useTranslate();
@@ -74,9 +72,11 @@ export default function SetsTab({ sets }) {
   const { t } = useTranslate();
   if (sets.length === 0) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: 60 }}>
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<Text type="secondary">{t("noSets")}</Text>} />
-      </div>
+      <EmptyState
+        icon="inventory"
+        title={t("emptySetsTitle")}
+        description={t("emptySetsDesc")}
+      />
     );
   }
 

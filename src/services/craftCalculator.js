@@ -1,3 +1,7 @@
+// Mirrors ITEM_IMAGE_BASE_URL in itemsService.js — kept inline to avoid
+// a circular import (itemsService consumes craftCalculator).
+const ITEM_IMAGE_BASE_URL = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/img";
+
 function addToTotals(totalsMap, key, requirement) {
   const existing = totalsMap.get(key);
   if (existing) {
@@ -194,22 +198,21 @@ function createResolver(itemMap, options) {
           addToTotals(requirements, nestedRequirement.uniqueName, nestedRequirement);
         }
       } else {
-        const componentImage = childItem
-          ? {
-              imageName: childItem.imageName || null,
-              imageUrl: childItem.imageUrl || null,
-            }
-          : {
-              imageName: null,
-              imageUrl: null,
-            };
+        // WFCD components carry their own imageName (e.g. Receiver,
+        // Blueprint, GenericComponentPrimePlug). Prefer it; fall back
+        // to the child item's image only if the component itself has none.
+        const componentImageName =
+          component.imageName || childItem?.imageName || null;
+        const componentImageUrl = componentImageName
+          ? `${ITEM_IMAGE_BASE_URL}/${encodeURIComponent(componentImageName)}`
+          : (childItem?.imageUrl || null);
 
         addToTotals(requirements, key, {
           uniqueName: key,
           name: component.name,
           quantity: componentQuantity,
-          imageName: componentImage.imageName,
-          imageUrl: componentImage.imageUrl,
+          imageName: componentImageName,
+          imageUrl: componentImageUrl,
         });
       }
     }

@@ -1,9 +1,11 @@
-import { Modal, InputNumber, Button, Typography, Flex } from "antd";
+import { useState } from "react";
+import { Modal, InputNumber, Button, Typography, Flex, Switch } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { FALLBACK_ICON, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useCraftStore } from "../../../stores/craftStore";
+import HintPill from "../../shared/HintPill";
 
 const { Text } = Typography;
 
@@ -14,6 +16,9 @@ export default function TotalDetailModal({
   const { t } = useTranslate();
   const selectedItems = useCraftStore((s) => s.selectedItems);
   const completedMap = useCraftStore((s) => s.completedMap);
+  // Hide completed consumers by default — most users want to see what's
+  // still needed, not scroll past 30 done items.
+  const [hideDone, setHideDone] = useState(true);
 
   if (!material) return null;
 
@@ -37,13 +42,16 @@ export default function TotalDetailModal({
   const liveRemaining = Math.max(0, liveTotal - liveCompleted);
   const livePercent = liveTotal > 0 ? Math.round((liveCompleted / liveTotal) * 100) : 100;
   const liveStatus = liveRemaining === 0 ? "done" : liveCompleted > 0 ? "partial" : "open";
+  const doneCount = consumers.filter((c) => c.remaining === 0).length;
+  const visibleConsumers = hideDone ? consumers.filter((c) => c.remaining > 0) : consumers;
 
   return (
     <Modal
       open={open}
       onCancel={onClose}
       footer={null}
-      width={680}
+      width={820}
+      classNames={{ body: "total-detail-modal-body" }}
       title={
         <Flex align="center" gap={14} style={{ paddingRight: 32 }}>
           <img
@@ -69,13 +77,30 @@ export default function TotalDetailModal({
         </div>
       </div>
 
-      <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600, display: "block", marginBottom: 10 }}>
-        {t("requirementUsedByCount", { count: consumers.length })}
-      </Text>
+      {doneCount > 0 && (
+        <HintPill
+          id="total-detail-hide-done-2026"
+          description={t("hintTotalDetailHide")}
+        />
+      )}
 
-      <div className="detail-req-grid">
+      <Flex align="center" justify="space-between" style={{ marginBottom: 10 }}>
+        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>
+          {t("requirementUsedByCount", { count: consumers.length })}
+        </Text>
+        {doneCount > 0 && (
+          <Flex align="center" gap={8}>
+            <Text type="secondary" style={{ fontSize: 11 }}>
+              {t("hideCompletedSwitch", { count: doneCount })}
+            </Text>
+            <Switch size="small" checked={hideDone} onChange={setHideDone} />
+          </Flex>
+        )}
+      </Flex>
+
+      <div className="detail-req-grid total-detail-scroll">
         <AnimatePresence>
-          {consumers.map((item, i) => {
+          {visibleConsumers.map((item, i) => {
             const isDone = item.remaining === 0;
             return (
               <motion.div
@@ -125,12 +150,7 @@ export default function TotalDetailModal({
       </div>
 
       {liveRemaining > 0 && (
-        <Flex align="center" gap={10} style={{
-          padding: "12px 14px", marginTop: 16,
-          background: "var(--wf-bg-container, #0f1a30)",
-          border: "1px solid var(--wf-border, rgba(255,255,255,0.06))",
-          borderRadius: 8,
-        }}>
+        <Flex align="center" gap={10} className="total-detail-bulk-footer">
           <Text style={{ fontSize: 12, whiteSpace: "nowrap" }}>{t("bulkDonate")}:</Text>
           <InputNumber
             min={0}

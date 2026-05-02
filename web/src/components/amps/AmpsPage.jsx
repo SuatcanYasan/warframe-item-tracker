@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "antd";
 import { requestJson } from "../../utils/helpers";
 import { useTranslate } from "../../hooks/useTranslate";
+import SkeletonGrid from "../shared/SkeletonGrid";
+import ErrorState from "../shared/ErrorState";
 
 const WF_ICONS = "https://wiki.warframe.com/images";
 import AmpBuilderTab from "./tabs/AmpBuilderTab";
@@ -23,7 +24,7 @@ export default function AmpsPage() {
   const { t } = useTranslate();
   const [activeTab, setActiveTab] = useState("builder");
 
-  const { data: ampsData, isLoading } = useQuery({
+  const { data: ampsData, isLoading, isError, refetch } = useQuery({
     queryKey: ["amps"],
     queryFn: () => requestJson("/api/amps"),
     staleTime: 30 * 60 * 1000,
@@ -44,7 +45,19 @@ export default function AmpsPage() {
   if (isLoading) {
     return (
       <div className="amps-page">
-        <Skeleton active paragraph={{ rows: 8 }} />
+        <SkeletonGrid variant="card" count={9} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="amps-page">
+        <ErrorState
+          title={t("errorAmpsTitle")}
+          description={t("errorAmpsDesc")}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -75,7 +88,7 @@ export default function AmpsPage() {
 
       <div className="amps-tab-body">
         {activeTab === "builder" && <AmpBuilderTab ampsData={ampsData} />}
-        {activeTab === "tracker" && <AmpTrackerTab allParts={allParts} />}
+        {activeTab === "tracker" && <AmpTrackerTab allParts={allParts} onGoToBuilder={() => setActiveTab("builder")} />}
         {activeTab === "mastery" && <AmpMasteryTab allParts={allParts} />}
         {activeTab === "eidolon" && <AmpEidolonTab ampsData={ampsData} />}
         {activeTab === "meta" && <AmpMetaTab ampsData={ampsData} />}

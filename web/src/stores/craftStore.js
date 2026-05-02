@@ -1,8 +1,16 @@
 import { create } from "zustand";
 
+// Bumped whenever WFCD/warframe-items publishes new image hashes.
+// On boot, if a stored craft item has a lower version, its imageUrl is
+// re-fetched from /api/items/resolve-metadata so 403/404 placeholders go
+// away without the user re-adding items.
+export const CRAFT_IMAGE_MIGRATION_VERSION = 1;
+
 export const useCraftStore = create((set, get) => ({
   selectedItems: [],
   completedMap: {},
+  imageMigrationVersion: 0,
+  setImageMigrationVersion: (v) => set({ imageMigrationVersion: v }),
   completionView: "all",
   calculation: { perItem: [], totals: [] },
   loadingCalc: false,

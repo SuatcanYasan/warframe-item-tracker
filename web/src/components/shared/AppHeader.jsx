@@ -5,6 +5,7 @@ import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
 import LanguageSelect from "./LanguageSelect";
 import AccountMenu from "./AccountMenu";
+import PageHelpDrawer from "./PageHelpDrawer";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent || navigator.platform);
 const MOD_KEY = isMac ? "⌘" : "Ctrl";
@@ -41,21 +42,42 @@ export default function AppHeader() {
         </nav>
       </div>
       <div className="app-header-right">
-        <button className="header-shortcut-btn" onClick={openShortcuts} title={t("shortcutsTitle")}>
+        <button
+          className="header-shortcut-btn"
+          onClick={() => {
+            // Synthesize a Cmd/Ctrl+K so CommandPalette's global listener
+            // fires — keeps a single source of truth for that toggle.
+            const evt = new KeyboardEvent("keydown", { key: "k", metaKey: isMac, ctrlKey: !isMac, bubbles: true });
+            window.dispatchEvent(evt);
+          }}
+          title={t("cmdPlaceholder")}
+          aria-label={t("cmdPlaceholder")}
+        >
           <SearchOutlined className="header-shortcut-icon" />
           <span className="header-shortcut-label">{t("search")}</span>
           <span className="header-shortcut-kbd">{MOD_KEY}K</span>
         </button>
+        <PageHelpDrawer />
         <LanguageSelect
           value={language}
           onChange={setLanguage}
           compact
         />
-        <button className="header-icon-btn" onClick={openShareModal} title={t("shareModalTitle")}>
+        <button
+          className="header-icon-btn"
+          onClick={openShareModal}
+          title={t("shareModalTitle")}
+          aria-label={t("shareModalTitle")}
+        >
           <ShareAltOutlined style={{ fontSize: 16, opacity: 0.85 }} />
         </button>
         <AccountMenu />
-        <button className="header-icon-btn" onClick={openThemeDrawer}>
+        <button
+          className="header-icon-btn"
+          onClick={openThemeDrawer}
+          title={t("customize")}
+          aria-label={t("customize")}
+        >
           <img src={`${WF_ICONS}/IconSalvage%28xWhite%29.png`} alt="" style={{ width: 18, height: 18, objectFit: "contain", opacity: 0.8 }} loading="lazy" decoding="async" />
         </button>
       </div>

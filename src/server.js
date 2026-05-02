@@ -304,21 +304,65 @@ const WF_STAT_BASE = "https://api.warframestat.us/pc";
 // endpoints, so we fetch the whole /pc/ payload once and slice it.
 let worldstateCache = { data: null, ts: 0 };
 
-const STALE_MAX_AGE = 60 * 60 * 1000;   // serve stale cache up to 1 hour on error
+// Per-field fallback endpoints — used when the bulk /pc/ payload comes
+// back empty (the upstream returns 200 + empty body intermittently).
+// Mapping is `field name in /pc/ payload` → `path under /pc/`.
+// Trailing slash matters — without it the upstream returns a 301
+// redirect (200 once followed) and adds a needless round-trip.
+const PER_FIELD_PATHS = {
+  cetusCycle: "/cetusCycle/",
+  vallisCycle: "/vallisCycle/",
+  cambionCycle: "/cambionCycle/",
+  voidTrader: "/voidTrader/",
+  fissures: "/fissures/",
+  invasions: "/invasions/",
+  nightwave: "/nightwave/",
+  sortie: "/sortie/",
+  archonHunt: "/archonHunt/",
+  arbitration: "/arbitration/",
+};
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchJsonOrNull(url) {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
+        "Accept": "application/json",
+        "Cache-Control": "no-cache",
+      },
+    });
+    if (!response.ok) return null;
+    const text = await response.text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch { return null; }
+  } catch {
+    return null;
+  }
+}
 
 async function fetchWorldstateOnce() {
-  const response = await fetch(`${WF_STAT_BASE}/?cb=${Date.now()}`, {
-    signal: AbortSignal.timeout(10000),
-    headers: {
-      "User-Agent": "Mozilla/5.0 (warframe-item-tracker)",
-      "Accept": "application/json",
-      "Cache-Control": "no-cache",
-    },
-  });
-  if (!response.ok) throw new Error(`worldstate ${response.status}`);
-  const text = await response.text();
-  if (!text) throw new Error("empty body");
-  return JSON.parse(text);
+  // Cache-bust to bypass any CDN-side stale empty body.
+  const data = await fetchJsonOrNull(`${WF_STAT_BASE}/?cb=${Date.now()}`);
+  if (!data || typeof data !== "object") return null;
+  return data;
+}
+
+// Last-resort: rebuild the worldstate slice we care about by hitting the
+// per-field endpoints individually. Slower but works when /pc/ is broken.
+async function fetchPerField() {
+  const entries = await Promise.all(
+    Object.entries(PER_FIELD_PATHS).map(async ([field, path]) => {
+      const value = await fetchJsonOrNull(`${WF_STAT_BASE}${path}?cb=${Date.now()}`);
+      return [field, value];
+    }),
+  );
+  const merged = Object.fromEntries(entries);
+  // Need at least one field to consider this a success.
+  const anyValue = Object.values(merged).some((v) => v && (Array.isArray(v) ? v.length > 0 : true));
+  return anyValue ? merged : null;
 }
 
 async function getWorldstate() {
@@ -326,26 +370,32 @@ async function getWorldstate() {
   const cacheFresh = worldstateCache.data && now - worldstateCache.ts < 30000;
   if (cacheFresh) return worldstateCache.data;
 
-  // Try to refresh, up to 3 attempts
-  let lastError = null;
-  for (let i = 0; i < 3; i++) {
-    try {
-      const data = await fetchWorldstateOnce();
+  // 5 attempts on the bulk endpoint with exponential backoff (50→800ms).
+  for (let i = 0; i < 5; i++) {
+    const data = await fetchWorldstateOnce();
+    if (data) {
       worldstateCache = { data, ts: Date.now() };
       return data;
-    } catch (err) {
-      lastError = err;
     }
+    if (i < 4) await sleep(50 * Math.pow(2, i));
   }
 
-  // Refresh failed — fall back to stale cache if it's within 1 hour
-  if (worldstateCache.data && now - worldstateCache.ts < STALE_MAX_AGE) {
-    console.warn(
-      `[worldstate] upstream failed (${lastError?.message}), serving stale cache (age ${Math.round((now - worldstateCache.ts) / 1000)}s)`,
-    );
+  // Bulk endpoint kept failing — try the per-field rebuild path.
+  const merged = await fetchPerField();
+  if (merged) {
+    console.warn("[worldstate] bulk endpoint failed, served per-field rebuild");
+    worldstateCache = { data: merged, ts: Date.now() };
+    return merged;
+  }
+
+  // Everything upstream failed — fall back to stale cache if we have any.
+  // Serving slightly stale data is always better than a 500 for the user.
+  if (worldstateCache.data) {
+    const ageMin = Math.round((now - worldstateCache.ts) / 60000);
+    console.warn(`[worldstate] all upstream paths failed, serving stale cache (age ${ageMin}m)`);
     return worldstateCache.data;
   }
-  throw lastError || new Error("worldstate unavailable");
+  throw new Error("worldstate unavailable (no cache, all upstream paths returned empty)");
 }
 
 app.get("/api/timers", async (_req, res) => {

@@ -1,0 +1,129 @@
+/* Skeleton loaders — used during initial fetch on key pages. */
+
+.skeleton-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  padding: 16px 0;
+}
+
+.skeleton-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  animation: skeleton-fade-in 0.45s ease forwards;
+  min-height: 220px;
+}
+
+.skeleton-card-img {
+  height: 110px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.skeleton-card-line {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-card-bar {
+  margin-top: auto;
+  height: 6px;
+  border-radius: 4px;
+}
+
+.skeleton-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  opacity: 0;
+  animation: skeleton-fade-in 0.4s ease forwards;
+}
+
+.skeleton-row-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-row-line {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-stat-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.skeleton-stat-card {
+  background: var(--wf-bg-elevated);
+  border: 1px solid var(--wf-border);
+  border-radius: 10px;
+  padding: 16px;
+  opacity: 0;
+  animation: skeleton-fade-in 0.4s ease forwards;
+}
+
+.skeleton-stat-line {
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--wf-text) 6%, transparent);
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--wf-primary) 14%, transparent) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes skeleton-fade-in {
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after,
+  .skeleton-card,
+  .skeleton-row,
+  .skeleton-stat-card {
+    animation: none;
+    opacity: 1;
+  }
+}

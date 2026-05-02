@@ -26,9 +26,9 @@ import { captureAndDownload } from "./utils/screenshot";
 import { applyCursorVars } from "./utils/cursors";
 
 import { useAppStore } from "./stores/appStore";
-import { useCraftStore } from "./stores/craftStore";
+import { useCraftStore, CRAFT_IMAGE_MIGRATION_VERSION } from "./stores/craftStore";
 import { useRelicStore } from "./stores/relicStore";
-import { useInventoryStore } from "./stores/inventoryStore";
+import { useInventoryStore, INVENTORY_IMAGE_MIGRATION_VERSION } from "./stores/inventoryStore";
 import { useMasteryStore } from "./stores/masteryStore";
 import { useAmpStore } from "./stores/ampStore";
 import { useChecklistStore } from "./stores/checklistStore";
@@ -51,11 +51,15 @@ import SummaryBar from "./components/craft/SummaryBar";
 import ItemCardGrid from "./components/craft/ItemCardGrid";
 import TotalsCardGrid from "./components/craft/TotalsCardGrid";
 import SearchDrawer from "./components/craft/SearchDrawer";
+import HintPill from "./components/shared/HintPill";
 import ThemeDrawer from "./components/shared/ThemeDrawer";
 import WizardModal from "./components/shared/WizardModal";
 import ShortcutsModal from "./components/shared/ShortcutsModal";
+import CommandPalette from "./components/shared/CommandPalette";
+import OnboardingTour from "./components/shared/OnboardingTour";
 import UpdateNotesModal from "./components/shared/UpdateNotesModal";
 import ShareModal from "./components/shared/ShareModal";
+import SyncConflictModal from "./components/shared/SyncConflictModal";
 import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
 import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
 // Route-level code splitting — each page ships as its own chunk.
@@ -198,24 +202,37 @@ function CraftAppContent() {
     return () => { cancelled = true; };
   }, [selectedItems]);
 
-  // --- Metadata resolution ---
+  // --- Metadata + image-URL refresh ---
+  // Two cases trigger this:
+  //   1. Item has missing/unknown category or type (legacy data shape)
+  //   2. Local image-migration version is below CRAFT_IMAGE_MIGRATION_VERSION
+  //      — runs once after each WFCD asset hash bump so stored 403/404
+  //      imageUrls get refreshed in place (the user keeps their craft list,
+  //      just the broken image disappears).
+  const imageMigrationVersion = useCraftStore((s) => s.imageMigrationVersion);
+  const setImageMigrationVersion = useCraftStore((s) => s.setImageMigrationVersion);
   useEffect(() => {
-    const missingMetadataNames = selectedItems
+    if (selectedItems.length === 0) return;
+    const needsMigration = imageMigrationVersion < CRAFT_IMAGE_MIGRATION_VERSION;
+    const namesNeedingMetadata = selectedItems
       .filter((item) => {
         const cat = String(item.category || "").trim().toLowerCase();
         const typ = String(item.type || "").trim().toLowerCase();
         return (!cat || cat === "bilinmiyor" || cat === "unknown") && (!typ || typ === "bilinmiyor" || typ === "unknown");
       })
       .map((item) => item.uniqueName);
-    if (missingMetadataNames.length === 0) return;
+    const targetNames = needsMigration
+      ? selectedItems.map((i) => i.uniqueName)
+      : namesNeedingMetadata;
+    if (targetNames.length === 0) return;
+
     let cancelled = false;
     requestJson("/api/items/resolve-metadata", {
       method: "POST",
-      body: JSON.stringify({ uniqueNames: missingMetadataNames }),
+      body: JSON.stringify({ uniqueNames: targetNames }),
     }).then((data) => {
       if (cancelled) return;
       const resolved = data?.itemsByUniqueName || {};
-      if (Object.keys(resolved).length === 0) return;
       setSelectedItems((prev) => {
         let changed = false;
         const next = prev.map((item) => {
@@ -223,16 +240,64 @@ function CraftAppContent() {
           if (!r) return item;
           const nextType = item.type || r.type || null;
           const nextCategory = item.category || r.category || r.type || null;
-          const nextImageUrl = item.imageUrl || r.imageUrl || null;
+          // During an image migration, prefer the fresh server URL over
+          // the stored one (it's likely 403/404). Otherwise keep what we
+          // have so we don't make pointless writes.
+          const nextImageUrl = needsMigration
+            ? (r.imageUrl || item.imageUrl || null)
+            : (item.imageUrl || r.imageUrl || null);
           if (nextType === item.type && nextCategory === item.category && nextImageUrl === item.imageUrl) return item;
           changed = true;
           return { ...item, type: nextType, category: nextCategory, imageUrl: nextImageUrl };
         });
         return changed ? next : prev;
       });
+      if (needsMigration) setImageMigrationVersion(CRAFT_IMAGE_MIGRATION_VERSION);
     }).catch(() => {});
     return () => { cancelled = true; };
-  }, [selectedItems]);
+  }, [selectedItems, imageMigrationVersion, setImageMigrationVersion, setSelectedItems]);
+
+  // Inventory image migration — same pattern as craft, but the URL we
+  // need to refresh is `parentImageUrl` (parts share the parent item
+  // image). We resolve by parentUniqueName since that's what /api/items
+  // returns image data for.
+  const inventoryImageVersion = useInventoryStore((s) => s.imageMigrationVersion);
+  const setInventoryImageVersion = useInventoryStore((s) => s.setImageMigrationVersion);
+  useEffect(() => {
+    if (inventoryImageVersion >= INVENTORY_IMAGE_MIGRATION_VERSION) return;
+    const parts = useInventoryStore.getState().inventoryParts;
+    const partUniqueNames = Object.keys(parts);
+    if (partUniqueNames.length === 0) return;
+    const parentUns = [...new Set(
+      partUniqueNames.map((un) => parts[un]?.parentUniqueName).filter(Boolean),
+    )];
+    if (parentUns.length === 0) return;
+
+    let cancelled = false;
+    requestJson("/api/items/resolve-metadata", {
+      method: "POST",
+      body: JSON.stringify({ uniqueNames: parentUns }),
+    }).then((data) => {
+      if (cancelled) return;
+      const resolved = data?.itemsByUniqueName || {};
+      useInventoryStore.getState().setInventoryParts((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const un of Object.keys(next)) {
+          const part = next[un];
+          const parent = resolved[part.parentUniqueName];
+          if (!parent || !parent.imageUrl) continue;
+          if (parent.imageUrl !== part.parentImageUrl) {
+            next[un] = { ...part, parentImageUrl: parent.imageUrl };
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+      setInventoryImageVersion(INVENTORY_IMAGE_MIGRATION_VERSION);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [inventoryImageVersion, setInventoryImageVersion]);
 
   // --- Actions needing message/modal ---
   function handleAddItem(item) {
@@ -390,6 +455,13 @@ function CraftAppContent() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/craft" element={
               <>
+                {selectedItems.length > 0 && (
+                  <HintPill
+                    id="command-palette-2026"
+                    title={t("hintDidYouKnow")}
+                    description={t("hintCommandPalette")}
+                  />
+                )}
                 <SummaryBar adjustedTotals={adjustedTotals} />
 
                 <div className="content-header">
@@ -468,7 +540,7 @@ function CraftAppContent() {
                         ))}
                       </div>
                     </div>
-                    <ItemCardGrid items={filteredSelectedItems} enrichedByItem={enrichedByItem} onOpenDetail={setDetailItem} onRemoveItem={removeItemWithConfirm} />
+                    <ItemCardGrid items={filteredSelectedItems} enrichedByItem={enrichedByItem} onOpenDetail={setDetailItem} onRemoveItem={removeItemWithConfirm} onOpenSearchDrawer={openSearchDrawer} />
                   </>
                 )}
 
@@ -518,11 +590,82 @@ function CraftAppContent() {
       <ThemeDrawer />
       <WizardModal />
       <ShortcutsModal />
+      <CommandPalette />
+      <OnboardingTour />
       <UpdateNotesModal />
       <ShareModal />
       <MobileNav />
     </>
   );
+}
+
+// ---- Sync conflict helpers (used by bootstrap + modal handlers) ----
+
+function hasMeaningfulData(state) {
+  return (
+    (state.selectedItems?.length || 0) > 0 ||
+    Object.keys(state.masteredItems || {}).length > 0 ||
+    Object.keys(state.inventoryParts || {}).length > 0 ||
+    (state.trackedSets?.length || 0) > 0 ||
+    (state.checklistItems?.length || 0) > 0 ||
+    (state.farmResources?.length || 0) > 0 ||
+    Object.keys(state.relicFoundComponents || {}).length > 0
+  );
+}
+
+function statesDiffer(local, cloud) {
+  // Quick count-based diff — different totals mean we should prompt the
+  // user instead of silently picking one. Catches both "local has more"
+  // and "cloud has more" scenarios.
+  const fields = [
+    [(local.selectedItems || []).length, (cloud.selectedItems || []).length],
+    [Object.keys(local.masteredItems || {}).length, Object.keys(cloud.masteredItems || {}).length],
+    [Object.keys(local.inventoryParts || {}).length, Object.keys(cloud.inventoryParts || {}).length],
+    [(local.trackedSets || []).length, (cloud.trackedSets || []).length],
+    [(local.checklistItems || []).length, (cloud.checklistItems || []).length],
+    [(local.farmResources || []).length, (cloud.farmResources || []).length],
+    [Object.keys(local.relicFoundComponents || {}).length, Object.keys(cloud.relicFoundComponents || {}).length],
+  ];
+  return fields.some(([l, c]) => l !== c);
+}
+
+function hydrateAllStores(persisted) {
+  const normalized = normalizePersistedState(persisted);
+  useAppStore.getState().hydrate(normalized);
+  useCraftStore.getState().hydrate(normalized);
+  useRelicStore.getState().hydrate(normalized);
+  useInventoryStore.getState().hydrate(normalized);
+  useMasteryStore.getState().hydrate(normalized);
+  useAmpStore.getState().hydrate(normalized);
+  useChecklistStore.getState().hydrate(normalized);
+  useFarmStore.getState().hydrate(normalized);
+}
+
+async function preWarmCloudHashes() {
+  // Re-read from stores after hydrate (some hydrate methods normalize/clean
+  // data, so the post-hydrate shape may differ from the raw input).
+  const app = useAppStore.getState();
+  const craft = useCraftStore.getState();
+  const amp = useAmpStore.getState();
+  await pushAllState({
+    language: app.language,
+    theme: app.themeName,
+    customThemeTokens: app.customThemeTokens,
+    themeProfiles: app.themeProfiles,
+    completionView: craft.completionView,
+    selectedItems: craft.selectedItems,
+    completedMap: craft.completedMap,
+    onboardingDone: !app.wizardOpen,
+    relicFoundComponents: useRelicStore.getState().foundComponents,
+    inventoryParts: useInventoryStore.getState().inventoryParts,
+    masteredItems: useMasteryStore.getState().masteredItems,
+    trackedSets: amp.trackedSets,
+    masteryParts: amp.masteryParts,
+    completedMaterials: amp.completedMaterials,
+    checklistItems: useChecklistStore.getState().items,
+    farmResources: useFarmStore.getState().trackedResources,
+    storedVersion: app.storedVersion,
+  }, { markOnly: true });
 }
 
 function CraftApp() {
@@ -593,54 +736,29 @@ function CraftApp() {
       const cloud = await pullAllState();
       if (cancelled) return;
 
-      if (cloud && !cloud.empty) {
-        const normalized = normalizePersistedState(cloud.state);
-        useAppStore.getState().hydrate(normalized);
-        useCraftStore.getState().hydrate(normalized);
-        useRelicStore.getState().hydrate(normalized);
-        useInventoryStore.getState().hydrate(normalized);
-        useMasteryStore.getState().hydrate(normalized);
-        useAmpStore.getState().hydrate(normalized);
-        useChecklistStore.getState().hydrate(normalized);
-        useFarmStore.getState().hydrate(normalized);
-        // Pre-warm push hashes from the ACTUAL store state (not normalized
-        // input) — some hydrate methods clean/transform data, so hash of
-        // store.masteredItems may differ from normalized.masteredItems.
-        // Reading post-hydrate guarantees the next persist cycle sees a
-        // matching hash and skips the echo write.
-        const app = useAppStore.getState();
-        const craft = useCraftStore.getState();
-        const amp = useAmpStore.getState();
-        await pushAllState({
-          language: app.language,
-          theme: app.themeName,
-          customThemeTokens: app.customThemeTokens,
-          themeProfiles: app.themeProfiles,
-          completionView: craft.completionView,
-          selectedItems: craft.selectedItems,
-          completedMap: craft.completedMap,
-          onboardingDone: !app.wizardOpen,
-          relicFoundComponents: useRelicStore.getState().foundComponents,
-          inventoryParts: useInventoryStore.getState().inventoryParts,
-          masteredItems: useMasteryStore.getState().masteredItems,
-          trackedSets: amp.trackedSets,
-          masteryParts: amp.masteryParts,
-          completedMaterials: amp.completedMaterials,
-          checklistItems: useChecklistStore.getState().items,
-          farmResources: useFarmStore.getState().trackedResources,
-          storedVersion: app.storedVersion,
-        }, { markOnly: true });
+      const localHasData = hasMeaningfulData(initialPersisted);
+
+      // Cloud empty — first login on this account with local data. Migrate up.
+      if (!cloud || cloud.empty) {
+        if (localHasData) await pushAllState(initialPersisted);
         markBootstrapReady();
         return;
       }
 
-      // Cloud empty — first login on a device with local data. Migrate up.
-      const localHasData =
-        (initialPersisted.selectedItems?.length || 0) > 0 ||
-        Object.keys(initialPersisted.masteredItems || {}).length > 0 ||
-        (initialPersisted.trackedSets?.length || 0) > 0 ||
-        Object.keys(initialPersisted.inventoryParts || {}).length > 0;
-      if (localHasData) await pushAllState(initialPersisted);
+      // Both sides have data — show modal whenever they differ in any
+      // meaningful way. User picks which one wins. Silent hydration only
+      // happens when local is empty OR counts match exactly (nothing to
+      // lose either way).
+      const cloudState = cloud.state;
+      const conflict = localHasData && statesDiffer(initialPersisted, cloudState);
+      if (conflict) {
+        useAppStore.getState().setSyncConflict({ local: initialPersisted, cloud: cloudState });
+        return;  // bootstrap stays gated until user picks
+      }
+
+      // No conflict: hydrate from cloud, pre-warm hashes.
+      hydrateAllStores(cloudState);
+      await preWarmCloudHashes();
       markBootstrapReady();
     })();
     return () => { cancelled = true; };
@@ -653,6 +771,27 @@ function CraftApp() {
     return () => clearTimeout(t);
   }, []);
 
+  // Sync conflict resolution. Modal shows local + cloud counts; user picks
+  // one to win. Local wins → push local up (merges into cloud). Cloud wins
+  // → hydrate stores from cloud. Either way: clear conflict, mark bootstrap
+  // ready so usePersist resumes normal sync.
+  const handleUseLocal = async () => {
+    const { syncConflict, clearSyncConflict } = useAppStore.getState();
+    if (!syncConflict) return;
+    hydrateAllStores(syncConflict.local);
+    await pushAllState(syncConflict.local);
+    clearSyncConflict();
+    markBootstrapReady();
+  };
+  const handleUseCloud = async () => {
+    const { syncConflict, clearSyncConflict } = useAppStore.getState();
+    if (!syncConflict) return;
+    hydrateAllStores(syncConflict.cloud);
+    await preWarmCloudHashes();
+    clearSyncConflict();
+    markBootstrapReady();
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -662,6 +801,7 @@ function CraftApp() {
     >
       <AntApp>
         <CraftAppContent />
+        <SyncConflictModal onUseLocal={handleUseLocal} onUseCloud={handleUseCloud} />
       </AntApp>
     </ConfigProvider>
   );

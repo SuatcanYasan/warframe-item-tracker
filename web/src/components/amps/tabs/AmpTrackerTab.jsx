@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { FALLBACK_ICON, requestJson, handleImgError } from "../../../utils/helpers";
 import { useTranslate } from "../../../hooks/useTranslate";
 import { useAmpStore } from "../../../stores/ampStore";
+import EmptyState from "../../shared/EmptyState";
 
 const rarityColors = {
   Common: "default",
@@ -84,7 +85,7 @@ function SetCard({ set, allParts, onRemove, onTogglePart, t }) {
   );
 }
 
-export default function AmpTrackerTab({ allParts }) {
+export default function AmpTrackerTab({ allParts, onGoToBuilder }) {
   const { t } = useTranslate();
   const trackedSets = useAmpStore((s) => s.trackedSets);
   const removeTrackedSet = useAmpStore((s) => s.removeTrackedSet);
@@ -165,14 +166,13 @@ export default function AmpTrackerTab({ allParts }) {
 
   if (totalSets === 0) {
     return (
-      <div className="amp-tracker-empty">
-        <Empty description={
-          <div>
-            <div style={{ marginBottom: 8, fontWeight: 600 }}>{t("ampTrackerEmptyTitle")}</div>
-            <div style={{ fontSize: 12, color: "var(--wf-text-muted)" }}>{t("ampTrackerEmptyHint")}</div>
-          </div>
-        } />
-      </div>
+      <EmptyState
+        icon="amp"
+        title={t("emptyAmpTitle")}
+        description={t("emptyAmpDesc")}
+        ctaLabel={t("emptyAmpCta")}
+        onCta={onGoToBuilder}
+      />
     );
   }
 

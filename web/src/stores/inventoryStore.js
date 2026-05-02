@@ -1,7 +1,13 @@
 import { create } from "zustand";
 
+// Same pattern as craftStore — bump when WFCD republishes assets with
+// new image hashes so persisted parentImageUrl values get refreshed.
+export const INVENTORY_IMAGE_MIGRATION_VERSION = 1;
+
 export const useInventoryStore = create((set) => ({
   inventoryParts: {},
+  imageMigrationVersion: 0,
+  setImageMigrationVersion: (v) => set({ imageMigrationVersion: v }),
 
   addPart: (comp, quantity) =>
     set((state) => ({

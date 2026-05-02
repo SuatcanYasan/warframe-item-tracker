@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { AutoComplete, InputNumber, Button, Empty, Tag, Modal, Skeleton, Spin, Input, Switch } from "antd";
+import EmptyState from "../shared/EmptyState";
 import {
   SearchOutlined,
   ToolOutlined,
@@ -272,7 +273,11 @@ export default function FarmPlannerPage() {
       </div>
 
       {trackedResources.length === 0 ? (
-        <Empty description={t("farmTrackedEmptyHint")} />
+        <EmptyState
+          icon="farm"
+          title={t("emptyFarmTitle")}
+          description={t("emptyFarmDesc")}
+        />
       ) : (
         <>
           <div className="farm-resource-grid">

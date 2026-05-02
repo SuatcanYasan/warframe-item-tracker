@@ -22,6 +22,13 @@ export const useAppStore = create((set) => ({
   shareModalOpen: false,
   pendingImportEncoded: null,  // set when app launches with #share=... hash
 
+  // Sign-in conflict — set during bootstrap when local and cloud both have
+  // data and they differ. The modal asks the user to pick one source.
+  // Shape: { local: persistedShape, cloud: persistedShape } | null
+  syncConflict: null,
+  setSyncConflict: (payload) => set({ syncConflict: payload }),
+  clearSyncConflict: () => set({ syncConflict: null }),
+
   setLanguage: (language) => set({ language }),
   setThemeName: (themeName) => set({ themeName }),
   setCustomThemeTokens: (tokensOrFn) =>

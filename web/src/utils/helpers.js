@@ -1,17 +1,30 @@
 export const FALLBACK_ICON =
   "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'><rect width='48' height='48' rx='8' fill='%2311182a'/><path d='M24 10l10 6v12l-10 6-10-6V16z' fill='%233f568f'/></svg>";
 
-// <img onError={handleImgError} /> — tries `data-img-fallback` first (e.g.
-// WFCD CDN when wiki 404s), then drops to FALLBACK_ICON. onerror is cleared
-// on the final step to prevent loops.
+// <img onError={handleImgError} /> — fallback chain:
+//   1. `data-img-fallback` (per-image override — wiki when WFCD CDN 404s)
+//   2. raw.githubusercontent.com (when jsDelivr 403/blocks the file)
+//   3. FALLBACK_ICON (final placeholder; clears onerror to prevent loops)
 export function handleImgError(event) {
   const img = event?.currentTarget || event?.target;
   if (!img) return;
+
   const fallbackUrl = img.dataset?.imgFallback;
   if (fallbackUrl && img.src !== fallbackUrl) {
     img.src = fallbackUrl;
     return;
   }
+
+  // jsDelivr WFCD path → swap to raw GitHub. Same file, different CDN —
+  // works around 403/Cloudflare rate limits and stale jsDelivr caches.
+  if (img.src.includes("cdn.jsdelivr.net/gh/WFCD/warframe-items")) {
+    img.src = img.src.replace(
+      "cdn.jsdelivr.net/gh/WFCD/warframe-items@master",
+      "raw.githubusercontent.com/WFCD/warframe-items/master",
+    );
+    return;
+  }
+
   img.onerror = null;
   img.src = FALLBACK_ICON;
 }
