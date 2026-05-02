@@ -1,6 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { Button } from "antd";
-import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, AppstoreAddOutlined, ClearOutlined } from "@ant-design/icons";
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from "react";
+import { Button, Segmented, Spin } from "antd";
+import { SearchOutlined, TrophyFilled, InboxOutlined, DatabaseOutlined, CheckOutlined, CheckCircleOutlined, CloseOutlined, AppstoreAddOutlined, ClearOutlined, RiseOutlined } from "@ant-design/icons";
+
+// MR XP calculator lives in this same page as a tab — moving it out
+// would mean an extra sidebar entry, and the workflow (cycle item →
+// see XP impact) is naturally connected.
+const MRCalculatorView = lazy(() => import("./MRCalculatorPage"));
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useTranslate } from "../../hooks/useTranslate";
@@ -47,6 +52,8 @@ export default function MasteryPage() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  // Tab — "items" (default, the cycle grid) or "calculator" (XP breakdown).
+  const [activeView, setActiveView] = useState("items");
 
   const loadItems = () => {
     let cancelled = false;
@@ -198,8 +205,38 @@ export default function MasteryPage() {
     { name: "rem", value: 100 - Math.max(0, Math.min(100, pct)) },
   ];
 
+  if (activeView === "calculator") {
+    return (
+      <>
+        <Segmented
+          block
+          value={activeView}
+          onChange={setActiveView}
+          options={[
+            { value: "items", icon: <TrophyFilled />, label: t("masteryTabItems") },
+            { value: "calculator", icon: <RiseOutlined />, label: t("masteryTabCalculator") },
+          ]}
+          style={{ marginBottom: 14 }}
+        />
+        <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: 80 }}><Spin size="large" /></div>}>
+          <MRCalculatorView />
+        </Suspense>
+      </>
+    );
+  }
+
   return (
     <>
+      <Segmented
+        block
+        value={activeView}
+        onChange={setActiveView}
+        options={[
+          { value: "items", icon: <TrophyFilled />, label: t("masteryTabItems") },
+          { value: "calculator", icon: <RiseOutlined />, label: t("masteryTabCalculator") },
+        ]}
+        style={{ marginBottom: 14 }}
+      />
       <HintPill
         id="mastery-right-click-2026"
         title={t("hintDidYouKnow")}

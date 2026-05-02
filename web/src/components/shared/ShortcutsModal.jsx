@@ -11,9 +11,9 @@ export default function ShortcutsModal() {
   const closeShortcuts = useAppStore((s) => s.closeShortcuts);
 
   const shortcuts = [
+    { keys: [MOD, "K"], description: t("shortcutCommandPalette") },
     { keys: [MOD, "Space"], description: t("shortcutOpenSearch") },
     { keys: ["/"], description: t("shortcutOpenSearch") },
-    { keys: [MOD, "K"], description: t("shortcutShowHelp") },
     { keys: ["0"], description: t("dashboard") },
     { keys: ["1"], description: t("shortcutGoCraft") },
     { keys: ["2"], description: t("shortcutGoRelic") },

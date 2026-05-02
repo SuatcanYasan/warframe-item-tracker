@@ -31,6 +31,7 @@ export function createDefaultPersistedState() {
     completedMaterials: {},
     checklistItems: [],
     farmResources: [],
+    incarnonClaimed: {},
     storedVersion: null,
   };
 }
@@ -92,6 +93,8 @@ export function normalizePersistedState(raw) {
         : {},
     checklistItems: Array.isArray(next.checklistItems) ? next.checklistItems : [],
     farmResources: Array.isArray(next.farmResources) ? next.farmResources : [],
+    incarnonClaimed:
+      next.incarnonClaimed && typeof next.incarnonClaimed === "object" ? next.incarnonClaimed : {},
     storedVersion: next.storedVersion || null,
   };
 }

@@ -69,6 +69,7 @@ import DashboardPage from "./components/dashboard/DashboardPage";
 const RelicTrackerContent = lazy(() => import("./components/relic/RelicPage"));
 const InventoryTrackerContent = lazy(() => import("./components/inventory/InventoryPage"));
 const MasteryPage = lazy(() => import("./components/mastery/MasteryPage"));
+const IncarnonRotationPage = lazy(() => import("./components/incarnon/IncarnonRotationPage"));
 const TimersPage = lazy(() => import("./components/timers/TimersPage"));
 const AmpsPage = lazy(() => import("./components/amps/AmpsPage"));
 const ActivitiesPage = lazy(() => import("./components/activities/ActivitiesPage"));
@@ -403,10 +404,8 @@ function CraftAppContent() {
       e.preventDefault();
       useCraftStore.getState().openSearchDrawer();
     });
-    hotkeys("ctrl+k,cmd+k", (e) => {
-      e.preventDefault();
-      useAppStore.getState().openShortcuts();
-    });
+    // Cmd/Ctrl+K is owned by CommandPalette (industry-standard binding —
+    // VS Code, Linear, GitHub). Shortcuts modal stays on `?` only.
     hotkeys("0", () => navigate("/"));
     hotkeys("1", () => navigate("/craft"));
     hotkeys("2", () => navigate("/relic"));
@@ -421,7 +420,6 @@ function CraftAppContent() {
     return () => {
       hotkeys.unbind("/");
       hotkeys.unbind("ctrl+space,cmd+space");
-      hotkeys.unbind("ctrl+k,cmd+k");
       hotkeys.unbind("0");
       hotkeys.unbind("1");
       hotkeys.unbind("2");
@@ -461,6 +459,9 @@ function CraftAppContent() {
             } />
             <Route path="/inventory" element={<InventoryTrackerContent />} />
             <Route path="/mastery" element={<MasteryPage />} />
+            {/* Legacy redirect — MR XP is now a tab inside /mastery */}
+            <Route path="/mr-calculator" element={<MasteryPage />} />
+            <Route path="/incarnon" element={<IncarnonRotationPage />} />
             <Route path="/timers" element={<TimersPage />} />
             <Route path="/amps" element={<AmpsPage />} />
             <Route path="/activities" element={<ActivitiesPage />} />

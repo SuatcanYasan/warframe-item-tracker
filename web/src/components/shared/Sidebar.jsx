@@ -16,7 +16,7 @@ export default function Sidebar({ onOpenSettings }) {
   const closeMobileSidebar = useAppStore((s) => s.closeMobileSidebar);
   const navigate = useNavigate();
   const location = useLocation();
-  const activePage = location.pathname === "/craft" ? "craft" : location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : location.pathname === "/mastery" ? "mastery" : location.pathname === "/timers" ? "timers" : location.pathname === "/amps" ? "amps" : location.pathname === "/activities" ? "activities" : location.pathname === "/checklist" ? "checklist" : location.pathname === "/farm" ? "farm" : "dashboard";
+  const activePage = location.pathname === "/craft" ? "craft" : location.pathname === "/relic" ? "relic" : location.pathname === "/inventory" ? "inventory" : location.pathname === "/mastery" ? "mastery" : location.pathname === "/incarnon" ? "incarnon" : location.pathname === "/timers" ? "timers" : location.pathname === "/amps" ? "amps" : location.pathname === "/activities" ? "activities" : location.pathname === "/checklist" ? "checklist" : location.pathname === "/farm" ? "farm" : "dashboard";
 
   function handleNavClick(path) {
     navigate(path);
@@ -30,6 +30,7 @@ export default function Sidebar({ onOpenSettings }) {
     { key: "inventory", path: "/inventory", icon: <img src={`${WF_ICONS}/IconBundle%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("inventoryTracker") },
     { key: "mastery", path: "/mastery", icon: <img src={`${WF_ICONS}/IconMasteryRank.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("masteryTracker") },
     { key: "amps", path: "/amps", icon: <img src={`${WF_ICONS}/IconCategoryAmp%28xWhite%29.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("ampsTracker") },
+    { key: "incarnon", path: "/incarnon", icon: <img src={`${WF_ICONS}/Stats.png`} alt="" className="nav-item-img" loading="lazy" decoding="async" />, label: t("incTitle") },
   ];
 
   return (

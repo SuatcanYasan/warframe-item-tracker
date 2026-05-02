@@ -7,6 +7,7 @@ import { useMasteryStore } from "../stores/masteryStore";
 import { useAmpStore } from "../stores/ampStore";
 import { useChecklistStore } from "../stores/checklistStore";
 import { useFarmStore } from "../stores/farmStore";
+import { useIncarnonStore } from "../stores/incarnonStore";
 import { savePersistedState, normalizePersistedState } from "../utils/storage";
 import { broadcastTabSync, onTabSync } from "../utils/tabSync";
 import { pushAllState, subscribeWithHydrate, waitForBootstrap } from "../lib/supabaseSync";
@@ -34,6 +35,7 @@ export function usePersist() {
   const completedMaterials = useAmpStore((s) => s.completedMaterials);
   const checklistItems = useChecklistStore((s) => s.items);
   const farmResources = useFarmStore((s) => s.trackedResources);
+  const incarnonClaimed = useIncarnonStore((s) => s.claimed);
 
   // Debounce localStorage writes: batch rapid edits (e.g. typing in theme editor,
   // dragging sliders) into a single JSON.stringify + setItem every 300ms. Flush
@@ -54,6 +56,7 @@ export function usePersist() {
     useAmpStore.getState().hydrate(normalized);
     useChecklistStore.getState().hydrate(normalized);
     useFarmStore.getState().hydrate(normalized);
+    useIncarnonStore.getState().hydrate(normalized);
   };
 
   // Cross-tab sync (same browser)
@@ -95,6 +98,7 @@ export function usePersist() {
       completedMaterials,
       checklistItems,
       farmResources,
+      incarnonClaimed,
       storedVersion,
     };
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -131,6 +135,7 @@ export function usePersist() {
     completedMaterials,
     checklistItems,
     farmResources,
+    incarnonClaimed,
     storedVersion,
   ]);
 }
