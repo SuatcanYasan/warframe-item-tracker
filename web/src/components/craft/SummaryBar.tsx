@@ -1,61 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useCraftStore } from "../../stores/craftStore";
 import type { AdjustedTotal } from "../../hooks/useCraftDerived";
 
-interface DonutProps {
-  percent: number;
-}
-
-function ProgressDonut({ percent }: DonutProps) {
-  const data = [
-    { name: "done", value: Math.max(0, Math.min(100, percent)) },
-    { name: "remaining", value: 100 - Math.max(0, Math.min(100, percent)) },
-  ];
-  return (
-    <div style={{ width: 72, height: 72, position: "relative" }}>
-      <ResponsiveContainer>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={24}
-            outerRadius={34}
-            startAngle={90}
-            endAngle={-270}
-            dataKey="value"
-            stroke="none"
-            isAnimationActive
-          >
-            <Cell fill="var(--wf-primary)" />
-            <Cell fill="color-mix(in srgb, var(--wf-text) 10%, transparent)" />
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          fontWeight: 700,
-          color: "var(--wf-primary)",
-          fontFamily: "var(--font-mono, monospace)",
-        }}
-      >
-        %{percent}
-      </div>
-    </div>
-  );
-}
+// Lazy-loaded so recharts (~80 KB gzip) isn't pulled into the entry
+// bundle. Donut renders an instant after the rest of the bar.
+const ProgressDonut = lazy(() => import("../shared/ProgressDonut"));
 
 interface Props {
   adjustedTotals: AdjustedTotal[];
@@ -108,7 +59,9 @@ export default function SummaryBar({ adjustedTotals }: Props) {
           <div className="stat-value">{stats.done} / {stats.total}</div>
           <div className="stat-sub">%{stats.percent}</div>
         </div>
-        <ProgressDonut percent={stats.percent} />
+        <Suspense fallback={<div style={{ width: 72, height: 72 }} />}>
+          <ProgressDonut percent={stats.percent} />
+        </Suspense>
       </motion.div>
 
     </div>

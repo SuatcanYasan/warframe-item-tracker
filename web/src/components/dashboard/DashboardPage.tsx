@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   RightOutlined,
@@ -9,7 +9,12 @@ import {
   FireOutlined,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+
+// Recharts isolated to its own chunk via lazy() so it doesn't bloat
+// the entry bundle. Both donut and bar chart share the same recharts
+// chunk thanks to Vite's shared-chunk dedup.
+const ProgressDonut = lazy(() => import("../shared/ProgressDonut"));
+const DashboardBarChart = lazy(() => import("./DashboardBarChart"));
 import { useRelativeTime } from "../../hooks/useRelativeTime";
 import { useTranslate } from "../../hooks/useTranslate";
 import { useAppStore } from "../../stores/appStore";
@@ -68,31 +73,19 @@ function PreviewRow({ items, totalCount, moreLabel }: PreviewRowProps) {
   );
 }
 
-interface MiniDonutProps {
-  percent: number;
-  size?: number;
-  color?: string;
-}
-
-function MiniDonut({ percent, size = 52, color = "var(--wf-primary)" }: MiniDonutProps) {
-  const data = [
-    { value: Math.max(0, Math.min(100, percent)) },
-    { value: 100 - Math.max(0, Math.min(100, percent)) },
-  ];
+// MiniDonut replaced by shared/ProgressDonut (lazy chunk).
+// Helper to keep call-sites short with the dashboard's preferred sizing.
+function MiniDonut({ percent, size = 52, color = "var(--wf-primary)" }: { percent: number; size?: number; color?: string }) {
   return (
-    <div style={{ width: size, height: size, position: "relative" }}>
-      <ResponsiveContainer>
-        <PieChart>
-          <Pie data={data} cx="50%" cy="50%" innerRadius={size * 0.38} outerRadius={size * 0.48} startAngle={90} endAngle={-270} dataKey="value" stroke="none" isAnimationActive>
-            <Cell fill={color} />
-            <Cell fill="color-mix(in srgb, var(--wf-text) 8%, transparent)" />
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color, fontFamily: "var(--font-mono, monospace)" }}>
-        %{percent}
-      </div>
-    </div>
+    <Suspense fallback={<div style={{ width: size, height: size }} />}>
+      <ProgressDonut
+        percent={percent}
+        size={size}
+        innerRadius={size * 0.38}
+        outerRadius={size * 0.48}
+        primaryColor={color}
+      />
+    </Suspense>
   );
 }
 
@@ -400,16 +393,9 @@ export default function DashboardPage() {
       <div className="dashboard-charts-row">
         <motion.div className="dashboard-chart-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
           <div className="dashboard-chart-title">{t("dashboardProgressTitle")}</div>
-          <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={barData} margin={{ left: 0, right: 16, top: 8, bottom: 4 }}>
-              <XAxis dataKey="name" tick={{ fill: "#94A3B8", fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
-              <YAxis type="number" domain={[0, 100]} hide />
-              <Tooltip formatter={(v) => [`%${v}`, t("overallProgress")]} contentStyle={{ background: "#1A1A28", border: `1px solid ${primaryColor}33`, borderRadius: 8, fontSize: 12, color: "#E2E8F0", boxShadow: `0 4px 16px ${primaryColor}15` }} labelStyle={{ color: primaryColor, fontWeight: 600 }} itemStyle={{ color: "#E2E8F0" }} cursor={{ fill: "rgba(255,255,255,0.06)", radius: 4 }} />
-              <Bar dataKey="pct" radius={[6, 6, 0, 0]} barSize={32} isAnimationActive animationDuration={800}>
-                {barData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<div style={{ height: 140 }} />}>
+            <DashboardBarChart data={barData} primaryColor={primaryColor} tooltipLabel={t("overallProgress")} />
+          </Suspense>
         </motion.div>
 
         {/* Timer Slider */}

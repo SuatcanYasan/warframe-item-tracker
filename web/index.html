@@ -6,6 +6,13 @@
     <link rel="icon" type="image/png" href="/trackerlogo.png" />
     <meta name="theme-color" content="#CA8A04" />
     <link rel="apple-touch-icon" href="/trackerlogo.png" />
+    <!-- Pre-warm DNS + TCP for the icon CDN we hit on every page (item
+         images, mastery icons). preconnect saves ~100-300ms on cold
+         loads vs lazy-resolving when the first <img> requests fire. -->
+    <link rel="preconnect" href="https://wiki.warframe.com" crossorigin />
+    <link rel="dns-prefetch" href="https://wiki.warframe.com" />
+    <link rel="preconnect" href="https://api.warframestat.us" crossorigin />
+    <link rel="dns-prefetch" href="https://api.warframestat.us" />
     <title>WIT</title>
   </head>
   <body>

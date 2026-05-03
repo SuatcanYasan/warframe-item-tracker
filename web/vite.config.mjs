@@ -126,6 +126,16 @@ export default defineConfig({
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("/@supabase/")) return "supabase";
           if (id.includes("/warframe-worldstate-parser/")) return "wf-data";
+          // Recharts + d3 deps stay UNGROUPED — Vite then attaches them
+          // to the dynamic-import chunk that pulls them in (Donut /
+          // Bar wrappers are lazy()), keeping recharts out of the
+          // entry critical path. Safe because chunks load AFTER React.
+          if (
+            id.includes("/recharts/") ||
+            id.includes("/victory-vendor/") ||
+            id.includes("/d3-") ||
+            id.includes("/internmap/")
+          ) return undefined;
           return "react-app";
         },
       },

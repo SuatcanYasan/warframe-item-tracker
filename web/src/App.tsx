@@ -57,16 +57,19 @@ import ItemCardGrid from "./components/craft/ItemCardGrid";
 import TotalsCardGrid from "./components/craft/TotalsCardGrid";
 import SearchDrawer from "./components/craft/SearchDrawer";
 import HintPill from "./components/shared/HintPill";
-import ThemeDrawer from "./components/shared/ThemeDrawer";
-import WizardModal from "./components/shared/WizardModal";
-import ShortcutsModal from "./components/shared/ShortcutsModal";
-import CommandPalette from "./components/shared/CommandPalette";
-import OnboardingTour from "./components/shared/OnboardingTour";
-import UpdateNotesModal from "./components/shared/UpdateNotesModal";
-import ShareModal from "./components/shared/ShareModal";
-import SyncConflictModal from "./components/shared/SyncConflictModal";
-import ItemDetailModal from "./components/craft/modals/ItemDetailModal";
-import TotalDetailModal from "./components/craft/modals/TotalDetailModal";
+// Heavy AntD modals/drawers — none of these render until the user
+// triggers them (or a one-time onboarding event). Lazy chunks keep
+// AntD's Modal/Drawer code out of the entry bundle.
+const ThemeDrawer = lazy(() => import("./components/shared/ThemeDrawer"));
+const WizardModal = lazy(() => import("./components/shared/WizardModal"));
+const ShortcutsModal = lazy(() => import("./components/shared/ShortcutsModal"));
+const CommandPalette = lazy(() => import("./components/shared/CommandPalette"));
+const OnboardingTour = lazy(() => import("./components/shared/OnboardingTour"));
+const UpdateNotesModal = lazy(() => import("./components/shared/UpdateNotesModal"));
+const ShareModal = lazy(() => import("./components/shared/ShareModal"));
+const SyncConflictModal = lazy(() => import("./components/shared/SyncConflictModal"));
+const ItemDetailModal = lazy(() => import("./components/craft/modals/ItemDetailModal"));
+const TotalDetailModal = lazy(() => import("./components/craft/modals/TotalDetailModal"));
 // Route-level code splitting — each page ships as its own chunk.
 // Dashboard stays eager since it's the default landing screen.
 import DashboardPage from "./components/dashboard/DashboardPage";
@@ -606,24 +609,27 @@ function CraftAppContent() {
 
       <SearchDrawer open={searchDrawerOpen} onClose={closeSearchDrawer} onAddItem={handleAddItem} />
 
-      <ItemDetailModal
-        item={detailItem} open={!!detailItem} onClose={() => setDetailItem(null)}
-        enrichedRequirements={detailItem ? enrichedByItem.get(detailItem.uniqueName) || [] : []}
-        onSetCompleted={setCompletedQuantity} onUpdateQuantity={updateQuantity}
-      />
-
-      <TotalDetailModal
-        material={detailMaterial} open={!!detailMaterial} onClose={() => setDetailMaterial(null)}
-        detailByItem={detailByItem} onSetCompleted={setCompletedQuantity} onBulkDonate={handleBulkDonate}
-      />
-
-      <ThemeDrawer />
-      <WizardModal />
-      <ShortcutsModal />
-      <CommandPalette />
-      <OnboardingTour />
-      <UpdateNotesModal />
-      <ShareModal />
+      {/* All lazy modals/drawers wrapped in a single Suspense boundary;
+          fallback is null because none of these visually occupy space
+          until the user opens them. */}
+      <Suspense fallback={null}>
+        <ItemDetailModal
+          item={detailItem} open={!!detailItem} onClose={() => setDetailItem(null)}
+          enrichedRequirements={detailItem ? enrichedByItem.get(detailItem.uniqueName) || [] : []}
+          onSetCompleted={setCompletedQuantity} onUpdateQuantity={updateQuantity}
+        />
+        <TotalDetailModal
+          material={detailMaterial} open={!!detailMaterial} onClose={() => setDetailMaterial(null)}
+          detailByItem={detailByItem} onSetCompleted={setCompletedQuantity} onBulkDonate={handleBulkDonate}
+        />
+        <ThemeDrawer />
+        <WizardModal />
+        <ShortcutsModal />
+        <CommandPalette />
+        <OnboardingTour />
+        <UpdateNotesModal />
+        <ShareModal />
+      </Suspense>
       <MobileNav />
     </>
   );
@@ -880,7 +886,9 @@ function CraftApp() {
     >
       <AntApp>
         <CraftAppContent />
-        <SyncConflictModal onUseLocal={handleUseLocal} onUseCloud={handleUseCloud} />
+        <Suspense fallback={null}>
+          <SyncConflictModal onUseLocal={handleUseLocal} onUseCloud={handleUseCloud} />
+        </Suspense>
       </AntApp>
     </ConfigProvider>
   );

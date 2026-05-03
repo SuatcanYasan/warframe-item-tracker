@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../stores/appStore";
 import { RTL_LANGUAGES } from "../constants/languages";
+import { loadAndChangeLanguage } from "../i18n";
 
 export type TranslateFn = (key: string, params?: Record<string, unknown>) => string;
 
@@ -16,7 +17,11 @@ export function useTranslate(): TranslateBag {
 
   useEffect(() => {
     if (i18nInstance.language !== language) {
-      i18nInstance.changeLanguage(language);
+      // loadAndChangeLanguage fetches the locale bundle on demand if
+      // it isn't already loaded (only the initial language ships with
+      // the entry chunk). Fire-and-forget — render uses whatever
+      // bundle is active until the new one resolves.
+      loadAndChangeLanguage(language);
     }
     if (typeof document !== "undefined") {
       document.documentElement.setAttribute("lang", language);

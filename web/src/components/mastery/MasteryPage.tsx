@@ -11,7 +11,7 @@ const JunctionsView = lazy(() => import("./MasteryJunctionsView"));
 const IntrinsicsView = lazy(() => import("./MasteryIntrinsicsView"));
 const StarChartView = lazy(() => import("./MasteryStarChartView"));
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+const ProgressDonut = lazy(() => import("../shared/ProgressDonut"));
 import { useTranslate } from "../../hooks/useTranslate";
 import type { TranslateFn } from "../../hooks/useTranslate";
 import { useMasteryStore } from "../../stores/masteryStore";
@@ -333,10 +333,7 @@ export default function MasteryPage() {
 
   const pct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
   const ownedPct = stats.total > 0 ? Math.round((stats.owned / stats.total) * 100) : 0;
-  const donutData = [
-    { name: "done", value: Math.max(0, Math.min(100, pct)) },
-    { name: "rem", value: 100 - Math.max(0, Math.min(100, pct)) },
-  ];
+  // donutData removed — ProgressDonut takes a flat percent prop.
 
   type ActiveView = "items" | "junctions" | "intrinsics" | "starchart" | "calculator";
   const segmentedOptions = [
@@ -421,10 +418,9 @@ export default function MasteryPage() {
             <div className="stat-value">{stats.mastered} / {stats.total}</div>
             <div className="stat-sub">{t("masteryProgress", { mastered: stats.mastered, total: stats.total, pct })}</div>
           </div>
-          <div style={{ width: 72, height: 72, position: "relative" }}>
-            <ResponsiveContainer><PieChart><Pie data={donutData} cx="50%" cy="50%" innerRadius={24} outerRadius={34} startAngle={90} endAngle={-270} dataKey="value" stroke="none" isAnimationActive><Cell fill="var(--wf-primary)" /><Cell fill="color-mix(in srgb, var(--wf-text) 10%, transparent)" /></Pie></PieChart></ResponsiveContainer>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "var(--wf-primary)", fontFamily: "var(--font-mono, monospace)" }}>%{pct}</div>
-          </div>
+          <Suspense fallback={<div style={{ width: 72, height: 72 }} />}>
+            <ProgressDonut percent={pct} />
+          </Suspense>
         </motion.div>
       </div>
 
