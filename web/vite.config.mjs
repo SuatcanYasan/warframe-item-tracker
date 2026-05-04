@@ -97,10 +97,13 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     chunkSizeWarningLimit: 1500,
-    // Modern browsers — no IE11 / old-Safari polyfills. Vite default
-    // `modules` already targets ES2020-capable browsers; explicit
-    // 'es2022' shaves a bit more by skipping a few transforms.
-    target: "es2022",
+    // Modern browsers only — no IE11/old-Safari polyfills. esnext
+    // skips the most transforms (top-level await, class fields,
+    // private methods, etc. are emitted as-is). PWA app, modern UAs.
+    target: "esnext",
+    // Minify identifiers AND drop console.* in prod. Logs survive in
+    // dev builds because Vite uses esbuild's `minify: false` there.
+    minify: "esbuild",
     rollupOptions: {
       output: {
         // Split node_modules into a few stable chunks. Important:

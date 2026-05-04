@@ -4,6 +4,25 @@ import { initSentry } from "./lib/sentry";
 // No-op when VITE_SENTRY_DSN is unset (dev / local).
 initSentry();
 
+// When a new deploy ships, the active page's lazy import statements
+// still reference the OLD chunk hashes. The first time the user
+// triggers one of those imports they get a 404 / fetch error.
+// Vite emits `vite:preloadError` for exactly this case — we hard
+// reload so the user lands on the fresh index.html with current
+// chunk references. Guarded against reload loops via sessionStorage.
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", () => {
+    if (sessionStorage.getItem("__wit_preload_reload__") === "1") return;
+    sessionStorage.setItem("__wit_preload_reload__", "1");
+    window.location.reload();
+  });
+  // Clear the guard after a successful page lifecycle so the next
+  // genuine deploy can recover too.
+  window.addEventListener("load", () => {
+    setTimeout(() => sessionStorage.removeItem("__wit_preload_reload__"), 5000);
+  });
+}
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

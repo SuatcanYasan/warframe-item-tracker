@@ -18,6 +18,9 @@ import { useMasteryStore } from "../stores/masteryStore";
 import { useAmpStore } from "../stores/ampStore";
 import { useChecklistStore } from "../stores/checklistStore";
 import { useFarmStore } from "../stores/farmStore";
+import { useJunctionStore } from "../stores/junctionStore";
+import { useIntrinsicStore } from "../stores/intrinsicStore";
+import { useStarChartStore } from "../stores/starChartStore";
 import type {
   PersistedState,
   SelectedCraftItem,
@@ -185,6 +188,15 @@ interface ProfileInput {
   masteryRealTotalXp?: number | null;
   masteryRealBreakdown?: unknown;
   masteryLastImportAt?: number | null;
+  // Mastery v2 fields (mode toggle + sync player id + 3 sub-trackers).
+  // Junctions/intrinsics/star-chart maps stored as JSONB. Mode + player
+  // id as text columns. All nullable — empty maps treated as "unset".
+  masteryRealDisplayName?: string | null;
+  masteryMode?: "manual" | "sync";
+  masterySyncPlayerId?: string | null;
+  junctionsCompleted?: Record<string, true>;
+  intrinsicRanks?: Record<string, number>;
+  starChartCompleted?: Record<string, true>;
 }
 
 interface ProfileRow {
@@ -202,6 +214,14 @@ interface ProfileRow {
   mastery_real_total_xp?: number | null;
   mastery_real_breakdown?: unknown;
   mastery_last_import_at?: string | null;
+  // Mastery v2 columns (added by migration). Same graceful-fallback
+  // path strips them if the migration wasn't applied yet.
+  mastery_real_display_name?: string | null;
+  mastery_mode?: string | null;
+  mastery_sync_player_id?: string | null;
+  junctions_completed?: unknown;
+  intrinsic_ranks?: unknown;
+  star_chart_completed?: unknown;
 }
 
 // Supabase rejects upserts that reference columns that don't exist in
@@ -213,6 +233,12 @@ const PROFILE_IMPORT_COLUMNS = [
   "mastery_real_total_xp",
   "mastery_real_breakdown",
   "mastery_last_import_at",
+  "mastery_real_display_name",
+  "mastery_mode",
+  "mastery_sync_player_id",
+  "junctions_completed",
+  "intrinsic_ranks",
+  "star_chart_completed",
 ] as const;
 
 function stripProfileImportColumns(row: ProfileRow): ProfileRow {
@@ -238,6 +264,12 @@ export async function pushProfile(profile: ProfileInput, opts: SyncOptions = {})
     mastery_last_import_at: profile.masteryLastImportAt
       ? new Date(profile.masteryLastImportAt).toISOString()
       : null,
+    mastery_real_display_name: profile.masteryRealDisplayName ?? null,
+    mastery_mode: profile.masteryMode ?? null,
+    mastery_sync_player_id: profile.masterySyncPlayerId ?? null,
+    junctions_completed: profile.junctionsCompleted ?? null,
+    intrinsic_ranks: profile.intrinsicRanks ?? null,
+    star_chart_completed: profile.starChartCompleted ?? null,
   };
   const hash = JSON.stringify(rowData);
   if (lastHash.get("user_profiles") === hash) return { ok: true, skipped: true };
@@ -253,7 +285,7 @@ export async function pushProfile(profile: ProfileInput, opts: SyncOptions = {})
     // Likely cause: the mastery_real_* columns don't exist yet because
     // the SQL migration hasn't been applied. Strip them and retry — the
     // rest of the profile still syncs, just without the import fields.
-    const isSchemaError = /column .*mastery_real_/i.test(error.message || "")
+    const isSchemaError = /column .*(mastery_|junctions_completed|intrinsic_ranks|star_chart_completed)/i.test(error.message || "")
       || /unknown column/i.test(error.message || "");
     if (isSchemaError) {
       const stripped = stripProfileImportColumns(rowData);
@@ -608,6 +640,12 @@ export async function pullAllState(): Promise<PullAllStateResult | null> {
       masteryLastImportAt: profile?.mastery_last_import_at
         ? new Date(profile.mastery_last_import_at as string).getTime()
         : null,
+      masteryRealDisplayName: typeof profile?.mastery_real_display_name === "string" ? profile.mastery_real_display_name : null,
+      masteryMode: profile?.mastery_mode === "sync" ? "sync" : "manual",
+      masterySyncPlayerId: typeof profile?.mastery_sync_player_id === "string" ? profile.mastery_sync_player_id : null,
+      junctionsCompleted: (profile?.junctions_completed as Record<string, true> | undefined) ?? {},
+      intrinsicRanks: (profile?.intrinsic_ranks as Record<string, number> | undefined) ?? {},
+      starChartCompleted: (profile?.star_chart_completed as Record<string, true> | undefined) ?? {},
       selectedItems: craftItems,
       completedMap: craftCompleted,
       relicFoundComponents: relicFound,
@@ -641,6 +679,12 @@ export async function pushAllState(
         masteryRealTotalXp: payload.masteryRealTotalXp ?? null,
         masteryRealBreakdown: payload.masteryRealBreakdown ?? null,
         masteryLastImportAt: payload.masteryLastImportAt ?? null,
+        masteryRealDisplayName: payload.masteryRealDisplayName ?? null,
+        masteryMode: payload.masteryMode,
+        masterySyncPlayerId: payload.masterySyncPlayerId ?? null,
+        junctionsCompleted: payload.junctionsCompleted ?? {},
+        intrinsicRanks: payload.intrinsicRanks ?? {},
+        starChartCompleted: payload.starChartCompleted ?? {},
       },
       opts,
     ),
@@ -696,6 +740,12 @@ const perTableHydrators: Record<string, () => Promise<void>> = {
       mastery_real_total_xp: p.mastery_real_total_xp ?? null,
       mastery_real_breakdown: p.mastery_real_breakdown ?? null,
       mastery_last_import_at: p.mastery_last_import_at ?? null,
+      mastery_real_display_name: p.mastery_real_display_name ?? null,
+      mastery_mode: p.mastery_mode ?? null,
+      mastery_sync_player_id: p.mastery_sync_player_id ?? null,
+      junctions_completed: p.junctions_completed ?? null,
+      intrinsic_ranks: p.intrinsic_ranks ?? null,
+      star_chart_completed: p.star_chart_completed ?? null,
     };
     const hash = JSON.stringify(rowData);
     if (lastHash.get("user_profiles") === hash) return;
@@ -720,7 +770,19 @@ const perTableHydrators: Record<string, () => Promise<void>> = {
       lastImportAt: p.mastery_last_import_at
         ? new Date(p.mastery_last_import_at as string).getTime()
         : null,
+      realDisplayName: typeof p.mastery_real_display_name === "string" ? p.mastery_real_display_name : null,
+      mode: p.mastery_mode === "sync" ? "sync" : "manual",
+      syncPlayerId: typeof p.mastery_sync_player_id === "string" ? p.mastery_sync_player_id : null,
     });
+    useJunctionStore.getState().setCompleted(
+      (p.junctions_completed as Record<string, true> | undefined) ?? {},
+    );
+    useIntrinsicStore.getState().setAll(
+      (p.intrinsic_ranks as Record<string, number> | undefined) ?? {},
+    );
+    useStarChartStore.getState().setCompleted(
+      (p.star_chart_completed as Record<string, true> | undefined) ?? {},
+    );
   },
   craft_items: async () => {
     const items = await pullCraftItems();

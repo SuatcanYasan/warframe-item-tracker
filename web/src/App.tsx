@@ -699,6 +699,9 @@ function mergeCloudOverLocal(local, cloud) {
     "inventoryParts", "masteredItems", "trackedSets", "masteryParts",
     "completedMaterials", "checklistItems", "farmResources",
     "incarnonClaimed", "wfRotationClaimed", "arcaneCounts",
+    // Mastery v2 sub-tracker maps. Empty → keep local (user may have
+    // toggled junctions on this device but not yet synced).
+    "junctionsCompleted", "intrinsicRanks", "starChartCompleted",
   ];
   for (const k of FIELDS) {
     const cloudVal = cloud?.[k];
@@ -711,6 +714,9 @@ function mergeCloudOverLocal(local, cloud) {
   if (cloud?.masteryRealTotalXp == null) merged.masteryRealTotalXp = local.masteryRealTotalXp;
   if (cloud?.masteryRealBreakdown == null) merged.masteryRealBreakdown = local.masteryRealBreakdown;
   if (cloud?.masteryLastImportAt == null) merged.masteryLastImportAt = local.masteryLastImportAt;
+  if (cloud?.masteryRealDisplayName == null) merged.masteryRealDisplayName = local.masteryRealDisplayName;
+  if (cloud?.masteryMode == null) merged.masteryMode = local.masteryMode;
+  if (cloud?.masterySyncPlayerId == null) merged.masterySyncPlayerId = local.masterySyncPlayerId;
   return merged;
 }
 
